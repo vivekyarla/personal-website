@@ -2,7 +2,7 @@ import Link from "next/link";
 import Clock from "@/components/Clock";
 
 export const metadata = {
-  title: "Repository — Vivek Yarlagedda",
+  title: "Repository — Vivek Y.",
 };
 
 export default function RepositoryIndex() {

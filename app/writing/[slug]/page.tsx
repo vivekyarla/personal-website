@@ -18,7 +18,7 @@ export async function generateMetadata({
   const post = await fetchPost(slug);
   if (!post) return { title: "Not found" };
   return {
-    title: `${post.title} — Vivek Yarlagedda`,
+    title: `${post.title} — Vivek Y.`,
     description: post.description,
     alternates: { canonical: post.url },
   };

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Vivek Yarlagedda",
+  title: "Vivek Y.",
   description: "Personal site of Vivek Yarlagedda.",
   metadataBase: new URL("https://vivekyarla.com"),
 };
