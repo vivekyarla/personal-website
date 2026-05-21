@@ -1,65 +1,185 @@
-import Image from "next/image";
+import Clock from "@/components/Clock";
+import HoverReveal from "@/components/HoverReveal";
+import ThinkingCarousel from "@/components/ThinkingCarousel";
+
+export const revalidate = 600;
+
+type ExperienceItem = {
+  org: string;
+  role: string;
+  year: string;
+  href?: string;
+};
+
+const experience: ExperienceItem[] = [
+  {
+    org: "McKinsey & Co.",
+    role: "Incoming Summer Analyst",
+    year: "2026",
+    href: "https://www.mckinsey.com/",
+  },
+  {
+    org: "The Chernin Group",
+    role: "Diligence - Consumer AI",
+    year: "2025",
+    href: "https://tcg.co/",
+  },
+  {
+    org: "The Westly Group",
+    role: "Diligence - Climate Tech",
+    year: "2025",
+    href: "https://westlygroup.com/",
+  },
+];
+
+const placeholderPhrases = [
+  "circular financing in the AI mega-deal era",
+  "what taste actually means in software",
+  "the next decade of capital flows",
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="flex flex-col gap-8 text-[0.9rem]">
+      {/* Name + live clock */}
+      <header className="flex items-baseline justify-between gap-4">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Vivek Yarlagedda
+        </h1>
+        <Clock />
+      </header>
+
+      {/* Bio */}
+      <section>
+        <p className="leading-relaxed">
+          I&apos;m 19 years old and a student at Stanford studying Economics
+          &amp; Computer Science. Currently, I&apos;m learning about frontier
+          markets, post-AGI governance, and predictive decision modeling. This
+          summer I will be based in San Francisco, working on GTM projects at{" "}
+          <a
+            href="https://www.mckinsey.com/"
+            target="_blank"
+            rel="noreferrer"
+            className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
+          >
+            McKinsey
+          </a>
+          .
+        </p>
+      </section>
+
+      {/* Interests */}
+      <section>
+        <p className="leading-relaxed">
+          The world I&apos;m growing up in is changing at an unprecedented
+          pace. I believe that how things are done today, even at the
+          cutting-edge, will look archaic in under a decade. Through
+          understanding technology, markets, culture, and society, I want to
+          figure out what to spend my twenties on.
+        </p>
+      </section>
+
+      {/* Daily thinking carousel */}
+      <section>
+        <ThinkingCarousel phrases={placeholderPhrases} />
+      </section>
+
+      {/* Writing / Repository */}
+      <section className="grid grid-cols-2 gap-8 sm:gap-12">
+        <HoverReveal
+          title="Writing"
+          href="/writing"
+          description="I sometimes write about my thoughts & predictions on: the AI build-out, high-growth startups, the venture ecosystem, economics, and life."
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+        <HoverReveal
+          title="Repository"
+          href="/repository"
+          description="I'm a heavy Twitter user; I believe that there's abundant alpha on the platform. Here, I collect and sort the tweets that I find most interesting."
+        />
+      </section>
+
+      {/* Experience */}
+      <section>
+        <h2 className="text-base font-semibold tracking-tight mb-1.5">
+          Experience
+        </h2>
+        <hr className="border-rule mb-1" />
+        <ul className="divide-y divide-rule">
+          {experience.map((item) => (
+            <li
+              key={`${item.org}-${item.year}`}
+              className="py-1.5 flex items-baseline justify-between gap-4"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
+              <div className="leading-tight">
+                <span className="font-medium">
+                  {item.href ? (
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="hover:opacity-70 transition-opacity"
+                    >
+                      {item.org}
+                    </a>
+                  ) : (
+                    item.org
+                  )}
+                </span>
+                <span className="italic text-muted ml-2 text-[0.85rem]">
+                  {item.role}
+                </span>
+              </div>
+              <span className="text-muted text-[0.8rem] whitespace-nowrap tabular-nums">
+                {item.year}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* Links */}
+      <section>
+        <ul className="flex flex-wrap justify-center gap-x-5 gap-y-1.5 text-[0.85rem]">
+          <li>
             <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
+              href="https://linkedin.com/in/vivekyarla"
+              target="_blank"
+              rel="noreferrer"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+              LinkedIn
+            </a>
+          </li>
+          <li>
+            <a
+              className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
+              href="https://x.com/vivekyarla"
+              target="_blank"
+              rel="noreferrer"
+            >
+              X
+            </a>
+          </li>
+          <li>
+            <a
+              className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
+              href="https://vyarla.substack.com"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Substack
+            </a>
+          </li>
+          <li>
+            <a
+              className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
+              href="mailto:viveky@stanford.edu"
+            >
+              Email
+            </a>
+          </li>
+        </ul>
+      </section>
     </div>
   );
 }

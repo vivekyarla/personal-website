@@ -1,26 +1,98 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fafaf7;
+  --foreground: #111111;
+  --muted: #6b6b6b;
+  --rule: #d8d6d0;
+  --accent: #111111;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-muted: var(--muted);
+  --color-rule: var(--rule);
+  --color-accent: var(--accent);
+  --font-serif: ui-serif, "New York", "Iowan Old Style", "Apple Garamond",
+    Georgia, "Times New Roman", serif;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Monaco, "Cascadia Code",
+    monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
+}
+
+::selection {
+  background: #dcdcd6;
+  color: #111111;
+}
+::-moz-selection {
+  background: #dcdcd6;
+  color: #111111;
+}
+
+/* Editorial prose styling for Substack content rendered on /writing/[slug] */
+.prose-editorial {
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: var(--foreground);
+}
+.prose-editorial p { margin: 1.1em 0; }
+.prose-editorial a {
+  text-decoration: underline;
+  text-decoration-color: var(--rule);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.15s ease;
+}
+.prose-editorial a:hover { text-decoration-color: var(--foreground); }
+.prose-editorial h1,
+.prose-editorial h2,
+.prose-editorial h3 {
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  margin: 1.8em 0 0.4em;
+}
+.prose-editorial h2 { font-size: 1.4rem; }
+.prose-editorial h3 { font-size: 1.15rem; }
+.prose-editorial img {
+  max-width: 100%;
+  height: auto;
+  margin: 1.6em 0;
+  border-radius: 2px;
+}
+.prose-editorial blockquote {
+  border-left: 2px solid var(--rule);
+  padding-left: 1.2em;
+  margin: 1.4em 0;
+  color: var(--muted);
+  font-style: italic;
+}
+.prose-editorial ul,
+.prose-editorial ol { margin: 1em 0; padding-left: 1.4em; }
+.prose-editorial li { margin: 0.4em 0; }
+.prose-editorial hr {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 2em 0;
+}
+.prose-editorial code {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  background: rgba(0,0,0,0.04);
+  padding: 0.12em 0.35em;
+  border-radius: 3px;
 }
