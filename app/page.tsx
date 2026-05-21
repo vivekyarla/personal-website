@@ -15,20 +15,20 @@ const experience: ExperienceItem[] = [
   {
     org: "McKinsey & Co.",
     role: "Incoming Summer Analyst",
-    year: "2026",
+    year: "Summer 2026",
     href: "https://www.mckinsey.com/",
-  },
-  {
-    org: "The Chernin Group",
-    role: "Diligence - Consumer AI",
-    year: "2025",
-    href: "https://tcg.co/",
   },
   {
     org: "The Westly Group",
     role: "Diligence - Climate Tech",
-    year: "2025",
+    year: "Spring 2025",
     href: "https://westlygroup.com/",
+  },
+  {
+    org: "The Chernin Group",
+    role: "Diligence - Consumer AI",
+    year: "Winter 2025",
+    href: "https://tcg.co/",
   },
 ];
 
@@ -143,21 +143,21 @@ export default function Home() {
           <li>
             <a
               className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
-              href="https://linkedin.com/in/vivekyarla"
-              target="_blank"
-              rel="noreferrer"
-            >
-              LinkedIn
-            </a>
-          </li>
-          <li>
-            <a
-              className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
               href="https://x.com/vivekyarla"
               target="_blank"
               rel="noreferrer"
             >
               X
+            </a>
+          </li>
+          <li>
+            <a
+              className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
+              href="https://linkedin.com/in/vivekyarla"
+              target="_blank"
+              rel="noreferrer"
+            >
+              LinkedIn
             </a>
           </li>
           <li>
