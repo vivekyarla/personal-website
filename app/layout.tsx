@@ -36,7 +36,7 @@ if(cosH>=-1&&cosH<=1){
         />
       </head>
       <body className="min-h-full flex flex-col">
-        <div className="mx-auto w-full max-w-2xl px-6 sm:px-8 pt-24 flex-1 flex flex-col">
+        <div className="mx-auto w-full max-w-2xl px-6 sm:px-8 pt-12 sm:pt-24 flex-1 flex flex-col">
           <main className="flex-1 pb-20">{children}</main>
           <footer className="py-6 text-[0.7rem] text-muted/60 text-center">
             © {new Date().getFullYear()} Vivek Yarlagedda

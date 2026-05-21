@@ -43,7 +43,7 @@ export default function Home() {
   return (
     <div className="flex flex-col gap-8 text-[0.9rem]">
       {/* Name + live clock */}
-      <header className="flex items-baseline justify-between gap-4">
+      <header className="flex flex-col-reverse gap-2 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
         <NameToggle />
         <Clock />
       </header>
@@ -109,8 +109,8 @@ export default function Home() {
               key={`${item.org}-${item.year}`}
               className="py-1.5 flex items-baseline justify-between gap-4"
             >
-              <div className="leading-tight">
-                <span className="font-medium">
+              <div className="leading-tight min-w-0">
+                <div className="font-medium">
                   {item.href ? (
                     <a
                       href={item.href}
@@ -123,10 +123,10 @@ export default function Home() {
                   ) : (
                     item.org
                   )}
-                </span>
-                <span className="italic text-muted ml-2 text-[0.85rem]">
+                </div>
+                <div className="italic text-muted text-[0.85rem]">
                   {item.role}
-                </span>
+                </div>
               </div>
               <span className="text-muted text-[0.8rem] whitespace-nowrap tabular-nums">
                 {item.year}

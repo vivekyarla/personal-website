@@ -25,7 +25,7 @@ export default async function WritingIndex() {
       </div>
 
       {/* Header */}
-      <header className="flex items-baseline justify-between gap-4">
+      <header className="flex flex-col-reverse gap-2 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
         <h1 className="text-2xl font-semibold tracking-tight">Writing</h1>
         <Clock />
       </header>
@@ -57,7 +57,7 @@ export default async function WritingIndex() {
             {inboundItems.map((item) => (
               <li key={item.url} className="py-3">
                 <div className="flex items-baseline justify-between gap-4 leading-tight">
-                  <div>
+                  <div className="min-w-0">
                     <a
                       href={item.url}
                       target="_blank"
@@ -66,9 +66,9 @@ export default async function WritingIndex() {
                     >
                       {item.title}
                     </a>
-                    <span className="italic text-muted ml-2 text-[0.85rem]">
+                    <div className="italic text-muted text-[0.85rem]">
                       {item.source}
-                    </span>
+                    </div>
                   </div>
                   <span className="text-muted text-[0.8rem] whitespace-nowrap tabular-nums">
                     {formatInboundDate(item.date)}
