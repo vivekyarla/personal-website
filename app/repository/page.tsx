@@ -19,7 +19,7 @@ export default function RepositoryIndex() {
       </div>
 
       {/* Header */}
-      <header className="flex flex-col-reverse gap-2 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
+      <header className="flex items-baseline justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">Repository</h1>
         <Clock />
       </header>

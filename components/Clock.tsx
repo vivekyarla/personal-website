@@ -25,12 +25,20 @@ function getParts(d: Date) {
     day: "numeric",
   }).format(d);
 
+  const dateShort = new Intl.DateTimeFormat("en-US", {
+    timeZone: TZ,
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  }).format(d);
+
   return {
     hour: map.hour ?? "--",
     minute: map.minute ?? "--",
     second: map.second ?? "--",
     dayPeriod: map.dayPeriod ?? "",
     date,
+    dateShort,
   };
 }
 
@@ -47,15 +55,16 @@ export default function Clock() {
     return <div className="text-xs text-muted/70 h-[1.1em]" />;
   }
 
-  const { hour, minute, second, dayPeriod, date } = getParts(now);
+  const { hour, minute, second, dayPeriod, date, dateShort } = getParts(now);
 
   return (
-    <div className="text-xs text-muted/70 tabular-nums tracking-tight">
+    <div className="text-xs text-muted/70 tabular-nums tracking-tight whitespace-nowrap">
       <span className="font-mono">
         {hour}:{minute}:{second} {dayPeriod}
       </span>
       <span className="mx-2 text-foreground">·</span>
-      <span className="text-[0.8rem]">{date}</span>
+      <span className="text-[0.8rem] sm:hidden">{dateShort}</span>
+      <span className="text-[0.8rem] hidden sm:inline">{date}</span>
     </div>
   );
 }

@@ -43,7 +43,7 @@ export default function Home() {
   return (
     <div className="flex flex-col gap-8 text-[0.9rem]">
       {/* Name + live clock */}
-      <header className="flex flex-col-reverse gap-2 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
+      <header className="flex items-baseline justify-between gap-3">
         <NameToggle />
         <Clock />
       </header>
