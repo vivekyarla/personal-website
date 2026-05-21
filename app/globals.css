@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant invert (&:where(.invert, .invert *));
+
 :root {
   --background: #fafaf7;
   --foreground: #111111;
@@ -9,8 +11,8 @@
   color-scheme: light;
 }
 
-:root.invert {
-  --background: #0e0e0e;
+html.invert {
+  --background: #000000;
   --foreground: #fafaf7;
   --muted: #9a9a9a;
   --rule: #2a2a2a;
@@ -18,9 +20,9 @@
   color-scheme: dark;
 }
 
-:root,
-:root.invert {
-  transition: background 0.35s ease, color 0.35s ease;
+html,
+html.invert {
+  transition: background-color 0.35s ease;
 }
 
 @theme inline {
@@ -44,10 +46,11 @@ html {
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
   font-feature-settings: "ss01", "cv11";
+  transition: background-color 0.35s ease, color 0.35s ease;
 }
 
 ::selection {
