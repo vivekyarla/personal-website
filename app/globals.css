@@ -59,6 +59,34 @@ body {
   color: #111111;
 }
 
+/* Waterfall reveal — stagger top-level children of .waterfall on page load */
+.waterfall > * {
+  opacity: 0;
+  animation: waterfall-in 380ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.waterfall > *:nth-child(1)  { animation-delay: 0ms; }
+.waterfall > *:nth-child(2)  { animation-delay: 60ms; }
+.waterfall > *:nth-child(3)  { animation-delay: 120ms; }
+.waterfall > *:nth-child(4)  { animation-delay: 180ms; }
+.waterfall > *:nth-child(5)  { animation-delay: 240ms; }
+.waterfall > *:nth-child(6)  { animation-delay: 300ms; }
+.waterfall > *:nth-child(7)  { animation-delay: 360ms; }
+.waterfall > *:nth-child(8)  { animation-delay: 420ms; }
+.waterfall > *:nth-child(9)  { animation-delay: 480ms; }
+.waterfall > *:nth-child(10) { animation-delay: 540ms; }
+
+@keyframes waterfall-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .waterfall > * {
+    opacity: 1;
+    animation: none;
+  }
+}
+
 /* Editorial prose styling for Substack content rendered on /writing/[slug] */
 .prose-editorial {
   font-family: var(--font-sans);

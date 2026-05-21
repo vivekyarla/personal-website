@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function RepositoryIndex() {
   return (
-    <div className="flex flex-col gap-8 text-[0.9rem]">
+    <div className="waterfall flex flex-col gap-8 text-[0.9rem]">
       {/* Back link */}
       <div>
         <Link
