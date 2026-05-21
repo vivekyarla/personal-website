@@ -45,7 +45,7 @@ export default function ThinkingCarousel({
   }, [typed, deleting, idx, visible, cycleMs, typeMs]);
 
   return (
-    <p className="italic text-center text-muted/80 leading-relaxed text-[1.05rem]">
+    <p className="italic text-center text-muted/80 leading-relaxed text-[1.05rem] min-h-[3.25em] sm:min-h-0">
       I&apos;m thinking about{" "}
       <span className="text-foreground not-italic">
         {typed}
