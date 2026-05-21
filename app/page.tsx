@@ -1,5 +1,6 @@
 import Clock from "@/components/Clock";
 import HoverReveal from "@/components/HoverReveal";
+import NameToggle from "@/components/NameToggle";
 import ThinkingCarousel from "@/components/ThinkingCarousel";
 
 export const revalidate = 600;
@@ -43,9 +44,7 @@ export default function Home() {
     <div className="flex flex-col gap-8 text-[0.9rem]">
       {/* Name + live clock */}
       <header className="flex items-baseline justify-between gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Vivek Yarlagedda
-        </h1>
+        <NameToggle />
         <Clock />
       </header>
 

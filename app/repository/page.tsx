@@ -26,11 +26,11 @@ export default function RepositoryIndex() {
 
       {/* Description */}
       <section className="space-y-3">
-        <p className="leading-relaxed">
+        <p className="leading-relaxed italic text-center">
           &ldquo;If you&apos;re the smartest person in the room, you&apos;re in
           the wrong room.&rdquo;
         </p>
-        <p className="leading-relaxed">
+        <p className="leading-relaxed italic text-center">
           &ldquo;If a smart person asks you a hard question, pay attention. The
           rest of the world will ask you the same question eventually.&rdquo;
         </p>
