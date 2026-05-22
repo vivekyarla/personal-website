@@ -6,7 +6,7 @@ import { inboundItems, formatInboundDate } from "@/lib/inbound";
 export const revalidate = 600;
 
 export const metadata = {
-  title: "Writing — Vivek Y.",
+  title: "Writing",
 };
 
 export default async function WritingIndex() {
