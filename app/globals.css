@@ -3,7 +3,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #fafaf7;
+  --background: #ffffff;
   --foreground: #111111;
   --muted: #6b6b6b;
   --rule: #d8d6d0;
