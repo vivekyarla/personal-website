@@ -41,7 +41,7 @@ const placeholderPhrases = [
 
 export default function Home() {
   return (
-    <div className="flex flex-col gap-8 text-[0.9rem]">
+    <div className="waterfall flex flex-col gap-8 text-[0.9rem]">
       {/* Name + live clock */}
       <header className="flex items-baseline justify-between gap-3">
         <NameToggle />
