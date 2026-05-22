@@ -6,12 +6,16 @@ type Props = {
   description: string;
 };
 
+const isDev = process.env.NODE_ENV === "development";
+
 export default function HoverReveal({ title, href, description }: Props) {
   return (
     <div className="text-center">
       <Link
         href={href}
-        className="inline-flex items-baseline gap-1.5 text-xl font-semibold tracking-tight hover:opacity-70 transition-opacity"
+        className={`inline-flex items-baseline gap-1.5 text-lg font-semibold tracking-tight hover:opacity-70 transition-opacity ${
+          isDev ? "font-serif font-normal" : ""
+        }`}
       >
         <span>{title}</span>
         <span className="text-muted text-xs">→</span>

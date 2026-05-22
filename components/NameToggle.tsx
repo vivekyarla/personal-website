@@ -1,5 +1,7 @@
 "use client";
 
+const isDev = process.env.NODE_ENV === "development";
+
 export default function NameToggle() {
   function toggle() {
     document.documentElement.classList.toggle("dark");
@@ -10,7 +12,9 @@ export default function NameToggle() {
       type="button"
       onClick={toggle}
       aria-label="Invert color scheme"
-      className="text-2xl font-semibold tracking-tight text-left cursor-pointer hover:opacity-70 transition-opacity"
+      className={`text-2xl font-semibold tracking-tight text-left cursor-pointer hover:opacity-70 transition-opacity ${
+        isDev ? "font-serif font-normal" : ""
+      }`}
     >
       Vivek Yarlagedda
     </button>

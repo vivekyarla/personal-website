@@ -99,7 +99,11 @@ export default function Home() {
 
       {/* Experience */}
       <section>
-        <h2 className="text-base font-semibold tracking-tight mb-1.5">
+        <h2
+          className={`text-base font-semibold tracking-tight mb-1.5 ${
+            process.env.NODE_ENV === "development" ? "font-serif font-normal text-lg" : ""
+          }`}
+        >
           Experience
         </h2>
         <hr className="border-rule mb-1" />

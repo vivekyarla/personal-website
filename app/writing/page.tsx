@@ -26,7 +26,13 @@ export default async function WritingIndex() {
 
       {/* Header */}
       <header className="flex items-baseline justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">Writing</h1>
+        <h1
+          className={`text-2xl font-semibold tracking-tight ${
+            process.env.NODE_ENV === "development" ? "font-serif font-normal" : ""
+          }`}
+        >
+          Writing
+        </h1>
         <Clock />
       </header>
 
@@ -41,7 +47,11 @@ export default async function WritingIndex() {
 
       {/* Inbound */}
       <section>
-        <h2 className="text-base font-semibold tracking-tight mb-1.5">
+        <h2
+          className={`text-base font-semibold tracking-tight mb-1.5 ${
+            process.env.NODE_ENV === "development" ? "font-serif font-normal text-lg" : ""
+          }`}
+        >
           Inbound
         </h2>
         <p className="text-[0.8rem] text-muted/80 mb-2 italic">
@@ -85,7 +95,11 @@ export default async function WritingIndex() {
 
       {/* Outbound */}
       <section>
-        <h2 className="text-base font-semibold tracking-tight mb-1.5">
+        <h2
+          className={`text-base font-semibold tracking-tight mb-1.5 ${
+            process.env.NODE_ENV === "development" ? "font-serif font-normal text-lg" : ""
+          }`}
+        >
           Outbound
         </h2>
         <p className="text-[0.8rem] text-muted/80 mb-2 italic">

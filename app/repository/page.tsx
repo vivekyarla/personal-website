@@ -20,7 +20,13 @@ export default function RepositoryIndex() {
 
       {/* Header */}
       <header className="mb-8 flex items-baseline justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">Repository</h1>
+        <h1
+          className={`text-2xl font-semibold tracking-tight ${
+            process.env.NODE_ENV === "development" ? "font-serif font-normal" : ""
+          }`}
+        >
+          Repository
+        </h1>
         <Clock />
       </header>
 
