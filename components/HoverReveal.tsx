@@ -11,7 +11,7 @@ export default function HoverReveal({ title, href, description }: Props) {
     <div className="text-center">
       <Link
         href={href}
-        className="inline-flex items-baseline gap-1.5 font-serif text-xl font-normal tracking-tight hover:opacity-70 transition-opacity"
+        className="inline-flex items-baseline gap-1.5 text-xl font-semibold tracking-tight hover:opacity-70 transition-opacity"
       >
         <span>{title}</span>
         <span className="text-muted text-xs">→</span>

@@ -10,7 +10,7 @@ export default function NameToggle() {
       type="button"
       onClick={toggle}
       aria-label="Invert color scheme"
-      className="font-serif text-2xl font-normal tracking-tight text-left cursor-pointer hover:opacity-70 transition-opacity"
+      className="text-2xl font-semibold tracking-tight text-left cursor-pointer hover:opacity-70 transition-opacity"
     >
       Vivek Yarlagedda
     </button>
