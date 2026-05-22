@@ -31,11 +31,11 @@ export default function RepositoryIndex() {
       </header>
 
       {/* Description — each paragraph animates independently */}
-      <p className="mb-3 leading-relaxed italic text-center">
+      <p className="mb-3 leading-relaxed italic text-center text-muted">
         &ldquo;If you&apos;re the smartest person in the room, you&apos;re in
         the wrong room.&rdquo;
       </p>
-      <p className="mb-3 leading-relaxed italic text-center">
+      <p className="mb-3 leading-relaxed italic text-center text-muted">
         &ldquo;If a smart person asks you a hard question, pay attention. The
         rest of the world will ask you the same question eventually.&rdquo;
       </p>
