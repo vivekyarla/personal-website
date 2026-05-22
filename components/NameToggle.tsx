@@ -2,7 +2,7 @@
 
 export default function NameToggle() {
   function toggle() {
-    document.documentElement.classList.toggle("invert");
+    document.documentElement.classList.toggle("dark");
   }
 
   return (

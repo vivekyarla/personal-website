@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@custom-variant invert (&:where(.invert, .invert *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   --background: #fafaf7;
@@ -11,7 +11,7 @@
   color-scheme: light;
 }
 
-html.invert {
+html.dark {
   --background: #000000;
   --foreground: #fafaf7;
   --muted: #9a9a9a;
@@ -21,7 +21,7 @@ html.invert {
 }
 
 html,
-html.invert {
+html.dark {
   transition: background-color 0.35s ease;
 }
 
