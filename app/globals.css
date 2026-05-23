@@ -53,6 +53,16 @@ body {
   transition: background-color 0.35s ease, color 0.35s ease;
 }
 
+/* Lock scroll on the home page, but only on viewports tall/wide enough to
+   fit the content without clipping. Shorter screens still scroll. */
+@media (min-width: 640px) and (min-height: 700px) {
+  html.home-locked,
+  html.home-locked body {
+    overflow: hidden;
+    height: 100%;
+  }
+}
+
 ::selection {
   background: #dcdcd6;
   color: #111111;

@@ -1,4 +1,5 @@
 import Clock from "@/components/Clock";
+import HomeViewport from "@/components/HomeViewport";
 import HoverReveal from "@/components/HoverReveal";
 import NameToggle from "@/components/NameToggle";
 import ThinkingCarousel from "@/components/ThinkingCarousel";
@@ -41,7 +42,8 @@ const placeholderPhrases = [
 
 export default function Home() {
   return (
-    <div className="waterfall flex flex-col gap-8 text-[0.9rem]">
+    <div className="waterfall flex flex-1 flex-col justify-center gap-8 text-[0.9rem] py-10">
+      <HomeViewport />
       {/* Name + live clock */}
       <header className="flex items-baseline justify-between gap-3">
         <NameToggle />

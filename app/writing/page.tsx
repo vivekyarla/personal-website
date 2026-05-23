@@ -13,7 +13,7 @@ export default async function WritingIndex() {
   const posts = await fetchPosts();
 
   return (
-    <div className="waterfall flex flex-col gap-8 text-[0.9rem]">
+    <div className="waterfall flex flex-col gap-8 text-[0.9rem] pt-12 sm:pt-24 pb-20">
       {/* Back link */}
       <div>
         <Link
