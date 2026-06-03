@@ -42,6 +42,30 @@ export default async function AdminHome() {
 
       <section>
         <h2 className="text-base font-semibold tracking-tight mb-2">
+          Repository
+        </h2>
+        <ul className="space-y-1.5">
+          <li>
+            <Link
+              href="/admin/categories"
+              className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
+            >
+              Manage categories →
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/admin/tweets"
+              className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
+            >
+              Manage tweets →
+            </Link>
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 className="text-base font-semibold tracking-tight mb-2">
           Security
         </h2>
         <EnrollPasskeyButton />
