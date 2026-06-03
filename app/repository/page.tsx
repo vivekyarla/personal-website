@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Clock from "@/components/Clock";
+import CollapsibleCategory from "@/components/CollapsibleCategory";
 import TweetCard from "@/components/TweetCard";
 import TwitterEmbeds from "@/components/TwitterEmbeds";
 import { fetchCategories, fetchTweets } from "@/lib/tweets";
@@ -75,14 +76,12 @@ export default async function RepositoryIndex() {
         than my classes.
       </p>
 
-      {/* Latest */}
+      {/* Latest (always open) */}
       {latest.length > 0 && (
-        <section className="mb-12">
-          <h2 className="text-base font-semibold tracking-tight mb-3">
-            Latest
-          </h2>
-          <hr className="border-rule mb-4" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <section className="mb-8">
+          <h2 className="text-base font-semibold tracking-tight">Latest</h2>
+          <hr className="border-rule mt-3 mb-4" />
+          <div className="grid grid-cols-1 gap-4">
             {latest.map((t) => (
               <TweetCard key={t.id} tweet={t} />
             ))}
@@ -90,22 +89,22 @@ export default async function RepositoryIndex() {
         </section>
       )}
 
-      {/* Per-category sections */}
+      {/* Per-category collapsible sections */}
       {categories.map((cat) => {
         const items = byCategory.get(cat.id) ?? [];
         if (items.length === 0) return null;
         return (
-          <section key={cat.id} className="mb-12">
-            <h2 className="text-base font-semibold tracking-tight mb-3">
-              {cat.name}
-            </h2>
-            <hr className="border-rule mb-4" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <CollapsibleCategory
+            key={cat.id}
+            name={cat.name}
+            count={items.length}
+          >
+            <div className="grid grid-cols-1 gap-4">
               {items.map((t) => (
                 <TweetCard key={t.id} tweet={t} />
               ))}
             </div>
-          </section>
+          </CollapsibleCategory>
         );
       })}
 

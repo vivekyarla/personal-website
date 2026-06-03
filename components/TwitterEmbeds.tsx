@@ -22,6 +22,18 @@ export default function TwitterEmbeds() {
     } else if (window.twttr?.widgets) {
       window.twttr.widgets.load();
     }
-  });
+
+    // Re-bind embeds when a category accordion opens so freshly-revealed
+    // blockquotes get rendered into proper Twitter iframes.
+    const observer = new MutationObserver(() => {
+      window.twttr?.widgets.load();
+    });
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["aria-hidden"],
+      subtree: true,
+    });
+    return () => observer.disconnect();
+  }, []);
   return null;
 }
