@@ -7,8 +7,8 @@ export default function TweetCarousel({
   tweets: TweetWithCategory[];
 }) {
   return (
-    <div className="-mx-6 sm:-mx-8 overflow-x-auto snap-x snap-mandatory scrollbar-hidden touch-pan-x">
-      <div className="flex gap-4 px-6 sm:px-8 pb-2">
+    <div className="overflow-x-auto snap-x snap-mandatory scrollbar-hidden touch-pan-x">
+      <div className="flex gap-4 pb-2">
         {tweets.map((t) => (
           <div
             key={t.id}
