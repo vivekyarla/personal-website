@@ -12,7 +12,7 @@ export default function TweetCarousel({
         {tweets.map((t) => (
           <div
             key={t.id}
-            className="snap-start shrink-0 w-[85vw] sm:w-[480px] max-w-[480px]"
+            className="snap-start shrink-0 w-[70vw] sm:w-[340px] max-w-[340px]"
           >
             <TweetCard tweet={t} />
           </div>
