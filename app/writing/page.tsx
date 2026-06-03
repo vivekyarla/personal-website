@@ -62,6 +62,14 @@ export default async function WritingIndex() {
         <div className="max-h-[40vh] overflow-y-auto scrollbar-hidden inbound-scroll">
           <InboundList items={inbound} />
         </div>
+        {inbound.length > 0 && (
+          <div
+            aria-hidden
+            className="text-center text-muted/60 text-sm mt-1 leading-none select-none"
+          >
+            ↓
+          </div>
+        )}
       </section>
 
       {/* Outbound */}
