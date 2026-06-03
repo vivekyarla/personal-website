@@ -11,6 +11,18 @@ function stripOuterQuotes(s: string): string {
 export default function InboundList({ items }: { items: InboundReading[] }) {
   const [open, setOpen] = useState<string | null>(null);
 
+  function toggle(id: string, li: HTMLElement | null) {
+    const wasOpen = open === id;
+    setOpen(wasOpen ? null : id);
+    if (!wasOpen && li) {
+      // Wait for expand animation, then scroll the LI into the container's
+      // visible area so the quotes show up.
+      window.setTimeout(() => {
+        li.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }, 520);
+    }
+  }
+
   if (items.length === 0) {
     return (
       <p className="py-3 text-muted text-[0.85rem] italic">Nothing here yet.</p>
@@ -26,11 +38,16 @@ export default function InboundList({ items }: { items: InboundReading[] }) {
             <div
               role="button"
               tabIndex={0}
-              onClick={() => setOpen(isOpen ? null : item.id)}
+              onClick={(e) =>
+                toggle(item.id, (e.currentTarget.closest("li") as HTMLElement | null) ?? null)
+              }
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
-                  setOpen(isOpen ? null : item.id);
+                  toggle(
+                    item.id,
+                    (e.currentTarget.closest("li") as HTMLElement | null) ?? null
+                  );
                 }
               }}
               className="py-3 cursor-pointer select-none"
