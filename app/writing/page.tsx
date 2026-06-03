@@ -59,7 +59,9 @@ export default async function WritingIndex() {
           Pieces I&apos;ve read and thought were worth saving.
         </p>
         <hr className="border-rule mb-1" />
-        <InboundList items={inbound} />
+        <div className="max-h-[40vh] overflow-y-auto scrollbar-hidden inbound-scroll">
+          <InboundList items={inbound} />
+        </div>
       </section>
 
       {/* Outbound */}
