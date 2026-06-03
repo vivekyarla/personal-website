@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Clock from "@/components/Clock";
 import CollapsibleCategory from "@/components/CollapsibleCategory";
-import TweetCard from "@/components/TweetCard";
+import TweetCarousel from "@/components/TweetCarousel";
 import TwitterEmbeds from "@/components/TwitterEmbeds";
 import { fetchCategories, fetchTweets } from "@/lib/tweets";
 
@@ -76,20 +76,16 @@ export default async function RepositoryIndex() {
         than my classes.
       </p>
 
-      {/* Latest (always open) */}
+      {/* Latest (always open, horizontal swipe) */}
       {latest.length > 0 && (
         <section className="mb-8">
           <h2 className="text-base font-semibold tracking-tight">Latest</h2>
           <hr className="border-rule mt-3 mb-4" />
-          <div className="grid grid-cols-1 gap-4">
-            {latest.map((t) => (
-              <TweetCard key={t.id} tweet={t} />
-            ))}
-          </div>
+          <TweetCarousel tweets={latest} />
         </section>
       )}
 
-      {/* Per-category collapsible sections */}
+      {/* Per-category collapsible sections (horizontal swipe inside) */}
       {categories.map((cat) => {
         const items = byCategory.get(cat.id) ?? [];
         if (items.length === 0) return null;
@@ -98,12 +94,9 @@ export default async function RepositoryIndex() {
             key={cat.id}
             name={cat.name}
             count={items.length}
+            defaultOpen={false}
           >
-            <div className="grid grid-cols-1 gap-4">
-              {items.map((t) => (
-                <TweetCard key={t.id} tweet={t} />
-              ))}
-            </div>
+            <TweetCarousel tweets={items} />
           </CollapsibleCategory>
         );
       })}

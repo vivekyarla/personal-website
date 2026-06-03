@@ -123,6 +123,15 @@ html.dark .quote-line .quote-text {
   background-image: linear-gradient(rgba(247, 229, 138, 0.4), rgba(247, 229, 138, 0.4));
 }
 
+/* Hide scrollbars on horizontal carousels */
+.scrollbar-hidden {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .waterfall > * {
     opacity: 1;
