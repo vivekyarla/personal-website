@@ -101,6 +101,39 @@ body {
   animation: blink 1s steps(1, end) infinite;
 }
 
+/* Highlighter sweep for inbound quotes */
+.quote-line {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+.quote-line .quote-text {
+  position: relative;
+  z-index: 1;
+}
+.quote-line::before {
+  content: "";
+  position: absolute;
+  inset: 0.1em -0.15em 0.1em -0.15em;
+  background: #f7e58a;
+  z-index: 0;
+  transform-origin: left center;
+  transform: scaleX(0);
+  opacity: 0.85;
+}
+.quote-line-active::before {
+  animation: highlighter-sweep 650ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: inherit;
+}
+@keyframes highlighter-sweep {
+  0%   { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+html.dark .quote-line::before {
+  background: #b58f1f;
+  opacity: 0.55;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .waterfall > * {
     opacity: 1;

@@ -1,16 +1,17 @@
 import Link from "next/link";
 import Clock from "@/components/Clock";
+import InboundList from "@/components/InboundList";
 import { fetchPosts, formatDate, excerpt } from "@/lib/substack";
-import { inboundItems, formatInboundDate } from "@/lib/inbound";
+import { fetchInbound } from "@/lib/inbound";
 
-export const revalidate = 600;
+export const revalidate = 60;
 
 export const metadata = {
   title: "Writing",
 };
 
 export default async function WritingIndex() {
-  const posts = await fetchPosts();
+  const [posts, inbound] = await Promise.all([fetchPosts(), fetchInbound()]);
 
   return (
     <div className="waterfall flex flex-col gap-8 text-[0.9rem] pt-12 sm:pt-24 pb-20">
@@ -58,39 +59,7 @@ export default async function WritingIndex() {
           Pieces I&apos;ve read and thought were worth saving.
         </p>
         <hr className="border-rule mb-1" />
-        {inboundItems.length === 0 ? (
-          <p className="py-3 text-muted text-[0.85rem] italic">
-            Nothing here yet.
-          </p>
-        ) : (
-          <ul className="divide-y divide-rule">
-            {inboundItems.map((item) => (
-              <li key={item.url} className="py-3">
-                <div className="flex items-baseline justify-between gap-4 leading-tight">
-                  <div className="min-w-0">
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-medium underline decoration-rule underline-offset-4 hover:decoration-foreground"
-                    >
-                      {item.title}
-                    </a>
-                    <div className="italic text-muted text-[0.85rem]">
-                      {item.source}
-                    </div>
-                  </div>
-                  <span className="text-muted text-[0.8rem] whitespace-nowrap tabular-nums">
-                    {formatInboundDate(item.date)}
-                  </span>
-                </div>
-                <p className="mt-1.5 text-[0.85rem] leading-relaxed text-muted">
-                  {item.note}
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
+        <InboundList items={inbound} />
       </section>
 
       {/* Outbound */}
