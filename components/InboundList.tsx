@@ -4,6 +4,10 @@ import { useState } from "react";
 import type { InboundReading } from "@/lib/inbound";
 import { formatInboundDate } from "@/lib/inbound";
 
+function stripOuterQuotes(s: string): string {
+  return s.replace(/^[\s"'“”‘’]+|[\s"'“”‘’]+$/g, "");
+}
+
 export default function InboundList({ items }: { items: InboundReading[] }) {
   const [open, setOpen] = useState<string | null>(null);
 
@@ -79,7 +83,9 @@ export default function InboundList({ items }: { items: InboundReading[] }) {
                         }`}
                         style={{ animationDelay: `${i * 110}ms` }}
                       >
-                        <span className="quote-text">{q}</span>
+                        <span className="quote-text">
+                          {"“" + stripOuterQuotes(q) + "”"}
+                        </span>
                       </li>
                     ))}
                   </ul>
