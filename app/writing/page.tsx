@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Clock from "@/components/Clock";
 import InboundList from "@/components/InboundList";
+import ScrollableSection from "@/components/ScrollHintArrow";
 import { fetchPosts, formatDate, excerpt } from "@/lib/substack";
 import { fetchInbound } from "@/lib/inbound";
 
@@ -59,17 +60,9 @@ export default async function WritingIndex() {
           Pieces I&apos;ve read and thought were worth saving.
         </p>
         <hr className="border-rule mb-1" />
-        <div className="max-h-[40vh] overflow-y-auto scrollbar-hidden inbound-scroll">
+        <ScrollableSection className="inbound-scroll" maxHeight="40vh">
           <InboundList items={inbound} />
-        </div>
-        {inbound.length > 0 && (
-          <div
-            aria-hidden
-            className="text-center text-muted/60 text-sm mt-1 leading-none select-none"
-          >
-            ↓
-          </div>
-        )}
+        </ScrollableSection>
       </section>
 
       {/* Outbound */}
