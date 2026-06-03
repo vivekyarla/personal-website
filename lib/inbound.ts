@@ -6,7 +6,7 @@ export type InboundReading = {
   url: string;
   source: string | null;
   tag: string | null;
-  date_read: string; // ISO yyyy-mm-dd
+  date_published: string; // ISO yyyy-mm-dd
   summary: string;
   quotes: string[];
   created_at: string;
@@ -16,7 +16,7 @@ export async function fetchInbound(): Promise<InboundReading[]> {
   const { data, error } = await supabasePublic
     .from("inbound_readings")
     .select("*")
-    .order("date_read", { ascending: false });
+    .order("date_published", { ascending: false });
 
   if (error) {
     console.error("[inbound] fetch error:", error.message);

@@ -13,7 +13,7 @@ export default function InboundForm({ initial }: Props) {
   const [source, setSource] = useState(initial?.source ?? "");
   const [tag, setTag] = useState(initial?.tag ?? "");
   const [dateRead, setDateRead] = useState(
-    initial?.date_read ?? new Date().toISOString().slice(0, 10)
+    initial?.date_published ?? new Date().toISOString().slice(0, 10)
   );
   const [summary, setSummary] = useState(initial?.summary ?? "");
   const [quotes, setQuotes] = useState<string[]>(
@@ -42,7 +42,7 @@ export default function InboundForm({ initial }: Props) {
         url: url.trim(),
         source: source.trim() || null,
         tag: tag.trim() || null,
-        date_read: dateRead,
+        date_published: dateRead,
         summary: summary.trim(),
         quotes: quotes.map((q) => q.trim()).filter((q) => q.length > 0),
       };
@@ -107,7 +107,7 @@ export default function InboundForm({ initial }: Props) {
           />
         </Field>
       </div>
-      <Field label="Date read">
+      <Field label="Date published">
         <input
           required
           type="date"

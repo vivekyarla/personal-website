@@ -8,7 +8,7 @@ export async function GET() {
   const { data, error } = await supabasePublic
     .from("inbound_readings")
     .select("*")
-    .order("date_read", { ascending: false });
+    .order("date_published", { ascending: false });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     url,
     source,
     tag,
-    date_read,
+    date_published,
     summary,
     quotes,
   } = body as {
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     url?: string;
     source?: string;
     tag?: string;
-    date_read?: string;
+    date_published?: string;
     summary?: string;
     quotes?: string[];
   };
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
       url,
       source: source ?? null,
       tag: tag ?? null,
-      date_read: date_read ?? new Date().toISOString().slice(0, 10),
+      date_published: date_published ?? new Date().toISOString().slice(0, 10),
       summary,
       quotes: Array.isArray(quotes) ? quotes.filter((q) => q.trim().length > 0) : [],
     })

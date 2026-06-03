@@ -44,7 +44,7 @@ export default async function AdminInbound() {
               <div className="min-w-0">
                 <div className="font-medium leading-tight">{item.title}</div>
                 <div className="text-[0.8rem] text-muted leading-tight">
-                  {item.tag ?? "—"} · {formatInboundDate(item.date_read)} ·{" "}
+                  {item.tag ?? "—"} · {formatInboundDate(item.date_published)} ·{" "}
                   {item.quotes.length} quote{item.quotes.length === 1 ? "" : "s"}
                 </div>
               </div>

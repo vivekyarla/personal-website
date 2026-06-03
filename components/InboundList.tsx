@@ -53,7 +53,7 @@ export default function InboundList({ items }: { items: InboundReading[] }) {
                   )}
                 </div>
                 <span className="text-muted text-[0.8rem] whitespace-nowrap tabular-nums">
-                  {formatInboundDate(item.date_read)}
+                  {formatInboundDate(item.date_published)}
                 </span>
               </div>
               <p className="mt-1.5 text-[0.85rem] leading-relaxed text-muted">
