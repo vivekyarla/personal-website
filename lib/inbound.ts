@@ -9,6 +9,7 @@ export type InboundReading = {
   date_published: string; // ISO yyyy-mm-dd
   summary: string;
   quotes: string[];
+  pinned: boolean;
   created_at: string;
 };
 
@@ -16,6 +17,7 @@ export async function fetchInbound(): Promise<InboundReading[]> {
   const { data, error } = await supabasePublic
     .from("inbound_readings")
     .select("*")
+    .order("pinned", { ascending: false })
     .order("date_published", { ascending: false });
 
   if (error) {

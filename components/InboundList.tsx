@@ -37,6 +37,9 @@ export default function InboundList({ items }: { items: InboundReading[] }) {
             >
               <div className="flex items-baseline justify-between gap-4 leading-tight">
                 <div className="min-w-0 flex items-baseline gap-2 flex-wrap">
+                  {item.pinned && (
+                    <span title="Pinned" className="text-[0.75rem] leading-none -ml-0.5">📌</span>
+                  )}
                   <a
                     href={item.url}
                     target="_blank"

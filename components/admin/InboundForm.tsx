@@ -19,6 +19,7 @@ export default function InboundForm({ initial }: Props) {
   const [quotes, setQuotes] = useState<string[]>(
     initial?.quotes?.length ? initial.quotes : [""]
   );
+  const [pinned, setPinned] = useState<boolean>(initial?.pinned ?? false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,6 +46,7 @@ export default function InboundForm({ initial }: Props) {
         date_published: dateRead,
         summary: summary.trim(),
         quotes: quotes.map((q) => q.trim()).filter((q) => q.length > 0),
+        pinned,
       };
       const endpoint = initial ? `/api/inbound/${initial.id}` : "/api/inbound";
       const method = initial ? "PATCH" : "POST";
@@ -160,6 +162,16 @@ export default function InboundForm({ initial }: Props) {
           </button>
         </div>
       </div>
+
+      <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={pinned}
+          onChange={(e) => setPinned(e.target.checked)}
+          className="w-4 h-4 accent-foreground"
+        />
+        <span>Pin to top of inbound</span>
+      </label>
 
       {error && <p className="text-xs text-red-600">{error}</p>}
 

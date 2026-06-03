@@ -30,6 +30,7 @@ export async function POST(request: Request) {
     date_published,
     summary,
     quotes,
+    pinned,
   } = body as {
     title?: string;
     url?: string;
@@ -38,6 +39,7 @@ export async function POST(request: Request) {
     date_published?: string;
     summary?: string;
     quotes?: string[];
+    pinned?: boolean;
   };
 
   if (!title || !url || !summary) {
@@ -54,6 +56,7 @@ export async function POST(request: Request) {
       date_published: date_published ?? new Date().toISOString().slice(0, 10),
       summary,
       quotes: Array.isArray(quotes) ? quotes.filter((q) => q.trim().length > 0) : [],
+      pinned: !!pinned,
     })
     .select()
     .single();

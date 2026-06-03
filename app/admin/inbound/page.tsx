@@ -42,7 +42,12 @@ export default async function AdminInbound() {
               className="py-3 flex items-baseline justify-between gap-4"
             >
               <div className="min-w-0">
-                <div className="font-medium leading-tight">{item.title}</div>
+                <div className="font-medium leading-tight flex items-baseline gap-2">
+                  {item.pinned && (
+                    <span title="Pinned" className="text-[0.7rem]">📌</span>
+                  )}
+                  {item.title}
+                </div>
                 <div className="text-[0.8rem] text-muted leading-tight">
                   {item.tag ?? "—"} · {formatInboundDate(item.date_published)} ·{" "}
                   {item.quotes.length} quote{item.quotes.length === 1 ? "" : "s"}

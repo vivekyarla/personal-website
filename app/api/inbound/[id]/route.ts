@@ -30,7 +30,7 @@ export async function PATCH(
   const { id } = await params;
   const body = await request.json().catch(() => ({}));
   const update: Record<string, unknown> = {};
-  for (const key of ["title", "url", "source", "tag", "date_published", "summary", "quotes"] as const) {
+  for (const key of ["title", "url", "source", "tag", "date_published", "summary", "quotes", "pinned"] as const) {
     if (key in body) update[key] = body[key];
   }
   const { error } = await supabaseAdmin
