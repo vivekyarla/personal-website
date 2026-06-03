@@ -5,7 +5,7 @@ import {
   type AuthenticationResponseJSON,
 } from "@simplewebauthn/server";
 import { getSession } from "@/lib/session";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { ORIGIN, RP_ID } from "@/lib/passkey";
 
 // GET → authentication options

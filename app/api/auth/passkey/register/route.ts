@@ -5,7 +5,7 @@ import {
   type RegistrationResponseJSON,
 } from "@simplewebauthn/server";
 import { getSession, requireAuth } from "@/lib/session";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { ADMIN_USER_ID, ADMIN_USER_NAME, ORIGIN, RP_ID, RP_NAME } from "@/lib/passkey";
 
 // GET → registration options. Must be authed (password or existing passkey) to enroll a new one.

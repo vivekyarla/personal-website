@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/session";
-import { supabaseAdmin, supabasePublic } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
+import { supabasePublic } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
 
 export async function GET() {
