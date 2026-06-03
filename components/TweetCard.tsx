@@ -2,7 +2,7 @@ import type { TweetWithCategory } from "@/lib/tweets";
 
 export default function TweetCard({ tweet }: { tweet: TweetWithCategory }) {
   return (
-    <div className="border border-rule rounded-sm overflow-hidden bg-background">
+    <div>
       {tweet.embed_html ? (
         <div
           className="tweet-embed [&_blockquote]:!my-0 [&_iframe]:!w-full"
@@ -19,9 +19,7 @@ export default function TweetCard({ tweet }: { tweet: TweetWithCategory }) {
         </a>
       )}
       {tweet.note && (
-        <p className="px-3 py-2 text-[0.8rem] italic text-muted border-t border-rule">
-          {tweet.note}
-        </p>
+        <p className="mt-1 text-[0.8rem] italic text-muted">{tweet.note}</p>
       )}
     </div>
   );
