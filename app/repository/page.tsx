@@ -15,12 +15,24 @@ export default async function RepositoryIndex() {
 
   const latest = tweets.slice(0, 6);
 
-  // Group tweets by category id
+  // Group tweets by category id; within each category, sort by the tweet's
+  // posted date (snowflake-derived), newest first.
   const byCategory = new Map<string | null, typeof tweets>();
   for (const t of tweets) {
     const key = t.category_id ?? null;
     if (!byCategory.has(key)) byCategory.set(key, []);
     byCategory.get(key)!.push(t);
+  }
+  for (const [, list] of byCategory) {
+    list.sort((a, b) => {
+      const da = a.tweet_posted_at
+        ? new Date(a.tweet_posted_at).getTime()
+        : new Date(a.created_at).getTime();
+      const db = b.tweet_posted_at
+        ? new Date(b.tweet_posted_at).getTime()
+        : new Date(b.created_at).getTime();
+      return db - da;
+    });
   }
 
   return (

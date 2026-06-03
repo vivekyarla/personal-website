@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { requireAuth } from "@/lib/session";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { supabasePublic } from "@/lib/supabase";
-import { isTweetUrl } from "@/lib/tweets";
+import { isTweetUrl, tweetDateFromUrl } from "@/lib/tweets";
 import { fetchTweetEmbed } from "@/lib/twitter-oembed";
 
 // GET: public list
@@ -71,6 +71,7 @@ export async function POST(request: Request) {
 
   // Fetch embed HTML from Twitter oEmbed
   const oembed = await fetchTweetEmbed(url);
+  const postedAt = tweetDateFromUrl(url);
 
   // Insert (upsert on URL to dedupe)
   const { data, error } = await supabaseAdmin
@@ -83,6 +84,7 @@ export async function POST(request: Request) {
         author_url: oembed?.author_url ?? null,
         category_id: resolvedCategoryId,
         note: note ?? null,
+        tweet_posted_at: postedAt ? postedAt.toISOString() : null,
       },
       { onConflict: "url" }
     )
