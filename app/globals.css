@@ -145,11 +145,20 @@ html.dark .quote-line .quote-text {
   border-radius: 0 !important;
 }
 
-/* Active habit reminder: text fades in once, highlight sweep loops forever.
-   Two independent animations — fade-in touches opacity, the loop touches only
-   background-size, so the text never fades after it arrives. */
+/* Active habit reminder: text fades in once and stays. The highlight sweeps
+   in left→right, fades out (marker only, via an animatable alpha var), resets
+   its width while invisible, then sweeps in again — never retracting. */
+@property --hl-alpha {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 1;
+}
 .reminder-highlight {
-  background-image: linear-gradient(#f7e58a, #f7e58a);
+  --hl-max: 0.85;
+  background-image: linear-gradient(
+    rgba(247, 229, 138, calc(var(--hl-alpha) * var(--hl-max))),
+    rgba(247, 229, 138, calc(var(--hl-alpha) * var(--hl-max)))
+  );
   background-repeat: no-repeat;
   background-position: 0 0.05em;
   background-size: 0% 90%;
@@ -158,20 +167,26 @@ html.dark .quote-line .quote-text {
   box-decoration-break: clone;
   animation:
     reminder-fade-in 0.6s ease-out both,
-    highlighter-loop 4.5s ease-in-out 0.6s infinite;
+    highlighter-loop 5s ease-in-out 0.6s infinite;
 }
 html.dark .reminder-highlight {
-  background-image: linear-gradient(rgba(247, 229, 138, 0.4), rgba(247, 229, 138, 0.4));
+  --hl-max: 0.4;
 }
 @keyframes reminder-fade-in {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 @keyframes highlighter-loop {
-  0%   { background-size: 0% 90%; }
-  28%  { background-size: 100% 90%; }
-  72%  { background-size: 100% 90%; }
-  100% { background-size: 0% 90%; }
+  /* sweep in left→right */
+  0%   { background-size: 0% 90%;   --hl-alpha: 1; }
+  28%  { background-size: 100% 90%; --hl-alpha: 1; }
+  /* hold */
+  60%  { background-size: 100% 90%; --hl-alpha: 1; }
+  /* fade the marker out (text stays) */
+  76%  { background-size: 100% 90%; --hl-alpha: 0; }
+  /* reset width while invisible, then idle before next sweep */
+  77%  { background-size: 0% 90%;   --hl-alpha: 0; }
+  100% { background-size: 0% 90%;   --hl-alpha: 0; }
 }
 
 /* Strobing "today" dot at the end of a habit chart line */
@@ -195,6 +210,7 @@ html.dark .reminder-highlight {
     animation: none;
   }
   .reminder-highlight {
+    --hl-alpha: 1;
     background-size: 100% 90%;
   }
 }
