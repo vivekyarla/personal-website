@@ -164,72 +164,72 @@ export default function HabitTracker({ habits, entries, dates, today }: Props) {
             No habits yet. Add some below.
           </p>
         ) : (
-          <div className="flex border border-rule rounded-sm overflow-hidden">
-            {/* Sticky habit-name column */}
-            <div className="shrink-0 bg-background border-r border-rule">
-              <div className="h-8 border-b border-rule" />
-              {habits.map((h) => (
-                <div
-                  key={h.id}
-                  className="h-9 px-3 flex items-center text-[0.8rem] whitespace-nowrap border-b border-rule last:border-b-0 max-w-[40vw] truncate"
-                >
-                  {h.name}
-                </div>
-              ))}
-            </div>
-            {/* Scrollable date columns */}
-            <div ref={gridScrollRef} className="overflow-x-auto scrollbar-hidden flex-1">
-              <div className="inline-flex flex-col min-w-full">
-                {/* Date header */}
-                <div className="flex h-8 border-b border-rule">
+          <div
+            ref={gridScrollRef}
+            className="overflow-x-auto scrollbar-hidden border border-rule rounded-sm"
+          >
+            <table className="border-collapse w-full" style={{ tableLayout: "auto" }}>
+              <thead>
+                <tr>
+                  <th className="sticky left-0 z-10 bg-background h-9 border-b border-r border-rule" />
                   {dates.map((d) => {
                     const { dow, day } = shortDate(d);
                     const isToday = d === today;
                     return (
-                      <div
+                      <th
                         key={d}
-                        className={`w-9 shrink-0 flex flex-col items-center justify-center leading-none ${
+                        className={`w-9 min-w-9 h-9 border-b border-rule font-normal align-middle ${
                           isToday ? "bg-foreground/5" : ""
                         }`}
                       >
-                        <span className="text-[0.55rem] text-muted/70 uppercase">
-                          {dow}
-                        </span>
-                        <span className="text-[0.7rem] tabular-nums">{day}</span>
-                      </div>
+                        <div className="flex flex-col items-center justify-center leading-none">
+                          <span className="text-[0.55rem] text-muted/70 uppercase">
+                            {dow}
+                          </span>
+                          <span className="text-[0.7rem] tabular-nums">{day}</span>
+                        </div>
+                      </th>
                     );
                   })}
-                </div>
-                {/* Cells */}
+                </tr>
+              </thead>
+              <tbody>
                 {habits.map((h) => (
-                  <div key={h.id} className="flex h-9 border-b border-rule last:border-b-0">
+                  <tr key={h.id}>
+                    <td className="sticky left-0 z-10 bg-background h-9 px-3 border-b border-r border-rule text-[0.8rem] whitespace-nowrap max-w-[40vw] truncate">
+                      {h.name}
+                    </td>
                     {dates.map((d) => {
                       const checked = done.has(keyOf(h.id, d));
                       const isToday = d === today;
                       return (
-                        <button
+                        <td
                           key={d}
-                          type="button"
-                          onClick={() => toggle(h.id, d)}
-                          aria-label={`${h.name} ${d}`}
-                          className={`w-9 shrink-0 flex items-center justify-center ${
+                          className={`w-9 min-w-9 h-9 border-b border-rule p-0 ${
                             isToday ? "bg-foreground/5" : ""
                           }`}
                         >
-                          <span
-                            className={`w-4 h-4 rounded-[3px] border transition-colors ${
-                              checked
-                                ? "bg-foreground border-foreground"
-                                : "border-rule"
-                            }`}
-                          />
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() => toggle(h.id, d)}
+                            aria-label={`${h.name} ${d}`}
+                            className="w-full h-9 flex items-center justify-center"
+                          >
+                            <span
+                              className={`w-4 h-4 rounded-[3px] border transition-colors ${
+                                checked
+                                  ? "bg-foreground border-foreground"
+                                  : "border-rule"
+                              }`}
+                            />
+                          </button>
+                        </td>
                       );
                     })}
-                  </div>
+                  </tr>
                 ))}
-              </div>
-            </div>
+              </tbody>
+            </table>
           </div>
         )}
       </section>
