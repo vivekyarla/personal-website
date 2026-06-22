@@ -9,6 +9,7 @@ import {
 } from "@/lib/habits";
 import HabitTracker from "@/components/admin/HabitTracker";
 import HabitManager from "@/components/admin/HabitManager";
+import Collapsible from "@/components/Collapsible";
 
 export const metadata = { title: "Admin · Habits" };
 export const dynamic = "force-dynamic";
@@ -43,12 +44,11 @@ export default async function AdminHabits() {
         today={today}
       />
 
-      <section>
-        <h2 className="text-base font-semibold tracking-tight mb-3">
-          Manage habits
-        </h2>
-        <HabitManager habits={habits} />
-      </section>
+      <Collapsible title="Manage habits">
+        <div className="pt-1">
+          <HabitManager habits={habits} />
+        </div>
+      </Collapsible>
     </div>
   );
 }
