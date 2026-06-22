@@ -4,10 +4,11 @@ import { useId } from "react";
 
 type Point = { date: string; value: number };
 
-// momentum value (0..1) → color along green(top) → amber → red(bottom)
+// momentum value (0..1) → color along green(top) → amber → red(bottom).
+// Generous green so ~5 days/week (~0.71) reads as solidly strong.
 function valueColor(v: number): string {
-  if (v >= 0.66) return "#16a34a"; // green
-  if (v >= 0.4) return "#d39b1a"; // amber
+  if (v >= 0.5) return "#16a34a"; // green
+  if (v >= 0.33) return "#d39b1a"; // amber
   return "#ef4444"; // red
 }
 
@@ -76,8 +77,10 @@ export default function HabitLineChart({
               x2="0"
               y2={H - pad}
             >
+              {/* top → bottom. Green holds down to ~50% (value 0.5) */}
               <stop offset="0%" stopColor="#16a34a" />
-              <stop offset="42%" stopColor="#d39b1a" />
+              <stop offset="50%" stopColor="#16a34a" />
+              <stop offset="70%" stopColor="#d39b1a" />
               <stop offset="100%" stopColor="#ef4444" />
             </linearGradient>
             <linearGradient
@@ -89,7 +92,8 @@ export default function HabitLineChart({
               y2={H - pad}
             >
               <stop offset="0%" stopColor="#16a34a" stopOpacity="0.22" />
-              <stop offset="42%" stopColor="#d39b1a" stopOpacity="0.12" />
+              <stop offset="50%" stopColor="#16a34a" stopOpacity="0.14" />
+              <stop offset="70%" stopColor="#d39b1a" stopOpacity="0.12" />
               <stop offset="100%" stopColor="#ef4444" stopOpacity="0.18" />
             </linearGradient>
           </defs>

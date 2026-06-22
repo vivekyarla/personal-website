@@ -3,9 +3,8 @@ import { ImageResponse } from "next/og";
 export const size = { width: 180, height: 180 };
 export const contentType = "image/png";
 
-// Apple touch icon for "Add to Home Screen" — the sun-glow mark on white.
-// (iOS applies its own rounded-corner mask and turns transparency black, so
-// we paint a solid white background.)
+// Apple touch icon for "Add to Home Screen" — the sun-glow mark on a dark
+// background so it stays consistent under iOS icon theming/tinting.
 export default function AppleIcon() {
   return new ImageResponse(
     (
@@ -16,7 +15,7 @@ export default function AppleIcon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#ffffff",
+          background: "#0e0e0e",
         }}
       >
         <div

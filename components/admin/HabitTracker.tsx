@@ -85,7 +85,7 @@ export default function HabitTracker({
   // a 7-point drag. Computed only through today.
   const charts = useMemo(() => {
     const chartDates = dates.slice(0, todayIndex + 1);
-    const N = 10; // smoothing window
+    const N = 7; // ~1 week smoothing — older days fade fast
     const ALPHA = 2 / (N + 1);
     return habits
       .filter((h) => h.show_chart)
