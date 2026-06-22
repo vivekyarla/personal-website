@@ -85,13 +85,10 @@ export default function HabitTracker({ habits, entries, dates, today }: Props) {
   return (
     <div className="flex flex-col gap-8">
       {/* Marcus Aurelius */}
-      <blockquote className="text-center font-serif italic text-[1.05rem] leading-relaxed text-muted/90">
+      <p className="mb-3 leading-relaxed italic text-center text-muted text-[0.9rem]">
         &ldquo;Waste no more time arguing about what a good man should be. Be
         one.&rdquo;
-        <span className="block not-italic text-[0.7rem] uppercase tracking-wide text-muted/60 mt-1">
-          Marcus Aurelius
-        </span>
-      </blockquote>
+      </p>
 
       {/* Reminders for missing core habits */}
       {coreHabits.length > 0 && (
