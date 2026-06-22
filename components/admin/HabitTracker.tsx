@@ -64,6 +64,9 @@ export default function HabitTracker({ habits, entries, dates, today }: Props) {
 
   const coreHabits = habits.filter((h) => h.is_core);
   const missingCore = coreHabits.filter((h) => !done.has(keyOf(h.id, today)));
+  // Habits arrive sorted by position (priority), so the first missing core
+  // habit with a reminder is the highest-priority nudge for today.
+  const topReminder = missingCore.find((h) => h.reminder)?.reminder ?? null;
 
   // Rolling 7-day completion rate for charted habits.
   const charts = useMemo(() => {
@@ -85,30 +88,26 @@ export default function HabitTracker({ habits, entries, dates, today }: Props) {
   return (
     <div className="flex flex-col gap-8">
       {/* Marcus Aurelius */}
-      <p className="mb-3 leading-relaxed italic text-center text-muted text-[0.9rem]">
+      <p className="leading-relaxed italic text-center text-muted text-[0.9rem]">
         &ldquo;Waste no more time arguing about what a good man should be. Be
         one.&rdquo;
+        <span className="block not-italic mt-1 text-muted/70">
+          — Marcus Aurelius
+        </span>
       </p>
 
-      {/* Reminders for missing core habits */}
+      {/* Single highest-priority reminder */}
       {coreHabits.length > 0 && (
-        <div className="flex flex-col gap-2">
+        <div className="text-center text-[0.9rem] leading-relaxed min-h-[1.5em]">
           {missingCore.length === 0 ? (
-            <p className="text-center text-[0.9rem] text-muted italic">
+            <p className="text-muted italic">
               Every core habit done today. Hold the line.
             </p>
-          ) : (
-            missingCore
-              .filter((h) => h.reminder)
-              .map((h) => (
-                <p
-                  key={h.id}
-                  className="text-center text-[0.9rem] leading-relaxed border-l-2 border-rule pl-3"
-                >
-                  {h.reminder}
-                </p>
-              ))
-          )}
+          ) : topReminder ? (
+            <p>
+              <span className="reminder-highlight">{topReminder}</span>
+            </p>
+          ) : null}
         </div>
       )}
 

@@ -32,7 +32,10 @@ export default function HabitLineChart({
     points.map((p, i) => `L ${x(i).toFixed(1)} ${y(p.value).toFixed(1)}`).join(" ") +
     ` L ${x(n - 1).toFixed(1)} ${(H - pad).toFixed(1)} Z`;
 
-  const latest = Math.round(points[points.length - 1].value * 100);
+  const latestVal = points[n - 1].value;
+  const latest = Math.round(latestVal * 100);
+  const dotTopPct = (y(latestVal) / H) * 100;
+  const dotLeftPct = (x(n - 1) / W) * 100;
 
   return (
     <div className="flex flex-col gap-1">
@@ -42,23 +45,31 @@ export default function HabitLineChart({
           {latest}% · 7-day
         </span>
       </div>
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        className="w-full h-12"
-        preserveAspectRatio="none"
-      >
-        <path d={area} fill="currentColor" className="text-foreground/8" />
-        <path
-          d={line}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1.5}
-          strokeLinejoin="round"
-          strokeLinecap="round"
-          className="text-foreground"
-          vectorEffect="non-scaling-stroke"
+      <div className="relative w-full h-12">
+        <svg
+          viewBox={`0 0 ${W} ${H}`}
+          className="w-full h-full"
+          preserveAspectRatio="none"
+        >
+          <path d={area} fill="currentColor" className="text-foreground/8" />
+          <path
+            d={line}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            className="text-foreground"
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+        {/* Strobing "today" dot — HTML overlay keeps it perfectly round */}
+        <span
+          className="pulse-dot-el absolute block w-1.5 h-1.5 rounded-full bg-foreground -translate-x-1/2 -translate-y-1/2"
+          style={{ top: `${dotTopPct}%`, left: `${dotLeftPct}%` }}
+          aria-hidden
         />
-      </svg>
+      </div>
     </div>
   );
 }

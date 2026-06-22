@@ -145,6 +145,53 @@ html.dark .quote-line .quote-text {
   border-radius: 0 !important;
 }
 
+/* Looping highlighter sweep for the active habit reminder */
+.reminder-highlight {
+  background-image: linear-gradient(#f7e58a, #f7e58a);
+  background-repeat: no-repeat;
+  background-position: 0 0.05em;
+  background-size: 0% 90%;
+  padding: 0 0.15em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  animation: highlighter-loop 4.5s ease-in-out infinite;
+}
+html.dark .reminder-highlight {
+  background-image: linear-gradient(rgba(247, 229, 138, 0.4), rgba(247, 229, 138, 0.4));
+}
+@keyframes highlighter-loop {
+  0%   { background-size: 0% 90%; opacity: 1; }
+  22%  { background-size: 100% 90%; opacity: 1; }
+  78%  { background-size: 100% 90%; opacity: 1; }
+  92%  { background-size: 100% 90%; opacity: 0; }
+  100% { background-size: 0% 90%; opacity: 0; }
+}
+
+/* Strobing "today" dot at the end of a habit chart line */
+@keyframes pulse-dot-el {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--foreground) 45%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 6px color-mix(in oklab, var(--foreground) 0%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--foreground) 0%, transparent);
+  }
+}
+.pulse-dot-el {
+  animation: pulse-dot-el 1.6s ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reminder-highlight,
+  .pulse-dot-el {
+    animation: none;
+  }
+  .reminder-highlight {
+    background-size: 100% 90%;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .waterfall > * {
     opacity: 1;
