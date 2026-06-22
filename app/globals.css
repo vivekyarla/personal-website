@@ -192,13 +192,13 @@ html.dark .reminder-highlight {
 /* Strobing "today" dot at the end of a habit chart line */
 @keyframes pulse-dot-el {
   0% {
-    box-shadow: 0 0 0 0 color-mix(in oklab, var(--foreground) 45%, transparent);
+    box-shadow: 0 0 0 0 color-mix(in oklab, currentColor 55%, transparent);
   }
   70% {
-    box-shadow: 0 0 0 6px color-mix(in oklab, var(--foreground) 0%, transparent);
+    box-shadow: 0 0 0 6px color-mix(in oklab, currentColor 0%, transparent);
   }
   100% {
-    box-shadow: 0 0 0 0 color-mix(in oklab, var(--foreground) 0%, transparent);
+    box-shadow: 0 0 0 0 color-mix(in oklab, currentColor 0%, transparent);
   }
 }
 .pulse-dot-el {

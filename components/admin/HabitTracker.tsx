@@ -80,20 +80,21 @@ export default function HabitTracker({
   // habit with a reminder is the highest-priority nudge for today.
   const topReminder = missingCore.find((h) => h.reminder)?.reminder ?? null;
 
-  // Rolling 7-day completion rate for charted habits — only through today,
-  // so the line ends at the live "today" point (no empty future tail).
+  // Momentum (exponential moving average) for charted habits — recent days
+  // weighted more, so one miss is a small local dip that recovers rather than
+  // a 7-point drag. Computed only through today.
   const charts = useMemo(() => {
     const chartDates = dates.slice(0, todayIndex + 1);
+    const N = 10; // smoothing window
+    const ALPHA = 2 / (N + 1);
     return habits
       .filter((h) => h.show_chart)
       .map((h) => {
+        let ema = 0;
         const points = chartDates.map((d, i) => {
-          // window = up to 7 days ending at d
-          const windowDates = chartDates.slice(Math.max(0, i - 6), i + 1);
-          const hits = windowDates.filter((wd) =>
-            done.has(keyOf(h.id, wd))
-          ).length;
-          return { date: d, value: hits / windowDates.length };
+          const v = done.has(keyOf(h.id, d)) ? 1 : 0;
+          ema = i === 0 ? v : ema + ALPHA * (v - ema);
+          return { date: d, value: ema };
         });
         return { habit: h, points };
       });
