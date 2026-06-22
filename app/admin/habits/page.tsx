@@ -4,7 +4,7 @@ import { requireAuth } from "@/lib/session";
 import {
   fetchHabits,
   fetchEntriesSince,
-  lastNDates,
+  gridDateRange,
   ptToday,
 } from "@/lib/habits";
 import HabitTracker from "@/components/admin/HabitTracker";
@@ -14,12 +14,10 @@ import Collapsible from "@/components/Collapsible";
 export const metadata = { title: "Admin · Habits" };
 export const dynamic = "force-dynamic";
 
-const GRID_DAYS = 30;
-
 export default async function AdminHabits() {
   if (!(await requireAuth())) redirect("/admin/login");
 
-  const dates = lastNDates(GRID_DAYS);
+  const { dates, weekStartIndex, todayIndex } = gridDateRange();
   const today = ptToday();
   const [habits, entries] = await Promise.all([
     fetchHabits(),
@@ -42,6 +40,8 @@ export default async function AdminHabits() {
         entries={entries}
         dates={dates}
         today={today}
+        weekStartIndex={weekStartIndex}
+        todayIndex={todayIndex}
       />
 
       <Collapsible title="Manage habits">

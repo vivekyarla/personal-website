@@ -45,6 +45,37 @@ export function lastNDates(n: number): string[] {
   return out;
 }
 
+// Grid date range: `weeksBack` weeks of history, then the full current week
+// through Saturday. `weekStartIndex` marks this week's Sunday (used as the
+// default scroll anchor); `todayIndex` marks today.
+export function gridDateRange(weeksBack = 8): {
+  dates: string[];
+  weekStartIndex: number;
+  todayIndex: number;
+} {
+  const today = ptToday();
+  const todayDate = new Date(today + "T12:00:00Z");
+  const dow = todayDate.getUTCDay(); // 0 = Sunday
+
+  const sunday = new Date(todayDate);
+  sunday.setUTCDate(sunday.getUTCDate() - dow);
+
+  const start = new Date(sunday);
+  start.setUTCDate(start.getUTCDate() - weeksBack * 7);
+
+  const end = new Date(sunday);
+  end.setUTCDate(end.getUTCDate() + 6); // Saturday of current week
+
+  const dates: string[] = [];
+  for (const d = new Date(start); d <= end; d.setUTCDate(d.getUTCDate() + 1)) {
+    dates.push(d.toISOString().slice(0, 10));
+  }
+
+  const weekStartIndex = weeksBack * 7;
+  const todayIndex = weekStartIndex + dow;
+  return { dates, weekStartIndex, todayIndex };
+}
+
 export async function fetchHabits(): Promise<Habit[]> {
   const { data, error } = await supabaseAdmin
     .from("habits")

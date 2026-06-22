@@ -7,9 +7,13 @@ import HabitLineChart from "@/components/admin/HabitLineChart";
 type Props = {
   habits: Habit[];
   entries: HabitEntry[];
-  dates: string[]; // oldest → newest, ends today
+  dates: string[]; // oldest → newest, ends on Saturday of current week
   today: string;
+  weekStartIndex: number; // index of current week's Sunday
+  todayIndex: number; // index of today within `dates`
 };
+
+const COL_W = 36; // matches w-9
 
 function keyOf(habitId: string, date: string) {
   return `${habitId}|${date}`;
@@ -23,18 +27,26 @@ function shortDate(iso: string) {
   };
 }
 
-export default function HabitTracker({ habits, entries, dates, today }: Props) {
+export default function HabitTracker({
+  habits,
+  entries,
+  dates,
+  today,
+  weekStartIndex,
+  todayIndex,
+}: Props) {
   // Optimistic done-set.
   const [done, setDone] = useState<Set<string>>(
     () => new Set(entries.map((e) => keyOf(e.habit_id, e.date)))
   );
   const gridScrollRef = useRef<HTMLDivElement>(null);
 
-  // Scroll the grid to the newest date on mount.
+  // On mount, anchor the scroll so the current week's Sunday sits at the left
+  // edge of the date columns (future days to the right, past reachable left).
   useEffect(() => {
     const el = gridScrollRef.current;
-    if (el) el.scrollLeft = el.scrollWidth;
-  }, []);
+    if (el) el.scrollLeft = weekStartIndex * COL_W;
+  }, [weekStartIndex]);
 
   async function toggle(habitId: string, date: string) {
     const k = keyOf(habitId, date);
@@ -68,14 +80,16 @@ export default function HabitTracker({ habits, entries, dates, today }: Props) {
   // habit with a reminder is the highest-priority nudge for today.
   const topReminder = missingCore.find((h) => h.reminder)?.reminder ?? null;
 
-  // Rolling 7-day completion rate for charted habits.
+  // Rolling 7-day completion rate for charted habits — only through today,
+  // so the line ends at the live "today" point (no empty future tail).
   const charts = useMemo(() => {
+    const chartDates = dates.slice(0, todayIndex + 1);
     return habits
       .filter((h) => h.show_chart)
       .map((h) => {
-        const points = dates.map((d, i) => {
+        const points = chartDates.map((d, i) => {
           // window = up to 7 days ending at d
-          const windowDates = dates.slice(Math.max(0, i - 6), i + 1);
+          const windowDates = chartDates.slice(Math.max(0, i - 6), i + 1);
           const hits = windowDates.filter((wd) =>
             done.has(keyOf(h.id, wd))
           ).length;
@@ -83,7 +97,7 @@ export default function HabitTracker({ habits, entries, dates, today }: Props) {
         });
         return { habit: h, points };
       });
-  }, [habits, dates, done]);
+  }, [habits, dates, done, todayIndex]);
 
   return (
     <div className="flex flex-col gap-8">
