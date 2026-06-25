@@ -193,12 +193,7 @@ export default function Home() {
               <div className="leading-tight min-w-0">
                 <div className="font-medium">
                   {item.href ? (
-                    <a
-                      href={item.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="hover:opacity-70 transition-opacity"
-                    >
+                    <a href={item.href} target="_blank" rel="noreferrer">
                       {item.org}
                     </a>
                   ) : (
