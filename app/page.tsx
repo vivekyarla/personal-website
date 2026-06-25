@@ -35,7 +35,7 @@ const experience: ExperienceItem[] = [
 
 export default function Home() {
   return (
-    <div className="waterfall flex flex-1 flex-col justify-center gap-8 text-[0.9rem] py-10">
+    <div className="namespot waterfall flex flex-1 flex-col justify-center gap-8 text-[0.9rem] py-10">
       <HomeViewport />
       {/* Name + live clock */}
       <header className="flex items-baseline justify-between gap-3">
@@ -44,7 +44,7 @@ export default function Home() {
       </header>
 
       {/* Bio */}
-      <section>
+      <section className="name-dim">
         <p className="leading-relaxed">
           I&apos;m 19 years old and a student at Stanford studying Economics
           &amp; Computer Science. Currently, I&apos;m learning about frontier
@@ -55,7 +55,7 @@ export default function Home() {
       </section>
 
       {/* Interests */}
-      <section>
+      <section className="name-dim">
         <p className="leading-relaxed">
           The world I&apos;m growing up in is changing at an unprecedented
           pace. I believe that how things are done today, even at the
@@ -67,7 +67,7 @@ export default function Home() {
 
 
       {/* Writing / Repository */}
-      <section className="blur-group grid grid-cols-2 gap-8 sm:gap-12">
+      <section className="name-dim blur-group grid grid-cols-2 gap-8 sm:gap-12">
         <div className="blur-item">
           <HoverReveal
             title="Writing"
@@ -85,7 +85,7 @@ export default function Home() {
       </section>
 
       {/* Projects */}
-      <section>
+      <section className="name-dim">
         <h2
           className={`tracking-tight mb-1.5 ${
             process.env.NODE_ENV === "development" ? "font-serif font-normal text-lg" : "text-base font-semibold"
@@ -167,7 +167,7 @@ export default function Home() {
       </section>
 
       {/* Experience */}
-      <section>
+      <section className="name-dim">
         <h2
           className={`tracking-tight mb-1.5 ${
             process.env.NODE_ENV === "development" ? "font-serif font-normal text-lg" : "text-base font-semibold"

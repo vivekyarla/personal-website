@@ -12,7 +12,7 @@ export default function NameToggle() {
       type="button"
       onClick={toggle}
       aria-label="Invert color scheme"
-      className={`text-2xl tracking-tight text-left cursor-pointer hover:opacity-70 transition-opacity ${
+      className={`name-trigger text-2xl tracking-tight text-left cursor-pointer hover:opacity-70 transition-opacity ${
         isDev ? "font-serif font-normal" : "font-semibold"
       }`}
     >
