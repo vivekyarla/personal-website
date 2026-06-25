@@ -111,7 +111,7 @@ export default function Home() {
                   Situational Unawareness
                 </a>
               </div>
-              <div className="italic text-muted text-[0.85rem]">
+              <div className="italic text-muted text-[0.85rem] mt-1">
                 Tracking the full-stack AI economy with a live deal map
               </div>
             </div>
@@ -142,7 +142,7 @@ export default function Home() {
                   </a>
                 </span>
               </div>
-              <div className="italic text-muted text-[0.85rem]">
+              <div className="italic text-muted text-[0.85rem] mt-1">
                 Built an ascending clock auction to solve GPU market failures
               </div>
             </div>
@@ -184,7 +184,7 @@ export default function Home() {
                     item.org
                   )}
                 </div>
-                <div className="italic text-muted text-[0.85rem]">
+                <div className="italic text-muted text-[0.85rem] mt-1">
                   {item.role}
                 </div>
               </div>
