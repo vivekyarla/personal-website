@@ -8,11 +8,11 @@ export default function TweetCarousel({
 }) {
   return (
     <div className="overflow-x-auto snap-x snap-mandatory scrollbar-hidden touch-pan-x">
-      <div className="flex gap-4 pb-2">
+      <div className="tweet-spot-group flex pb-2">
         {tweets.map((t) => (
           <div
             key={t.id}
-            className="snap-start shrink-0 w-[70vw] sm:w-[340px] max-w-[340px]"
+            className="tweet-spot-item snap-start shrink-0 w-[74vw] sm:w-[356px] max-w-[356px] pr-4"
           >
             <TweetCard tweet={t} />
           </div>
