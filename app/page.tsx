@@ -102,14 +102,28 @@ export default function Home() {
           <li className="py-1.5 flex items-baseline justify-between gap-4">
             <div className="leading-tight min-w-0">
               <div className="font-medium">
-                <a
-                  href="https://situational-unawareness.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hover:opacity-70 transition-opacity"
-                >
-                  Situational Unawareness
-                </a>
+                Situational Unawareness{" "}
+                <span className="font-normal text-muted text-[0.8rem] whitespace-nowrap">
+                  (
+                  <a
+                    href="https://situational-unawareness.com/"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
+                  >
+                    map
+                  </a>
+                  ){" "}(
+                  <a
+                    href="https://situational-unawareness.com/manifesto"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
+                  >
+                    manifesto
+                  </a>
+                  )
+                </span>
               </div>
               <div className="italic text-muted text-[0.85rem] mt-1">
                 Tracking the full-stack AI economy with a live deal map
