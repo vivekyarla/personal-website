@@ -102,7 +102,7 @@ export default function Home() {
           Projects
         </h2>
         <hr className="border-rule mb-1" />
-        <ul className="blur-group divide-y divide-rule">
+        <ul className="blur-group">
           <li className="blur-item py-1.5 flex items-baseline justify-between gap-4">
             <div className="leading-tight min-w-0">
               <div className="font-medium">
@@ -184,7 +184,7 @@ export default function Home() {
           Experience
         </h2>
         <hr className="border-rule mb-1" />
-        <ul className="blur-group divide-y divide-rule">
+        <ul className="blur-group">
           {experience.map((item) => (
             <li
               key={`${item.org}-${item.year}`}
