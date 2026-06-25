@@ -123,6 +123,24 @@ html.dark .quote-line .quote-text {
   background-image: linear-gradient(rgba(247, 229, 138, 0.4), rgba(247, 229, 138, 0.4));
 }
 
+/* Spotlight blur: hovering one item in a group dims + blurs the siblings.
+   :has(...:hover) → no dead-zone blur; :not(:hover) → hovered item stays sharp;
+   slower transition on the dimmed state so siblings recede a touch more gently. */
+.blur-group .blur-item {
+  filter: blur(0px);
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}
+.blur-group:has(.blur-item:hover) .blur-item:not(:hover) {
+  opacity: 0.3;
+  filter: blur(2.4px);
+  transition: opacity 0.42s ease, filter 0.42s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .blur-group:has(.blur-item:hover) .blur-item:not(:hover) {
+    filter: none;
+  }
+}
+
 /* Hide scrollbars on horizontal carousels */
 .scrollbar-hidden {
   scrollbar-width: none;
