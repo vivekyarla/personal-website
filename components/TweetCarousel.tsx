@@ -8,7 +8,7 @@ export default function TweetCarousel({
 }) {
   return (
     <div className="overflow-x-auto snap-x snap-mandatory scrollbar-hidden touch-pan-x">
-      <div className="tweet-spot-group flex pb-2">
+      <div className="tweet-spot-group flex items-start pb-2">
         {tweets.map((t) => (
           <div
             key={t.id}
