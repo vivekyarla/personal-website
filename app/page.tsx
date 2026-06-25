@@ -88,6 +88,71 @@ export default function Home() {
         />
       </section>
 
+      {/* Projects */}
+      <section>
+        <h2
+          className={`tracking-tight mb-1.5 ${
+            process.env.NODE_ENV === "development" ? "font-serif font-normal text-lg" : "text-base font-semibold"
+          }`}
+        >
+          Projects
+        </h2>
+        <hr className="border-rule mb-1" />
+        <ul className="divide-y divide-rule">
+          <li className="py-1.5 flex items-baseline justify-between gap-4">
+            <div className="leading-tight min-w-0">
+              <div className="font-medium">
+                <a
+                  href="https://situational-unawareness.com"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:opacity-70 transition-opacity"
+                >
+                  Situational Unawareness
+                </a>
+              </div>
+              <div className="italic text-muted text-[0.85rem]">
+                Tracking the full-stack AI economy with a live deal map
+              </div>
+            </div>
+            <span className="text-muted text-[0.8rem] whitespace-nowrap tabular-nums">
+              Spring 2026
+            </span>
+          </li>
+          <li className="py-1.5 flex items-baseline justify-between gap-4">
+            <div className="leading-tight min-w-0">
+              <div className="font-medium">
+                A Novel Matching Mechanism for Idle Compute{" "}
+                <span className="font-normal text-muted text-[0.8rem] whitespace-nowrap">
+                  <a
+                    href="https://drive.google.com/file/d/1LyRbqVtve0DBpFlcESQpZ6l9c0N3Zy3p/view?usp=drive_link"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
+                  >
+                    (paper)
+                  </a>{" "}
+                  <a
+                    href="https://drive.google.com/file/d/1LyRbqVtve0DBpFlcESQpZ6l9c0N3Zy3p/view?usp=drive_link"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
+                  >
+                    (deck)
+                  </a>
+                </span>
+              </div>
+              <div className="italic text-muted text-[0.85rem]">
+                Built an ascending clock auction to solve GPU market failures
+              </div>
+            </div>
+            <span className="text-muted text-[0.8rem] whitespace-nowrap tabular-nums">
+              Spring 2026
+            </span>
+          </li>
+        </ul>
+      </section>
+
       {/* Experience */}
       <section>
         <h2
