@@ -196,6 +196,32 @@ html.dark .quote-line .quote-text {
   border-radius: 0 !important;
 }
 
+/* react-tweet theming — tied to our .dark toggle (not prefers-color-scheme),
+   transparent + borderless to blend into the page, compact margins. */
+.react-tweet-theme {
+  --tweet-container-margin: 0;
+  --tweet-body-font-size: 0.95rem;
+  --tweet-bg-color: transparent;
+  --tweet-bg-color-hover: transparent;
+  --tweet-border: none;
+}
+html:not(.dark) .react-tweet-theme {
+  --tweet-font-color: rgb(15, 20, 25);
+  --tweet-font-color-secondary: rgb(83, 100, 113);
+  --tweet-color-blue-secondary: rgb(0, 111, 214);
+  --tweet-color-blue-secondary-hover: rgba(0, 111, 214, 0.1);
+  --tweet-quoted-bg-color-hover: rgba(0, 0, 0, 0.03);
+  --tweet-twitter-icon-color: rgb(15, 20, 25);
+}
+html.dark .react-tweet-theme {
+  --tweet-font-color: rgb(247, 249, 249);
+  --tweet-font-color-secondary: rgb(139, 152, 165);
+  --tweet-color-blue-secondary: rgb(107, 201, 251);
+  --tweet-color-blue-secondary-hover: rgba(107, 201, 251, 0.1);
+  --tweet-quoted-bg-color-hover: rgba(255, 255, 255, 0.03);
+  --tweet-twitter-icon-color: rgb(247, 249, 249);
+}
+
 /* Active habit reminder: text fades in once and stays. The highlight sweeps
    in left→right, fades out (marker only, via an animatable alpha var), resets
    its width while invisible, then sweeps in again — never retracting. */

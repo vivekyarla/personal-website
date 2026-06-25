@@ -2,7 +2,6 @@ import Link from "next/link";
 import Clock from "@/components/Clock";
 import CollapsibleCategory from "@/components/CollapsibleCategory";
 import TweetCarousel from "@/components/TweetCarousel";
-import TwitterEmbeds from "@/components/TwitterEmbeds";
 import { fetchCategories, fetchTweets } from "@/lib/tweets";
 
 export const metadata = { title: "Repository" };
@@ -109,8 +108,6 @@ export default async function RepositoryIndex() {
           No tweets yet. Set up the Apple Shortcut to start saving them.
         </p>
       )}
-
-      <TwitterEmbeds />
     </div>
   );
 }
