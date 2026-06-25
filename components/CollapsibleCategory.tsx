@@ -20,7 +20,7 @@ export default function CollapsibleCategory({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <section className={`mb-6 ${className}`}>
+    <section className={`pb-6 ${className}`}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
