@@ -124,22 +124,25 @@ export default function Home() {
               <div className="font-medium">
                 A Novel Matching Mechanism for Idle Compute{" "}
                 <span className="font-normal text-muted text-[0.8rem] whitespace-nowrap">
+                  (
                   <a
                     href="https://drive.google.com/file/d/1LyRbqVtve0DBpFlcESQpZ6l9c0N3Zy3p/view?usp=drive_link"
                     target="_blank"
                     rel="noreferrer"
                     className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
                   >
-                    (paper)
-                  </a>{" "}
-                  <a
-                    href="https://drive.google.com/file/d/1LyRbqVtve0DBpFlcESQpZ6l9c0N3Zy3p/view?usp=drive_link"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
-                  >
-                    (deck)
+                    paper
                   </a>
+                  ){" "}(
+                  <a
+                    href="https://drive.google.com/file/d/1LyRbqVtve0DBpFlcESQpZ6l9c0N3Zy3p/view?usp=drive_link"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
+                  >
+                    deck
+                  </a>
+                  )
                 </span>
               </div>
               <div className="italic text-muted text-[0.85rem] mt-1">
