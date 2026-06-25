@@ -56,7 +56,7 @@ export default function Home() {
           I&apos;m 19 years old and a student at Stanford studying Economics
           &amp; Computer Science. Currently, I&apos;m learning about frontier
           markets, post-AGI governance, and predictive decision modeling. This
-          summer I will be based in San Francisco, working on GTM projects at{" "}
+          summer I will be based in San Francisco, working on AI rollouts at{" "}
           <a
             href="https://www.mckinsey.com/"
             target="_blank"
