@@ -2,7 +2,6 @@ import Clock from "@/components/Clock";
 import HomeViewport from "@/components/HomeViewport";
 import HoverReveal from "@/components/HoverReveal";
 import NameToggle from "@/components/NameToggle";
-import ThinkingCarousel from "@/components/ThinkingCarousel";
 
 export const revalidate = 600;
 
@@ -32,12 +31,6 @@ const experience: ExperienceItem[] = [
     year: "Winter 2025",
     href: "https://tcg.co/",
   },
-];
-
-const placeholderPhrases = [
-  "circular financing in the AI mega-deal era",
-  "what taste actually means in software",
-  "the next decade of capital flows",
 ];
 
 export default function Home() {
@@ -80,10 +73,6 @@ export default function Home() {
         </p>
       </section>
 
-      {/* Daily thinking carousel */}
-      <section>
-        <ThinkingCarousel phrases={placeholderPhrases} />
-      </section>
 
       {/* Writing / Repository */}
       <section className="grid grid-cols-2 gap-8 sm:gap-12">
