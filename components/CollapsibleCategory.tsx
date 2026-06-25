@@ -6,6 +6,7 @@ type Props = {
   name: string;
   count: number;
   defaultOpen?: boolean;
+  className?: string;
   children: React.ReactNode;
 };
 
@@ -13,12 +14,13 @@ export default function CollapsibleCategory({
   name,
   count,
   defaultOpen = false,
+  className = "",
   children,
 }: Props) {
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <section className="mb-6">
+    <section className={`mb-6 ${className}`}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

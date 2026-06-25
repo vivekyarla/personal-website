@@ -86,20 +86,23 @@ export default async function RepositoryIndex() {
       )}
 
       {/* Per-category collapsible sections (horizontal swipe inside) */}
-      {categories.map((cat) => {
-        const items = byCategory.get(cat.id) ?? [];
-        if (items.length === 0) return null;
-        return (
-          <CollapsibleCategory
-            key={cat.id}
-            name={cat.name}
-            count={items.length}
-            defaultOpen={false}
-          >
-            <TweetCarousel tweets={items} />
-          </CollapsibleCategory>
-        );
-      })}
+      <div className="blur-group">
+        {categories.map((cat) => {
+          const items = byCategory.get(cat.id) ?? [];
+          if (items.length === 0) return null;
+          return (
+            <CollapsibleCategory
+              key={cat.id}
+              name={cat.name}
+              count={items.length}
+              defaultOpen={false}
+              className="blur-item"
+            >
+              <TweetCarousel tweets={items} />
+            </CollapsibleCategory>
+          );
+        })}
+      </div>
 
       {tweets.length === 0 && (
         <p className="text-muted italic text-[0.85rem]">
