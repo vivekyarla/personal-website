@@ -136,7 +136,7 @@ export default function Home() {
                 <span className="font-normal text-muted text-[0.8rem] whitespace-nowrap">
                   (
                   <a
-                    href="https://drive.google.com/file/d/1LyRbqVtve0DBpFlcESQpZ6l9c0N3Zy3p/view?usp=drive_link"
+                    href="https://drive.google.com/file/d/1ecOMU-rpeg3LDmxG0m3VIG3cAS9pY7PF/view?usp=sharing"
                     target="_blank"
                     rel="noreferrer"
                     className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
