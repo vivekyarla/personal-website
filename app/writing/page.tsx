@@ -40,10 +40,10 @@ export default async function WritingIndex() {
       {/* Description */}
       <section>
         <p className="leading-relaxed italic text-center text-muted">
-          &ldquo;You must strive to find your own voice, boys, and the longer
-          you wait to begin, the less likely you are to find it at all.&rdquo;
+          &ldquo;The truth is not for all men but only for those who seek
+          it.&rdquo;
           <span className="block not-italic mt-1 text-muted/70">
-            — Robin Williams, Dead Poets Society
+            — Ayn Rand
           </span>
         </p>
       </section>

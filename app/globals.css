@@ -55,9 +55,9 @@ body {
   overflow-x: clip;
 }
 
-/* Lock scroll on the home page, but only on viewports tall/wide enough to
-   fit the content without clipping. Shorter screens still scroll. */
-@media (min-width: 640px) and (min-height: 700px) {
+/* Hard-lock scroll on the home page — always stationary, no scrollbar.
+   Phones (<640px wide) still scroll so nothing is clipped unreachable. */
+@media (min-width: 640px) {
   html.home-locked,
   html.home-locked body {
     overflow: hidden;
