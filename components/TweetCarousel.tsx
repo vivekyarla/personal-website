@@ -1,5 +1,6 @@
 import { tweetIdFromUrl, type TweetWithCategory } from "@/lib/tweets";
 import RepoTweet from "@/components/RepoTweet";
+import TweetSpotlightGroup from "@/components/TweetSpotlightGroup";
 
 export default function TweetCarousel({
   tweets,
@@ -8,8 +9,7 @@ export default function TweetCarousel({
 }) {
   return (
     <div className="tweet-bleed">
-      <div className="overflow-x-auto snap-x snap-mandatory scrollbar-hidden touch-pan-x">
-        <div className="tweet-spot-group flex items-start pb-2 px-6">
+      <TweetSpotlightGroup>
         {tweets.map((t) => {
           const id = tweetIdFromUrl(t.url);
           return (
@@ -32,8 +32,7 @@ export default function TweetCarousel({
             </div>
           );
         })}
-        </div>
-      </div>
+      </TweetSpotlightGroup>
       <span aria-hidden className="tweet-edge tweet-edge-left" />
       <span aria-hidden className="tweet-edge tweet-edge-right" />
     </div>

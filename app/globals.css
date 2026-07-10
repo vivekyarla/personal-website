@@ -190,19 +190,20 @@ html.dark .quote-line .quote-text {
   mask-image: linear-gradient(to left, #000 25%, transparent);
 }
 
-/* Spotlight blur for embedded tweets — separate class set so it doesn't
-   collide with the category-level .blur-group. Works on iframes too. */
+/* Spotlight blur for embedded tweets — class-driven (tw-spot/tw-active set by
+   TweetSpotlightGroup) instead of :hover, so the spotlight hands off fluidly
+   while scrolling under a stationary cursor. */
 .tweet-spot-group .tweet-spot-item {
   filter: blur(0px);
   transition: opacity 0.3s ease, filter 0.3s ease;
 }
-.tweet-spot-group:has(.tweet-spot-item:hover) .tweet-spot-item:not(:hover) {
+.tweet-spot-group.tw-spot .tweet-spot-item:not(.tw-active) {
   opacity: 0.3;
   filter: blur(2.4px);
   transition: opacity 0.42s ease, filter 0.42s ease;
 }
 @media (prefers-reduced-motion: reduce) {
-  .tweet-spot-group:has(.tweet-spot-item:hover) .tweet-spot-item:not(:hover) {
+  .tweet-spot-group.tw-spot .tweet-spot-item:not(.tw-active) {
     filter: none;
   }
 }

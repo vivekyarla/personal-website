@@ -30,11 +30,11 @@ export default function InboundList({ items }: { items: InboundReading[] }) {
   }
 
   return (
-    <ul className="divide-y divide-rule">
+    <ul className="blur-group divide-y divide-rule">
       {items.map((item) => {
         const isOpen = open === item.id;
         return (
-          <li key={item.id}>
+          <li key={item.id} className="blur-item">
             <div
               role="button"
               tabIndex={0}
