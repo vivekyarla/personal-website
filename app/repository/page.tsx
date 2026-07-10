@@ -36,7 +36,7 @@ export default async function RepositoryIndex() {
   }
 
   return (
-    <div className="relative waterfall flex flex-col text-[0.9rem] pt-[10vh] pb-20">
+    <div className="relative waterfall flex flex-col text-[0.9rem] pt-[8vh] pb-20">
       {/* Back link — out of flow so the header sits at the shared offset */}
       <div className="absolute top-6 left-0">
         <Link

@@ -217,13 +217,6 @@ html.dark .quote-line .quote-text {
   display: none;
 }
 
-/* Subtle bottom fade hint that there's more content below in the inbound list */
-.inbound-scroll {
-  mask-image: linear-gradient(to bottom, black calc(100% - 24px), transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 24px), transparent 100%);
-  scroll-padding-block-end: 32px;
-}
-
 /* Strip Twitter embed iframe chrome so it blends in light + dark */
 .tweet-embed iframe {
   background-color: transparent !important;

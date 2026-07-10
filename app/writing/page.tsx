@@ -14,7 +14,7 @@ export default async function WritingIndex() {
   const [posts, inbound] = await Promise.all([fetchPosts(), fetchInbound()]);
 
   return (
-    <div className="relative waterfall flex flex-col gap-8 text-[0.9rem] pt-[10vh] pb-20">
+    <div className="relative waterfall flex flex-col gap-8 text-[0.9rem] pt-[8vh] pb-20">
       {/* Back link — out of flow so the header sits at the shared offset */}
       <div className="absolute top-6 left-0">
         <Link
@@ -98,11 +98,11 @@ export default async function WritingIndex() {
                   className="blur-item py-3 relative hover:z-10 border-t border-b border-rule -mt-px first:mt-0 first:border-t-0 last:border-b-0"
                 >
                   <Link href={`/writing/${p.slug}`} className="block">
-                    <div className="flex items-baseline justify-between gap-4 leading-tight">
+                    <div className="leading-tight">
                       <span className="font-medium">{p.title}</span>
-                      <span className="text-muted text-[0.8rem] whitespace-nowrap tabular-nums">
-                        {formatDate(p.pubDateISO)}
-                      </span>
+                    </div>
+                    <div className="mt-1 text-[0.72rem] text-muted/80 tabular-nums">
+                      {formatDate(p.pubDateISO)}
                     </div>
                     <p className="mt-1.5 text-[0.85rem] leading-relaxed text-muted">
                       {excerpt(p.description || p.contentHtml, 200)}

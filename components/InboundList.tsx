@@ -11,16 +11,8 @@ function stripOuterQuotes(s: string): string {
 export default function InboundList({ items }: { items: InboundReading[] }) {
   const [open, setOpen] = useState<string | null>(null);
 
-  function toggle(id: string, li: HTMLElement | null) {
-    const wasOpen = open === id;
-    setOpen(wasOpen ? null : id);
-    if (!wasOpen && li) {
-      // Wait for expand animation, then scroll the LI into the container's
-      // visible area so the quotes show up.
-      window.setTimeout(() => {
-        li.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      }, 520);
-    }
+  function toggle(id: string) {
+    setOpen(open === id ? null : id);
   }
 
   if (items.length === 0) {
@@ -41,43 +33,37 @@ export default function InboundList({ items }: { items: InboundReading[] }) {
             <div
               role="button"
               tabIndex={0}
-              onClick={(e) =>
-                toggle(item.id, (e.currentTarget.closest("li") as HTMLElement | null) ?? null)
-              }
+              onClick={() => toggle(item.id)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
-                  toggle(
-                    item.id,
-                    (e.currentTarget.closest("li") as HTMLElement | null) ?? null
-                  );
+                  toggle(item.id);
                 }
               }}
               className="py-3 cursor-pointer select-none"
             >
-              <div className="flex items-baseline justify-between gap-4 leading-tight">
-                <div className="min-w-0 flex items-baseline gap-2 flex-wrap">
-                  {item.pinned && (
-                    <span title="Pinned" className="text-[0.75rem] leading-none -ml-0.5">📌</span>
-                  )}
-                  <a
-                    href={item.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="font-medium underline decoration-rule underline-offset-4 hover:decoration-foreground"
-                  >
-                    {item.title}
-                  </a>
-                  {item.tag && (
-                    <span className="text-[0.7rem] uppercase tracking-wide text-muted px-1.5 py-0.5 border border-rule rounded-sm">
-                      {item.tag}
-                    </span>
-                  )}
-                </div>
-                <span className="text-muted text-[0.8rem] whitespace-nowrap tabular-nums">
-                  {formatInboundDate(item.date_published)}
-                </span>
+              <div className="leading-tight">
+                {item.pinned && (
+                  <span title="Pinned" className="text-[0.75rem] leading-none mr-1.5">📌</span>
+                )}
+                <a
+                  href={item.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="font-medium underline decoration-rule underline-offset-4 hover:decoration-foreground"
+                >
+                  {item.title}
+                </a>
+              </div>
+              <div className="mt-1 text-[0.72rem] text-muted/80 tabular-nums">
+                {item.tag && (
+                  <>
+                    <span className="uppercase tracking-wide">{item.tag}</span>
+                    <span className="mx-1.5">·</span>
+                  </>
+                )}
+                {formatInboundDate(item.date_published)}
               </div>
               <p className="mt-1.5 text-[0.85rem] leading-relaxed text-muted">
                 {item.summary}

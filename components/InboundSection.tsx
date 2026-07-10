@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import type { InboundReading } from "@/lib/inbound";
 import InboundList from "@/components/InboundList";
-import ScrollableSection from "@/components/ScrollHintArrow";
 
 // Inbound list with minimal tag-filter chips. Chips mirror the tag badges on
 // the rows (tiny, uppercase, hairline border); the active chip inverts.
@@ -40,9 +39,7 @@ export default function InboundSection({ items }: { items: InboundReading[] }) {
           ))}
         </div>
       )}
-      <ScrollableSection className="inbound-scroll" maxHeight="40vh">
-        <InboundList items={filtered} />
-      </ScrollableSection>
+      <InboundList items={filtered} />
     </>
   );
 }

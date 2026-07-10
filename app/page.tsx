@@ -35,7 +35,7 @@ const experience: ExperienceItem[] = [
 
 export default function Home() {
   return (
-    <div className="namespot waterfall flex flex-1 flex-col gap-8 text-[0.9rem] pt-[10vh] pb-12">
+    <div className="namespot waterfall flex flex-1 flex-col gap-8 text-[0.9rem] pt-[8vh] pb-12">
       <HomeViewport />
       {/* Name + live clock */}
       <header className="flex items-baseline justify-between gap-3">
