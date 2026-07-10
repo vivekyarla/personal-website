@@ -34,7 +34,7 @@ export default function TweetCarousel({
               {/* Category label — inside the spot item so it blurs/sharpens
                   together with its tweet */}
               {showCategory && t.category?.name && (
-                <div className="mt-1.5 text-left text-[0.68rem] uppercase tracking-wide text-muted/80">
+                <div className="mt-0.5 text-left text-[0.68rem] uppercase tracking-wide text-muted/80">
                   {t.category.name}
                 </div>
               )}
