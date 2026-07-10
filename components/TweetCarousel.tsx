@@ -4,8 +4,10 @@ import TweetSpotlightGroup from "@/components/TweetSpotlightGroup";
 
 export default function TweetCarousel({
   tweets,
+  showCategory = false,
 }: {
   tweets: TweetWithCategory[];
+  showCategory?: boolean;
 }) {
   return (
     <div className="tweet-bleed">
@@ -28,6 +30,13 @@ export default function TweetCarousel({
                 >
                   View on X →
                 </a>
+              )}
+              {/* Category label — inside the spot item so it blurs/sharpens
+                  together with its tweet */}
+              {showCategory && t.category?.name && (
+                <div className="mt-1.5 text-left text-[0.68rem] uppercase tracking-wide text-muted/80">
+                  {t.category.name}
+                </div>
               )}
             </div>
           );

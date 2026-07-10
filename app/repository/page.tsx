@@ -13,7 +13,7 @@ export default async function RepositoryIndex() {
     fetchCategories(),
   ]);
 
-  const latest = tweets.slice(0, 6);
+  const latest = tweets.slice(0, 10);
 
   // Group tweets by category id; within each category, sort by the tweet's
   // posted date (snowflake-derived), newest first.
@@ -23,6 +23,10 @@ export default async function RepositoryIndex() {
     if (!byCategory.has(key)) byCategory.set(key, []);
     byCategory.get(key)!.push(t);
   }
+  const activeCategoryCount = categories.filter(
+    (c) => (byCategory.get(c.id) ?? []).length > 0
+  ).length;
+
   for (const [, list] of byCategory) {
     list.sort((a, b) => {
       const da = a.tweet_posted_at
@@ -70,9 +74,15 @@ export default async function RepositoryIndex() {
         &ldquo;If a smart person asks you a hard question, pay attention. The
         rest of the world will ask you the same question eventually.&rdquo;
       </p>
-      <p className="mb-12 leading-relaxed text-center">
+      <p className="mb-4 leading-relaxed text-center">
         The intersection of those two ideas are why I learn more from tweets
         than my classes.
+      </p>
+
+      {/* Collection index */}
+      <p className="mb-12 text-center text-[0.72rem] text-muted/80 tabular-nums">
+        {tweets.length} tweet{tweets.length === 1 ? "" : "s"} ·{" "}
+        {activeCategoryCount} categor{activeCategoryCount === 1 ? "y" : "ies"}
       </p>
 
       {/* Latest (always open, horizontal swipe) */}
@@ -80,7 +90,7 @@ export default async function RepositoryIndex() {
         <section className="mb-8">
           <h2 className="text-base font-semibold tracking-tight">Latest</h2>
           <hr className="border-rule mt-3 mb-4" />
-          <TweetCarousel tweets={latest} />
+          <TweetCarousel tweets={latest} showCategory />
         </section>
       )}
 
