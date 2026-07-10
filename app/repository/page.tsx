@@ -36,9 +36,9 @@ export default async function RepositoryIndex() {
   }
 
   return (
-    <div className="waterfall flex flex-col text-[0.9rem] pt-12 sm:pt-24 pb-20">
-      {/* Back link */}
-      <div className="mb-8">
+    <div className="relative waterfall flex flex-col text-[0.9rem] pt-[10vh] pb-20">
+      {/* Back link — out of flow so the header sits at the shared offset */}
+      <div className="absolute top-6 left-0">
         <Link
           href="/"
           className="text-xs text-muted/70 hover:text-foreground transition-colors"

@@ -30,11 +30,14 @@ export default function InboundList({ items }: { items: InboundReading[] }) {
   }
 
   return (
-    <ul className="blur-group divide-y divide-rule">
+    <ul className="blur-group">
       {items.map((item) => {
         const isOpen = open === item.id;
         return (
-          <li key={item.id} className="blur-item">
+          <li
+            key={item.id}
+            className="blur-item relative hover:z-10 border-t border-b border-rule -mt-px first:mt-0 first:border-t-0 last:border-b-0"
+          >
             <div
               role="button"
               tabIndex={0}
