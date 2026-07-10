@@ -159,6 +159,14 @@ html.dark .quote-line .quote-text {
   }
 }
 
+/* Writing page: the Inbound|Outbound grid escapes the text column into a
+   wider centered band — capped, never touching the viewport edges. */
+.writing-bleed {
+  --wb-w: min(58rem, 100vw - 4rem);
+  width: var(--wb-w);
+  margin-left: calc(50% - var(--wb-w) / 2);
+}
+
 /* Full-bleed tweet carousel: breaks out of the centered text column to span
    almost the whole viewport, with permanent soft-blur fog at both ends.
    Overlays are pointer-events:none so hover/scroll (and the spotlight blur)
@@ -201,6 +209,10 @@ html.dark .quote-line .quote-text {
   opacity: 0.3;
   filter: blur(2.4px);
   transition: opacity 0.42s ease, filter 0.42s ease;
+}
+/* Active row paints its crisp borders above blurred neighbors (inbound list) */
+.tweet-spot-group .tweet-spot-item.tw-active {
+  z-index: 10;
 }
 @media (prefers-reduced-motion: reduce) {
   .tweet-spot-group.tw-spot .tweet-spot-item:not(.tw-active) {

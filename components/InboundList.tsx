@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { InboundReading } from "@/lib/inbound";
 import { formatInboundDate } from "@/lib/inbound";
 
@@ -10,10 +10,58 @@ function stripOuterQuotes(s: string): string {
 
 export default function InboundList({ items }: { items: InboundReading[] }) {
   const [open, setOpen] = useState<string | null>(null);
+  const ulRef = useRef<HTMLUListElement>(null);
 
   function toggle(id: string) {
     setOpen(open === id ? null : id);
   }
+
+  // Class-driven spotlight (same technique as the tweet carousels): :hover
+  // freezes during scroll, so we track the pointer and recompute the row under
+  // it on every pointer move AND every page-scroll frame.
+  useEffect(() => {
+    const group = ulRef.current;
+    if (!group) return;
+    let raf = 0;
+    let pt: { x: number; y: number } | null = null;
+
+    function paint() {
+      raf = 0;
+      if (!group) return;
+      let active: Element | null = null;
+      if (pt) {
+        const el = document.elementFromPoint(pt.x, pt.y);
+        const item = el?.closest(".tweet-spot-item");
+        if (item && group.contains(item)) active = item;
+      }
+      group
+        .querySelectorAll(".tweet-spot-item")
+        .forEach((it) => it.classList.toggle("tw-active", it === active));
+      group.classList.toggle("tw-spot", !!active);
+    }
+    function schedule() {
+      if (!raf) raf = requestAnimationFrame(paint);
+    }
+    function onMove(e: PointerEvent) {
+      if (e.pointerType !== "mouse") return;
+      pt = { x: e.clientX, y: e.clientY };
+      schedule();
+    }
+    function onLeave() {
+      pt = null;
+      schedule();
+    }
+
+    group.addEventListener("pointermove", onMove);
+    group.addEventListener("pointerleave", onLeave);
+    window.addEventListener("scroll", schedule, { passive: true });
+    return () => {
+      group.removeEventListener("pointermove", onMove);
+      group.removeEventListener("pointerleave", onLeave);
+      window.removeEventListener("scroll", schedule);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
 
   if (items.length === 0) {
     return (
@@ -22,13 +70,13 @@ export default function InboundList({ items }: { items: InboundReading[] }) {
   }
 
   return (
-    <ul className="blur-group">
+    <ul ref={ulRef} className="tweet-spot-group">
       {items.map((item) => {
         const isOpen = open === item.id;
         return (
           <li
             key={item.id}
-            className="blur-item relative hover:z-10 border-t border-b border-rule -mt-px first:mt-0 first:border-t-0 last:border-b-0"
+            className="tweet-spot-item relative border-t border-b border-rule -mt-px first:mt-0 first:border-t-0 last:border-b-0"
           >
             <div
               role="button"

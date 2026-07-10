@@ -39,15 +39,18 @@ export default async function WritingIndex() {
 
       {/* Description */}
       <section>
-        <p className="leading-relaxed">
-          I believe that growth happens quickest by ingesting high-quality
-          content, making my own predictive theses, and testing them against
-          empirical feedback.
+        <p className="leading-relaxed italic text-center text-muted">
+          &ldquo;You must strive to find your own voice, boys, and the longer
+          you wait to begin, the less likely you are to find it at all.&rdquo;
+          <span className="block not-italic mt-1 text-muted/70">
+            — Robin Williams, Dead Poets Society
+          </span>
         </p>
       </section>
 
-      {/* Inbound | Outbound — side by side on desktop, stacked on mobile */}
-      <div className="grid gap-8 sm:grid-cols-2 sm:gap-10 items-start">
+      {/* Inbound | Outbound — side by side on desktop, stacked on mobile.
+          Breaks out of the text column to a wider centered band. */}
+      <div className="writing-bleed grid gap-8 sm:grid-cols-2 sm:gap-10 items-start">
         {/* Inbound */}
         <section className="min-w-0">
           <h2
@@ -88,7 +91,7 @@ export default async function WritingIndex() {
           <hr className="border-rule mb-2" />
           {posts.length === 0 ? (
             <p className="py-3 text-muted text-[0.85rem] italic">
-              Nothing here yet.
+              Coming very soon...
             </p>
           ) : (
             <ul className="blur-group">
