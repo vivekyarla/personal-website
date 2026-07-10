@@ -49,7 +49,9 @@ export default function CollapsibleCategory({
           open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
         }`}
       >
-        <div className="overflow-hidden">
+        {/* Clip only vertically: the collapse animation needs y-clipping, but
+            the full-bleed carousel must overflow horizontally. */}
+        <div className="overflow-y-clip overflow-x-visible">
           <div className="pt-4">{children}</div>
         </div>
       </div>

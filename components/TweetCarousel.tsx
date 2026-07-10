@@ -7,8 +7,9 @@ export default function TweetCarousel({
   tweets: TweetWithCategory[];
 }) {
   return (
-    <div className="overflow-x-auto snap-x snap-mandatory scrollbar-hidden touch-pan-x">
-      <div className="tweet-spot-group flex items-start pb-2">
+    <div className="tweet-bleed">
+      <div className="overflow-x-auto snap-x snap-mandatory scrollbar-hidden touch-pan-x">
+        <div className="tweet-spot-group flex items-start pb-2 px-6">
         {tweets.map((t) => {
           const id = tweetIdFromUrl(t.url);
           return (
@@ -31,7 +32,10 @@ export default function TweetCarousel({
             </div>
           );
         })}
+        </div>
       </div>
+      <span aria-hidden className="tweet-edge tweet-edge-left" />
+      <span aria-hidden className="tweet-edge tweet-edge-right" />
     </div>
   );
 }

@@ -51,6 +51,8 @@ body {
   font-family: var(--font-sans);
   font-feature-settings: "ss01", "cv11";
   transition: background-color 0.35s ease, color 0.35s ease;
+  /* Full-bleed carousels use 100vw math; never allow sideways page scroll. */
+  overflow-x: clip;
 }
 
 /* Lock scroll on the home page, but only on viewports tall/wide enough to
@@ -155,6 +157,37 @@ html.dark .quote-line .quote-text {
   .namespot:has(.name-trigger:hover) .name-dim {
     filter: none;
   }
+}
+
+/* Full-bleed tweet carousel: breaks out of the centered text column to span
+   almost the whole viewport, with permanent soft-blur fog at both ends.
+   Overlays are pointer-events:none so hover/scroll (and the spotlight blur)
+   pass straight through them. */
+.tweet-bleed {
+  position: relative;
+  width: calc(100vw - 2rem);
+  margin-left: calc(50% + 1rem - 50vw);
+}
+.tweet-edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 64px;
+  z-index: 2;
+  pointer-events: none;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  background: color-mix(in oklab, var(--background) 45%, transparent);
+}
+.tweet-edge-left {
+  left: 0;
+  -webkit-mask-image: linear-gradient(to right, #000 25%, transparent);
+  mask-image: linear-gradient(to right, #000 25%, transparent);
+}
+.tweet-edge-right {
+  right: 0;
+  -webkit-mask-image: linear-gradient(to left, #000 25%, transparent);
+  mask-image: linear-gradient(to left, #000 25%, transparent);
 }
 
 /* Spotlight blur for embedded tweets — separate class set so it doesn't
