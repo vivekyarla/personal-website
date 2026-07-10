@@ -35,7 +35,7 @@ const experience: ExperienceItem[] = [
 
 export default function Home() {
   return (
-    <div className="namespot waterfall flex flex-1 flex-col gap-8 text-[0.9rem] pt-[8vh] pb-12">
+    <div className="namespot waterfall flex flex-1 flex-col gap-[clamp(0.875rem,2.4vh,2rem)] text-[0.9rem] pt-[clamp(1.5rem,7vh,6rem)] pb-6">
       <HomeViewport />
       {/* Name + live clock */}
       <header className="flex items-baseline justify-between gap-3">
@@ -72,7 +72,7 @@ export default function Home() {
           <HoverReveal
             title="Writing"
             href="/writing"
-            description="I sometimes write about my thoughts & predictions on: the AI build-out, high-growth startups, the venture ecosystem, economics, and life."
+            description="I curate a running list of my favorite readings, with quotes and short analysis. I also sometimes write re: AI, startups, economics, and life."
           />
         </div>
         <div className="blur-item">

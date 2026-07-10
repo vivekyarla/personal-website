@@ -14,7 +14,7 @@ export default async function WritingIndex() {
   const [posts, inbound] = await Promise.all([fetchPosts(), fetchInbound()]);
 
   return (
-    <div className="relative waterfall flex flex-col gap-8 text-[0.9rem] pt-[8vh] pb-20">
+    <div className="relative waterfall flex flex-col gap-8 text-[0.9rem] pt-[clamp(1.5rem,7vh,6rem)] pb-20">
       {/* Back link — out of flow so the header sits at the shared offset */}
       <div className="absolute top-6 left-0">
         <Link
