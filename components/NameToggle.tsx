@@ -4,7 +4,11 @@ const isDev = process.env.NODE_ENV === "development";
 
 export default function NameToggle() {
   function toggle() {
-    document.documentElement.classList.toggle("dark");
+    const next = document.documentElement.classList.toggle("dark");
+    // Manual choice wins over the automatic sunset theming for this session.
+    try {
+      sessionStorage.setItem("themeOverride", next ? "dark" : "light");
+    } catch {}
   }
 
   return (

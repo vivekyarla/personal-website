@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from "react";
 
-const TZ = "America/Los_Angeles";
-
+// Viewer-local time — no fixed timezone. Clock only renders after mount,
+// so it always reflects the visitor's own clock.
 function getParts(d: Date) {
   const timeParts = new Intl.DateTimeFormat("en-US", {
-    timeZone: TZ,
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
@@ -19,14 +18,12 @@ function getParts(d: Date) {
   }
 
   const date = new Intl.DateTimeFormat("en-US", {
-    timeZone: TZ,
     weekday: "long",
     month: "long",
     day: "numeric",
   }).format(d);
 
   const dateShort = new Intl.DateTimeFormat("en-US", {
-    timeZone: TZ,
     weekday: "short",
     month: "short",
     day: "numeric",
