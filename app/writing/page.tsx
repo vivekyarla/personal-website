@@ -46,6 +46,11 @@ export default async function WritingIndex() {
             — Ayn Rand
           </span>
         </p>
+
+        {/* Collection index — mirrors the repository page */}
+        <p className="mt-4 text-center text-[0.72rem] text-muted/80 tabular-nums">
+          {inbound.length} in · {posts.length} out
+        </p>
       </section>
 
       {/* Inbound | Outbound — side by side on desktop, stacked on mobile.
