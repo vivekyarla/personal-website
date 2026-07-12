@@ -95,14 +95,6 @@ body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes blink {
-  0%, 50% { opacity: 1; }
-  50.01%, 100% { opacity: 0; }
-}
-.animate-blink {
-  animation: blink 1s steps(1, end) infinite;
-}
-
 /* Highlighter sweep for inbound quotes — width hugs the text on each line */
 .quote-line .quote-text {
   background-image: linear-gradient(#f7e58a, #f7e58a);
@@ -244,12 +236,6 @@ html.dark .quote-line .quote-text {
 }
 .scrollbar-hidden::-webkit-scrollbar {
   display: none;
-}
-
-/* Strip Twitter embed iframe chrome so it blends in light + dark */
-.tweet-embed iframe {
-  background-color: transparent !important;
-  border-radius: 0 !important;
 }
 
 /* react-tweet theming — tied to our .dark toggle (not prefers-color-scheme),

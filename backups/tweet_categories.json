@@ -1,0 +1,65 @@
+[
+  {
+    "id": "46e06610-6a04-4135-b163-4e3f47b3e284",
+    "slug": "fundraise",
+    "name": "Funding Rounds",
+    "position": 0,
+    "created_at": "2026-06-03T07:04:53.551521+00:00"
+  },
+  {
+    "id": "177e359f-45a9-4587-a00a-d3cf435552c9",
+    "slug": "product",
+    "name": "Products",
+    "position": 1,
+    "created_at": "2026-06-03T07:05:07.311483+00:00"
+  },
+  {
+    "id": "681a7b8f-ec59-430e-9fe2-c186a5545a0a",
+    "slug": "aesthetics",
+    "name": "Aesthetics",
+    "position": 2,
+    "created_at": "2026-06-03T07:05:14.007005+00:00"
+  },
+  {
+    "id": "4195f446-8447-4d89-974e-2047399d9df2",
+    "slug": "memes",
+    "name": "Memes",
+    "position": 3,
+    "created_at": "2026-06-03T07:05:17.89828+00:00"
+  },
+  {
+    "id": "e89dde32-e859-4f9c-84b2-2aaaa82d0fc1",
+    "slug": "advice",
+    "name": "Advice",
+    "position": 4,
+    "created_at": "2026-06-03T07:05:26.984382+00:00"
+  },
+  {
+    "id": "0cd37dc5-7a77-4c58-8954-3694dd01ac98",
+    "slug": "writing",
+    "name": "Writings",
+    "position": 5,
+    "created_at": "2026-06-03T07:06:01.352003+00:00"
+  },
+  {
+    "id": "dbb9a3dd-7649-499a-b301-a697ba169409",
+    "slug": "misc",
+    "name": "Miscellaneous",
+    "position": 6,
+    "created_at": "2026-06-03T07:06:40.085073+00:00"
+  },
+  {
+    "id": "2983b138-2f30-4500-9115-c79d4068d27b",
+    "slug": "takes",
+    "name": "Takes",
+    "position": 7,
+    "created_at": "2026-06-04T00:44:19.875661+00:00"
+  },
+  {
+    "id": "5d48368c-a38a-4f9a-8f49-2947de167306",
+    "slug": "vc",
+    "name": "Venture",
+    "position": 8,
+    "created_at": "2026-06-04T00:44:25.991049+00:00"
+  }
+]

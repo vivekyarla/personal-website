@@ -1,0 +1,34 @@
+name: Backup Supabase
+
+on:
+  schedule:
+    - cron: "0 9 * * 1" # Mondays 09:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Dump tables
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+        run: node scripts/backup-supabase.mjs
+      - name: Commit if changed
+        run: |
+          git config user.name "backup-bot"
+          git config user.email "actions@github.com"
+          git add backups/
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: weekly supabase backup"
+            git push
+          else
+            echo "No changes."
+          fi
