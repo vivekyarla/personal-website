@@ -14,7 +14,7 @@ type ExperienceItem = {
 
 const experience: ExperienceItem[] = [
   {
-    org: "McKinsey & Co.",
+    org: "McKinsey & Company",
     role: "Summer Analyst",
     year: "Summer 2026",
     href: "https://www.mckinsey.com/",

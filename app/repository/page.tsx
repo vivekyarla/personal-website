@@ -85,13 +85,15 @@ export default async function RepositoryIndex() {
         {activeCategoryCount} categor{activeCategoryCount === 1 ? "y" : "ies"}
       </p>
 
-      {/* Latest (always open, horizontal swipe) */}
+      {/* Latest — collapsible like the categories, but open by default */}
       {latest.length > 0 && (
-        <section className="mb-8">
-          <h2 className="text-base font-semibold tracking-tight">Latest</h2>
-          <hr className="border-rule mt-3 mb-4" />
+        <CollapsibleCategory
+          name="Latest"
+          count={latest.length}
+          defaultOpen
+        >
           <TweetCarousel tweets={latest} showCategory />
-        </section>
+        </CollapsibleCategory>
       )}
 
       {/* Per-category collapsible sections (horizontal swipe inside) */}

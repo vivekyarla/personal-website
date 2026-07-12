@@ -177,18 +177,16 @@ html.dark .quote-line .quote-text {
   margin-left: calc(50% + 1rem - 50vw);
 }
 
-/* Inside a collapsible category, the wheel starts at column width and fans
-   out to full bleed as the section expands — same duration/easing as the
-   vertical reveal so the two read as one motion. */
+/* Inside a collapsible section the wheel never moves — it sits at its final
+   full-bleed position and simply fades in as the section opens (quick fade
+   out on close). No translation, matching the site's fade language. */
 .fan-body .tweet-bleed {
-  width: 100%;
-  margin-left: 0;
-  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1),
-    margin-left 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 .fan-body.fan-open .tweet-bleed {
-  width: calc(100vw - 2rem);
-  margin-left: calc(50% + 1rem - 50vw);
+  opacity: 1;
+  transition: opacity 0.65s ease 0.12s;
 }
 @media (prefers-reduced-motion: reduce) {
   .fan-body .tweet-bleed {
