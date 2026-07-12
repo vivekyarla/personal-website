@@ -5,8 +5,21 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Vivek Y.",
-  description: "Personal site of Vivek Yarlagedda.",
+  description:
+    "Stanford student studying Economics & Computer Science — learning about frontier markets, post-AGI governance, and predictive decision modeling.",
   metadataBase: new URL("https://vivekyarla.com"),
+  openGraph: {
+    siteName: "Vivek Yarlagedda",
+    type: "website",
+    url: "https://vivekyarla.com",
+    title: "Vivek Yarlagedda",
+    description:
+      "Stanford student studying Economics & Computer Science — learning about frontier markets, post-AGI governance, and predictive decision modeling.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    creator: "@vivekyarla",
+  },
 };
 
 export default function RootLayout({

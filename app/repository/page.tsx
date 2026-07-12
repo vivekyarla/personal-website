@@ -4,7 +4,17 @@ import CollapsibleCategory from "@/components/CollapsibleCategory";
 import TweetCarousel from "@/components/TweetCarousel";
 import { fetchCategories, fetchTweets } from "@/lib/tweets";
 
-export const metadata = { title: "Repository" };
+export const metadata = {
+  title: "Repository",
+  description:
+    "A sorted collection of the tweets I find most interesting — startups, aesthetics, memes, advice, and more.",
+  openGraph: {
+    title: "Repository — Vivek Yarlagedda",
+    description:
+      "A sorted collection of the tweets I find most interesting — startups, aesthetics, memes, advice, and more.",
+    url: "https://vivekyarla.com/repository",
+  },
+};
 export const revalidate = 60;
 
 export default async function RepositoryIndex() {

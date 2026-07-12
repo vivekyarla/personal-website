@@ -33,10 +33,30 @@ const experience: ExperienceItem[] = [
   },
 ];
 
+const personLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: "Vivek Yarlagedda",
+  url: "https://vivekyarla.com",
+  sameAs: [
+    "https://x.com/vivekyarla",
+    "https://linkedin.com/in/vivekyarla",
+    "https://vyarla.substack.com",
+  ],
+  affiliation: {
+    "@type": "CollegeOrUniversity",
+    name: "Stanford University",
+  },
+};
+
 export default function Home() {
   return (
     <div className="namespot waterfall flex flex-1 flex-col gap-[clamp(0.875rem,2.4vh,2rem)] text-[0.9rem] pt-[clamp(1.5rem,7vh,6rem)] pb-6">
       <HomeViewport />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(personLd) }}
+      />
       {/* Name + live clock */}
       <header className="flex items-baseline justify-between gap-3">
         <NameToggle />

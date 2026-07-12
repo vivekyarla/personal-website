@@ -8,6 +8,14 @@ export const revalidate = 60;
 
 export const metadata = {
   title: "Writing",
+  description:
+    "Readings in, essays out — a running list of my favorite pieces with quotes and short analysis, plus my own writing on AI, startups, economics, and life.",
+  openGraph: {
+    title: "Writing — Vivek Yarlagedda",
+    description:
+      "Readings in, essays out — a running list of my favorite pieces with quotes and short analysis, plus my own writing on AI, startups, economics, and life.",
+    url: "https://vivekyarla.com/writing",
+  },
 };
 
 export default async function WritingIndex() {

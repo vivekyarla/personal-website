@@ -21,6 +21,13 @@ export async function generateMetadata({
     title: `${post.title} — Vivek Y.`,
     description: post.description,
     alternates: { canonical: post.url },
+    openGraph: {
+      type: "article",
+      title: post.title,
+      description: post.description,
+      url: `https://vivekyarla.com/writing/${post.slug}`,
+      publishedTime: post.pubDateISO || undefined,
+    },
   };
 }
 
