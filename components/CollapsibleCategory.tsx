@@ -45,13 +45,14 @@ export default function CollapsibleCategory({
       <hr className="border-rule mt-3" />
       <div
         aria-hidden={!open}
-        className={`grid transition-[grid-template-rows] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-          open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        className={`fan-body grid transition-[grid-template-rows] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          open ? "grid-rows-[1fr] fan-open" : "grid-rows-[0fr]"
         }`}
       >
-        {/* Clip only vertically: the collapse animation needs y-clipping, but
-            the full-bleed carousel must overflow horizontally. */}
-        <div className="overflow-y-clip overflow-x-visible">
+        {/* min-h-0 lets the 0fr row actually collapse (overflow-x:visible
+            disables the automatic min-height:0); y-clip for the reveal,
+            x visible so the full-bleed carousel can escape the column. */}
+        <div className="min-h-0 overflow-y-clip overflow-x-visible">
           <div className="pt-4">{children}</div>
         </div>
       </div>
