@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import GeoTheme from "@/components/GeoTheme";
 import "./globals.css";
 
@@ -64,6 +65,7 @@ apply(lat,lon);
             © {new Date().getFullYear()} Vivek Yarlagedda
           </footer>
         </div>
+        <Analytics />
       </body>
     </html>
   );
