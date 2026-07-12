@@ -11,7 +11,8 @@ export default function NotFound() {
         <Clock />
       </header>
 
-      <section>
+      {/* Message — centered horizontally and vertically in the free space */}
+      <section className="flex-1 flex flex-col items-center justify-center text-center">
         <p className="leading-relaxed">
           This page does not exist. What a tragedy.
         </p>
@@ -26,7 +27,7 @@ export default function NotFound() {
       </section>
 
       {/* Links */}
-      <section className="mt-auto">
+      <section>
         <ul className="flex flex-wrap justify-center gap-x-5 gap-y-1.5 text-[0.85rem]">
           <li>
             <a
