@@ -3,6 +3,9 @@ import { getIronSession, IronSession, SessionOptions } from "iron-session";
 
 export type SessionData = {
   authed?: boolean;
+  // Unlisted, password-gated pages. Separate from `authed` so the admin
+  // password is never what opens them (and vice versa).
+  roxAuthed?: boolean;
   // Transient values stored across multi-step passkey ceremonies.
   webauthnChallenge?: string;
   webauthnUserId?: string;
@@ -27,4 +30,9 @@ export async function getSession(): Promise<IronSession<SessionData>> {
 export async function requireAuth(): Promise<boolean> {
   const session = await getSession();
   return !!session.authed;
+}
+
+export async function requireRoxAuth(): Promise<boolean> {
+  const session = await getSession();
+  return !!session.roxAuthed;
 }
