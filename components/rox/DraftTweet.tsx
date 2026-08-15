@@ -1,158 +1,171 @@
-import React from "react";
+import { EmbeddedTweet } from "react-tweet";
+import type { Tweet } from "react-tweet/api";
+
+/* Drafts are rendered through react-tweet's own EmbeddedTweet — the same
+   component /repository uses for real embeds — by synthesising the object
+   shape the syndication API would have returned. That way the cards are
+   identical to the real ones by construction, not by imitation, and they
+   inherit the .react-tweet-theme vars already set in globals.css. */
 
 export type XAuthor = {
   name: string;
   handle: string;
   avatar: string;
-  badge?: "blue" | "gold";
+};
+
+export type XMedia = {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
 };
 
 export type XDraft = {
   author: XAuthor;
   text: string;
-  media?: { src: string; alt: string; width: number; height: number };
-  /** Right-aligned chip in the header — thread position, timing, whatever. */
-  meta?: string;
-  /** Renders the "quoting" affordance above the actions row. */
-  quoting?: string;
+  media?: XMedia;
+  /** ISO timestamp shown under the post, as X shows it. */
+  postedAt: string;
+  /** Small caption under the card, matching /repository's category labels. */
+  label?: string;
 };
 
-/* ── text ─────────────────────────────────────────────────────────────
-   X colours @handles, #tags and links. Everything else is plain, and
-   newlines are preserved by the container's white-space rule. */
-const ENTITY = /(@[A-Za-z0-9_]{1,15}|#[A-Za-z0-9_]+|https?:\/\/\S+|rox\.com\/\S*)/g;
+/* ── entities ─────────────────────────────────────────────────────────
+   X auto-links @mentions and bare domains. react-tweet colours whatever
+   we hand it in `entities`, so we derive them from the text. Indices are
+   code-point offsets, which is what enrichTweet slices on. */
 
-function renderText(text: string) {
-  return text.split(ENTITY).map((part, i) =>
-    i % 2 === 1 ? (
-      <span key={i} className="rox-link">
-        {part}
-      </span>
-    ) : (
-      <React.Fragment key={i}>{part}</React.Fragment>
-    )
+const MENTION = /@[A-Za-z0-9_]{1,15}/g;
+const URLISH =
+  /(?:https?:\/\/)?(?:[a-z0-9-]+\.)+(?:com|io|org|ai|dev|net)(?:\/[^\s]*)?/gi;
+
+function buildEntities(text: string) {
+  const user_mentions = Array.from(text.matchAll(MENTION)).map((m) => ({
+    id_str: "0",
+    name: m[0].slice(1),
+    screen_name: m[0].slice(1),
+    indices: [m.index!, m.index! + m[0].length] as [number, number],
+  }));
+
+  const taken = new Set(
+    user_mentions.flatMap((m) => {
+      const out: number[] = [];
+      for (let i = m.indices[0]; i < m.indices[1]; i++) out.push(i);
+      return out;
+    })
   );
+
+  const urls = Array.from(text.matchAll(URLISH))
+    .filter((m) => !taken.has(m.index!))
+    .map((m) => ({
+      display_url: m[0].replace(/^https?:\/\//, ""),
+      expanded_url: m[0].startsWith("http") ? m[0] : `https://${m[0]}`,
+      url: m[0],
+      indices: [m.index!, m.index! + m[0].length] as [number, number],
+    }));
+
+  return { hashtags: [], symbols: [], user_mentions, urls };
 }
 
-/* ── chrome ───────────────────────────────────────────────────────── */
+/* ── the synthetic tweet ─────────────────────────────────────────────── */
 
-function Badge({ kind }: { kind: "blue" | "gold" }) {
-  return (
-    <svg
-      viewBox="0 0 22 22"
-      aria-label="Verified account"
-      className={`rox-badge rox-badge-${kind}`}
-    >
-      <path d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.816.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.634.433 1.218.877 1.688.47.443 1.054.747 1.687.878.633.132 1.29.084 1.897-.136.274.586.705 1.084 1.246 1.439.54.354 1.17.551 1.816.569.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.239 1.266.296 1.903.164.636-.132 1.22-.447 1.68-.907.46-.46.776-1.044.908-1.681s.075-1.299-.165-1.903c.586-.274 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z" />
-    </svg>
-  );
+function buildTweet(draft: XDraft): Tweet {
+  const { author, text, media, postedAt } = draft;
+
+  const tweet = {
+    __typename: "Tweet",
+    lang: "en",
+    // Drafts, so there is nothing to count yet.
+    favorite_count: 0,
+    conversation_count: 0,
+    news_action_type: "conversation",
+    created_at: postedAt,
+    display_text_range: [0, Array.from(text).length],
+    entities: buildEntities(text),
+    id_str: "0",
+    text,
+    isEdited: false,
+    isStaleEdit: false,
+    edit_control: {
+      edit_tweet_ids: ["0"],
+      editable_until_msecs: "0",
+      is_edit_eligible: false,
+      edits_remaining: "0",
+    },
+    user: {
+      id_str: "0",
+      name: author.name,
+      profile_image_url_https: author.avatar,
+      profile_image_shape: "Circle",
+      screen_name: author.handle,
+      verified: false,
+      is_blue_verified: true,
+    },
+    ...(media
+      ? {
+          mediaDetails: [
+            {
+              display_url: "",
+              expanded_url: "",
+              ext_media_availability: { status: "Available" },
+              indices: [0, 0],
+              media_url_https: `https://vivekyarla.com${media.src}`,
+              original_info: {
+                width: media.width,
+                height: media.height,
+                focus_rects: [],
+              },
+              sizes: {},
+              type: "photo",
+              url: "",
+              ext_alt_text: media.alt,
+            },
+          ],
+        }
+      : {}),
+  };
+
+  // The synthetic object satisfies every field the renderer touches; the
+  // remaining ones on the API type are metadata no component reads.
+  return tweet as unknown as Tweet;
 }
 
-const ACTIONS: { label: string; d: string }[] = [
-  {
-    label: "Reply",
-    d: "M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 8.129 3.64 8.129 8.13 0 2.96-1.607 5.68-4.196 7.11l-8.054 4.46v-3.69h-.067c-4.49.1-8.183-3.51-8.183-8.01zm8.005-6c-3.317 0-6.005 2.69-6.005 6 0 3.37 2.77 6.08 6.138 6.01l.351-.01h1.761v2.3l5.087-2.81c1.951-1.08 3.163-3.13 3.163-5.36 0-3.39-2.744-6.13-6.129-6.13H9.756z",
-  },
-  {
-    label: "Repost",
-    d: "M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14-4.432-4.14 1.364-1.46 2.068 1.93V8c0-1.1-.896-2-2-2z",
-  },
-  {
-    label: "Like",
-    d: "M16.697 5.5c-1.222-.06-2.679.51-3.89 2.16l-.805 1.09-.806-1.09C9.984 6.01 8.526 5.44 7.304 5.5c-1.243.07-2.349.78-2.91 1.91-.552 1.12-.633 2.78.479 4.82 1.074 1.97 3.257 4.27 7.129 6.61 3.87-2.34 6.052-4.64 7.126-6.61 1.111-2.04 1.03-3.7.477-4.82-.561-1.13-1.666-1.84-2.908-1.91z",
-  },
-  {
-    label: "Views",
-    d: "M8.75 21V3h2v18h-2zM18 21V8.5h2V21h-2zM4 21l.004-10h2L6 21H4zm9.248 0v-7h2v7h-2z",
-  },
-];
-
-function Actions() {
-  return (
-    <div className="rox-actions" aria-hidden>
-      {ACTIONS.map((a) => (
-        <span key={a.label} className="rox-action">
-          <svg viewBox="0 0 24 24">
-            <path d={a.d} />
-          </svg>
-        </span>
-      ))}
-    </div>
-  );
+/* react-tweet rewrites media URLs into the twimg `?format=&name=` form.
+   Ours are local files, so we undo that and serve the plain path. */
+function MediaImg(props: React.ImgHTMLAttributes<HTMLImageElement>) {
+  let src = typeof props.src === "string" ? props.src : "";
+  try {
+    const url = new URL(src);
+    const format = url.searchParams.get("format");
+    src = format ? `${url.pathname}.${format}` : url.pathname;
+  } catch {
+    /* already relative */
+  }
+  // eslint-disable-next-line jsx-a11y/alt-text, @next/next/no-img-element
+  return <img {...props} src={src} />;
 }
 
-/* ── one tweet's contents (everything right of the avatar) ─────────── */
+/* ── public ──────────────────────────────────────────────────────────── */
 
-function Body({ draft }: { draft: XDraft }) {
-  const { author, text, media, meta, quoting } = draft;
+export function DraftTweet({ draft }: { draft: XDraft }) {
   return (
-    <div className="rox-content">
-      <div className="rox-namerow">
-        <span className="rox-name">{author.name}</span>
-        {author.badge && <Badge kind={author.badge} />}
-        <span className="rox-handle">@{author.handle}</span>
-        {meta && <span className="rox-meta">{meta}</span>}
-      </div>
-
-      <div className="rox-text">{renderText(text)}</div>
-
-      {quoting && <div className="rox-quoting">Quote-tweeting {quoting}</div>}
-
-      {media && (
-        <a
-          className="rox-media"
-          href={media.src}
-          target="_blank"
-          rel="noreferrer"
-          aria-label={`${media.alt} — open full size`}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={media.src}
-            alt={media.alt}
-            width={media.width}
-            height={media.height}
-            loading="lazy"
-          />
-        </a>
+    <div>
+      <EmbeddedTweet tweet={buildTweet(draft)} components={{ MediaImg }} />
+      {draft.label && (
+        <div className="mt-0.5 text-left text-[0.68rem] uppercase tracking-wide text-muted/80">
+          {draft.label}
+        </div>
       )}
-
-      <Actions />
     </div>
   );
 }
 
-/* ── public: a standalone card, like an embed on /repository ───────── */
-
-export function TweetCard({ draft }: { draft: XDraft }) {
+export function DraftThread({ tweets }: { tweets: XDraft[] }) {
   return (
-    <article className="rox-x rox-card">
-      <div className="rox-row">
-        <div className="rox-rail">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={draft.author.avatar} alt="" width={40} height={40} />
-        </div>
-        <Body draft={draft} />
-      </div>
-    </article>
-  );
-}
-
-/* ── public: a connected thread, the way X stacks one ──────────────── */
-
-export function TweetThread({ tweets }: { tweets: XDraft[] }) {
-  return (
-    <article className="rox-x rox-card rox-thread">
+    <div className="flex flex-col gap-4">
       {tweets.map((t, i) => (
-        <div className="rox-row" key={i}>
-          <div className="rox-rail">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={t.author.avatar} alt="" width={40} height={40} />
-            {i < tweets.length - 1 && <span className="rox-connector" />}
-          </div>
-          <Body draft={t} />
-        </div>
+        <DraftTweet draft={t} key={i} />
       ))}
-    </article>
+    </div>
   );
 }

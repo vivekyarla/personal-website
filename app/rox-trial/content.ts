@@ -1,27 +1,24 @@
-import type { XAuthor, XDraft } from "@/components/rox/DraftTweet";
+import type { XAuthor, XDraft, XMedia } from "@/components/rox/DraftTweet";
 
 export const ROX: XAuthor = {
   name: "Rox",
   handle: "rox_ai",
   avatar: "/rox/av-rox_ai.jpg",
-  badge: "gold",
 };
 
 export const ISHAN: XAuthor = {
   name: "Ishan Mukherjee",
   handle: "ishanmkh",
   avatar: "/rox/av-ishanmkh.jpg",
-  badge: "blue",
 };
 
 export const AVANIKA: XAuthor = {
   name: "Avanika Narayan",
   handle: "Avanika15",
   avatar: "/rox/av-avanika15.jpg",
-  badge: "blue",
 };
 
-const FIG = {
+const FIG: Record<string, XMedia> = {
   accuracy: {
     src: "/rox/fig-accuracy.png",
     alt: "Accuracy by model, keyed vs unkeyed questions, relational vs graph",
@@ -54,12 +51,19 @@ const FIG = {
   },
 };
 
-/* ── Deliverable 1: the main launch thread ─────────────────────────── */
+/* Launch is Tuesday 18 Aug 2026, 9:05am PT. Each post in the thread lands a
+   minute after the one before it, the way a real thread posts. */
+const LAUNCH = Date.UTC(2026, 7, 18, 16, 5);
+const at = (minutesAfterLaunch: number) =>
+  new Date(LAUNCH + minutesAfterLaunch * 60_000).toISOString();
 
-const t = (text: string, extra: Partial<XDraft> = {}): XDraft => ({
+/* ── The main thread ──────────────────────────────────────────────────── */
+
+const t = (text: string, media?: XMedia): XDraft => ({
   author: ROX,
   text,
-  ...extra,
+  media,
+  postedAt: "",
 });
 
 export const THREAD: XDraft[] = [
@@ -71,7 +75,7 @@ Same warehouse. Same questions. Same business context in the prompt.
 8.9% → 99.9%.
 
 The only thing that changed was how the data was represented.`,
-    { media: FIG.accuracy }
+    FIG.accuracy
   ),
 
   t(
@@ -81,7 +85,7 @@ Two arms, one Snowflake:
 
 SQL over 11 Salesforce tables
 SPARQL over a graph of the same rows`,
-    { media: FIG.architecture }
+    FIG.architecture
   ),
 
   t(`Five of the questions are answerable with a foreign key. "What's the close date on the Verkada deal." Both arms score ~99% — and the graph is the more expensive one, by about 20% in tokens.
@@ -97,7 +101,7 @@ relational (SQL) — 8.9% accurate · 4.91 queries · 103.6K tokens
 graph (SPARQL) — 99.9% accurate · 1.21 queries · 5.0K tokens
 
 11x the accuracy at a twentieth of the cost.`,
-    { media: FIG.grid }
+    FIG.grid
   ),
 
   t(`One failure worth sitting with.
@@ -128,7 +132,7 @@ Opus 4.8 · 9% → 100%`),
 Accuracy didn't move.
 
 Past a point it got worse — the deeper it searched transcripts, the more it mistook someone being mentioned in a meeting for someone being the champion.`,
-    { media: FIG.effort }
+    FIG.effort
   ),
 
   t(`The standard objection: just write the context down. Put it in the system prompt, put it in a skill file, let the model reason from there.
@@ -160,63 +164,65 @@ In a revenue workflow that's a forecast someone acts on Monday morning.`),
 rox.com/research/agentic-retrieval
 
 Short version: we built the knowledge graph before we built the agents. This is why.`),
-];
+].map((draft, i) => ({ ...draft, postedAt: at(i) }));
 
-/* ── Deliverable 2: supporting posts referenced in the strategy ────── */
+/* ── Additional posts ─────────────────────────────────────────────────── */
 
-export const ISHAN_QT: XDraft = {
-  author: ISHAN,
-  text: `For two years the question we got most was why we bothered building a knowledge graph instead of pointing an LLM at Salesforce like everyone else.
+export const ADDITIONAL: XDraft[] = [
+  {
+    author: ISHAN,
+    postedAt: at(5),
+    label: "Quote-tweeting @rox_ai · T+5 min",
+    text: `For two years the question we got most was why we bothered building a knowledge graph instead of pointing an LLM at Salesforce like everyone else.
 
 Here's the answer, measured on our own production CRM, against the best models that exist.
 
 The model was never the bottleneck.`,
-  meta: "T+5 min",
-  quoting: "@rox_ai",
-};
-
-export const AVANIKA_METHOD: XDraft = {
-  author: AVANIKA,
-  text: `Some notes on how we ran this, because "vendor benchmarks own product" deserves scrutiny.
+  },
+  {
+    author: AVANIKA,
+    postedAt: at(20),
+    label: "T+20 min",
+    text: `Some notes on how we ran this, because "vendor benchmarks own product" deserves scrutiny.
 
 We deliberately reused the setup from Sequeda, Allemang & Jacob (2023): virtualize an ontology over the relational schema, zero-shot, each arm gets its own native schema description. Same shape, new models.
 
 What I'd attack about our result, and what survived:`,
-  meta: "T+20 min",
-};
-
-export const RECEIPTS: XDraft = {
-  author: ROX,
-  text: `Cloud Software Group gets mail at cloud.com.
+  },
+  {
+    author: ROX,
+    postedAt: at(60 * 48),
+    label: "Day 3",
+    text: `Cloud Software Group gets mail at cloud.com.
 
 Point an agent at that domain and it returns 1,491 emails. The real number is 883.
 
 The extra 608 are jumpcloud.com and icloud.com.
 
 This one substring is the entire reason "just connect the CRM" doesn't work.`,
-  meta: "Day 3",
-  media: FIG.grid,
-};
+    media: FIG.grid,
+  },
+  {
+    author: ROX,
+    postedAt: at(60 * 72),
+    label: "Day 4",
+    text: `We put the benchmark up: the 10 questions, the OWL vocabulary, the 18 edge types, and the grading rubric the judge used.
 
-export const STEELMAN: XDraft = {
-  author: AVANIKA,
-  text: `Best critique we've had so far: you picked the questions and you wrote the ontology, so of course the graph wins.
+If your agent gets more than 8.9% on the unkeyed five without a resolution layer, we want to see the trace.
+
+github.com/rox-ai/agentic-retrieval-bench`,
+    media: FIG.tokens,
+  },
+  {
+    author: AVANIKA,
+    postedAt: at(60 * 96),
+    label: "Day 5",
+    text: `Best critique we've had so far: you picked the questions and you wrote the ontology, so of course the graph wins.
 
 Fair. Two answers.
 
 The five keyed questions are the control, and the graph loses them — it costs 20% more tokens for the same answer.
 
 And the ontology is in the paper. Point it at your CRM and tell us we're wrong.`,
-  meta: "Day 5",
-};
-
-export const OPEN_HOUSE: XDraft = {
-  author: ROX,
-  text: `We put the benchmark up: the 10 questions, the OWL vocabulary, the 18 edge types, and the grading rubric the judge used.
-
-If your agent gets more than 8.9% on the unkeyed five without a resolution layer, we want to see the trace.
-
-github.com/rox-ai/agentic-retrieval-bench`,
-  meta: "Day 4",
-  media: FIG.tokens,
-};
+  },
+];
