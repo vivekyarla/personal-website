@@ -20,6 +20,9 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     creator: "@vivekyarla",
   },
+  verification: {
+    google: "kV659bpzlytKbEeAXPvOlka1Z4AOiXMsUVBbm5nmsMc",
+  },
 };
 
 export default function RootLayout({
