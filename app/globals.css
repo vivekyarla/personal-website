@@ -450,3 +450,25 @@ html.dark .reminder-highlight {
   line-height: 1.3;
   color: var(--tweet-font-color);
 }
+
+/* Thread connector: the vertical line X draws from a post's avatar down to
+   the reply beneath it. Sits in the gap between two embeds, aligned to the
+   48px avatar's centre (1px card border + 1rem article padding + 24px). */
+.rox-thread-link {
+  display: block;
+  position: relative;
+  height: 16px;
+}
+.rox-thread-link::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  left: 41px;
+  width: 2px;
+  border-radius: 1px;
+  background: rgb(207, 217, 222);
+}
+html.dark .rox-thread-link::before {
+  background: rgb(66, 83, 100);
+}

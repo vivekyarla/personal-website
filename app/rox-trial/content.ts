@@ -89,6 +89,21 @@ Full paper below.`,
     },
   },
 
+  {
+    author: ROX,
+    postedAt: "",
+    text: `1/ Full paper: https://docs.google.com/document/d/1DpkVCJPsjDZVCqQZS1Xu-_3KCFGtRy_XwNXC5vZgmVM/edit?tab=t.0#heading=h.nveo3sf169tx
+
+We used the same warehouse and the same ten questions, with ground truth checked against our own production CRM. One arm writes SQL against raw Salesforce. The other queries a knowledge graph on top of it, with three relationships resolved in advance: emails to account, meetings to account, and champion. Eight model families, 31 configurations, 3,100 runs.`,
+    // TODO: swap for the dark Rox-branded architecture diagram.
+    media: {
+      src: "/rox/fig-architecture.png",
+      alt: "Experiment architecture: one MCP client, a raw SQL arm and a knowledge graph arm, both against the same Salesforce data",
+      width: 1400,
+      height: 902,
+    },
+  },
+
   t(
     `3,100 runs. 31 configurations across 8 model families. 10 questions pulled from our own revenue workflows, graded by an independent judge against our production system of record.
 

@@ -76,12 +76,17 @@ function buildEntities(text: string) {
 
   const urls = Array.from(text.matchAll(URLISH))
     .filter((m) => !taken.has(m.index!))
-    .map((m) => ({
-      display_url: m[0].replace(/^https?:\/\//, ""),
-      expanded_url: m[0].startsWith("http") ? m[0] : `https://${m[0]}`,
-      url: m[0],
-      indices: [m.index!, m.index! + m[0].length] as [number, number],
-    }));
+    .map((m) => {
+      // X truncates long URLs in the rendered text and keeps the full one
+      // behind the link.
+      const bare = m[0].replace(/^https?:\/\//, "");
+      return {
+        display_url: bare.length > 30 ? `${bare.slice(0, 30)}…` : bare,
+        expanded_url: m[0].startsWith("http") ? m[0] : `https://${m[0]}`,
+        url: m[0],
+        indices: [m.index!, m.index! + m[0].length] as [number, number],
+      };
+    });
 
   return { hashtags: [], symbols: [], user_mentions, urls };
 }
@@ -227,11 +232,19 @@ export function DraftTweet({ draft }: { draft: XDraft }) {
   );
 }
 
+/* A reply chain. Each card is still a standalone embed; the connector
+   between them is what makes it read as one thread, the way X runs a line
+   down from a post's avatar to the reply underneath it. */
 export function DraftThread({ tweets }: { tweets: XDraft[] }) {
   return (
-    <div className="flex flex-col gap-4">
+    <div>
       {tweets.map((t, i) => (
-        <DraftTweet draft={t} key={i} />
+        <div key={i}>
+          <DraftTweet draft={t} />
+          {i < tweets.length - 1 && (
+            <span className="rox-thread-link" aria-hidden />
+          )}
+        </div>
       ))}
     </div>
   );
