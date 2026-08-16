@@ -25,11 +25,15 @@ export const SHRIRAM: XAuthor = {
   avatar: "/rox/av-shriram_s.jpg",
 };
 
-/* Launch is Tuesday 18 Aug 2026, 9:05am PT — midweek, as the timeline calls
-   for. Each post in the thread lands a minute after the one before it, the
-   way a real thread posts. Every other timestamp below is derived from this
-   so the cards agree with the timeline in section 03. */
-const LAUNCH = Date.UTC(2026, 7, 18, 16, 5);
+/* Launch is Tuesday 18 Aug 2026, 9:05am — midweek, as the timeline calls for.
+   Each post in the thread lands a minute after the one before it, the way a
+   real thread posts, and every other timestamp is derived from this so the
+   cards can't drift from the timeline in section 03.
+
+   Authored in UTC because that's the timezone the server renders in, and
+   react-tweet formats the date at render: pick a wall-clock hour here and it
+   is the hour the card displays. */
+const LAUNCH = Date.UTC(2026, 7, 18, 9, 5);
 const at = (minutesAfterLaunch: number) =>
   new Date(LAUNCH + minutesAfterLaunch * 60_000).toISOString();
 const hours = (h: number) => h * 60;
