@@ -78,7 +78,9 @@ We ran 3,100 experiments across every frontier model to find out why. The answer
 
 Swap raw Salesforce for a knowledge graph and accuracy jumps from 8.9% to 99.9%, with a 27B open-weight model getting there at a twentieth of the cost.
 
-Reasoning is downstream of representation. For revenue agents, the edge isn't a bigger model, it's a system of record for relationships. Every Rox agent runs on one.`,
+Reasoning is downstream of representation. For revenue agents, the edge isn't a bigger model, it's a system of record for relationships. Every Rox agent runs on one.
+
+Full paper below.`,
     card: {
       url: "https://www.rox.com/research",
       domain: "rox.com",
