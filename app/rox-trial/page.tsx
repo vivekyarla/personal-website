@@ -63,6 +63,23 @@ export default async function RoxTrial() {
         organic views.
       </p>
 
+      <p className="mt-4 leading-relaxed text-muted">
+        <strong className="font-semibold text-foreground">TLDR:</strong>{" "}
+        I drafted a main anchor thread that serves as the base for marketing the
+        paper. To supplement, I&apos;d work on a case study video, post an X
+        article via Shriram&apos;s account, and have Ishan quote-tweet the
+        anchor post. In advance of the main thread I&apos;d also reach out to a
+        bunch of partners, related voices, etc., that are listed in detail
+        below.
+      </p>
+      <p className="mt-3 leading-relaxed text-muted">
+        The thesis generally focuses on human-centered content, technical
+        writing native on X, and focused partner distribution. In my experience,
+        executing on each of those three items across several research pieces in
+        succession is how teams like Ramp Labs and Harvey have built cult-like
+        followings surrounding their research work.
+      </p>
+
       <hr className="rox-rule" />
 
       <H2 n="01">The main thread</H2>
