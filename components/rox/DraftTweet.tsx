@@ -1,6 +1,9 @@
 import Link from "next/link";
 import {
   enrichTweet,
+  QuotedTweetBody,
+  QuotedTweetContainer,
+  QuotedTweetHeader,
   TweetActions,
   TweetBody,
   TweetContainer,
@@ -55,6 +58,8 @@ export type XDraft = {
   article?: XArticle;
   /** Stands in for footage that doesn't exist yet. */
   video?: { spec: string };
+  /** The post being quote-tweeted, rendered as X's inset card. */
+  quoted?: XDraft;
   /** ISO timestamp shown under the post, as X shows it. */
   postedAt: string;
   /** Small caption under the card, matching /repository's category labels. */
@@ -252,6 +257,18 @@ export function DraftTweet({ draft }: { draft: XDraft }) {
     reply_url: profileUrl,
   };
 
+  // The quoted post gets the same treatment. It's composed from the same
+  // sub-components react-tweet's own QuotedTweet uses — but that wrapper
+  // doesn't forward `components` to TweetMedia, so our local figures would
+  // 404 through its twimg URL rewriting. Composing it here fixes that.
+  const q = draft.quoted;
+  const quoted = q
+    ? {
+        ...enrichTweet(buildTweet(q)),
+        url: `https://x.com/${q.author.handle}`,
+      }
+    : null;
+
   return (
     <div>
       <TweetContainer>
@@ -260,6 +277,23 @@ export function DraftTweet({ draft }: { draft: XDraft }) {
         {tweet.mediaDetails?.length ? (
           <TweetMedia tweet={tweet} components={{ MediaImg }} />
         ) : null}
+        {quoted && (
+          /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+          <QuotedTweetContainer tweet={quoted as any}>
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            <QuotedTweetHeader tweet={quoted as any} />
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            <QuotedTweetBody tweet={quoted as any} />
+            {quoted.mediaDetails?.length ? (
+              <TweetMedia
+                quoted
+                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                tweet={quoted as any}
+                components={{ MediaImg }}
+              />
+            ) : null}
+          </QuotedTweetContainer>
+        )}
         {draft.video && <VideoSlot spec={draft.video.spec} />}
         {draft.card && <LinkCard card={draft.card} />}
         {draft.article && <ArticleCard article={draft.article} />}

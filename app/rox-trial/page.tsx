@@ -10,6 +10,7 @@ import {
   ADDITIONAL,
   BLAND_TWEET,
   CASE_STUDY_POST,
+  ISHAN_QT,
   NEXT_STEPS,
   SHRIRAM_POST,
   STORYTELLING_TWEETS,
@@ -155,6 +156,22 @@ export default async function RoxTrial() {
       <div className="mt-4 rox-carousel-center">
         <TweetCarousel tweets={STORYTELLING_TWEETS} />
       </div>
+
+      <h3 className="mt-10 mb-3 text-[0.95rem] font-semibold tracking-tight">
+        Ishan Mukherjee
+      </h3>
+      <DraftTweet draft={ISHAN_QT} />
+
+      <h4 className="mt-7 mb-2 text-[0.85rem] font-semibold tracking-tight">
+        Approach
+      </h4>
+      <p className="leading-relaxed text-muted">
+        Ishan quote-tweets the anchor within the first hour. Founder accounts
+        travel further than brand accounts on X, and a QT this early gets the
+        anchor into his followers&apos; feeds while it&apos;s still ranking. The
+        line should read as a general takeaway from the paper and is intended to
+        be the bridge between the content and non-research audiences.
+      </p>
 
       <h3 className="mt-10 mb-3 text-[0.95rem] font-semibold tracking-tight">
         Shriram Sridharan

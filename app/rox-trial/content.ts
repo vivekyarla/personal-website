@@ -150,6 +150,14 @@ Full story below.`,
   video: { spec: "45–60s · phone-shot · no music" },
 };
 
+/* Quote-tweets the anchor post, so it embeds THREAD[0] verbatim. */
+export const ISHAN_QT: XDraft = {
+  author: ISHAN,
+  postedAt: at(45),
+  text: `Everyone in revenue AI is racing to the next model. The gap we found is in how data is represented, and the results are stark. Great work from @shriram_s and the research team at @rox_ai`,
+  quoted: THREAD[0],
+};
+
 export const SHRIRAM_POST: XDraft = {
   author: SHRIRAM,
   postedAt: at(35),
