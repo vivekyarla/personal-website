@@ -25,11 +25,15 @@ export const SHRIRAM: XAuthor = {
   avatar: "/rox/av-shriram_s.jpg",
 };
 
-/* Launch is Tuesday 18 Aug 2026, 9:05am PT. Each post in the thread lands a
-   minute after the one before it, the way a real thread posts. */
+/* Launch is Tuesday 18 Aug 2026, 9:05am PT — midweek, as the timeline calls
+   for. Each post in the thread lands a minute after the one before it, the
+   way a real thread posts. Every other timestamp below is derived from this
+   so the cards agree with the timeline in section 03. */
 const LAUNCH = Date.UTC(2026, 7, 18, 16, 5);
 const at = (minutesAfterLaunch: number) =>
   new Date(LAUNCH + minutesAfterLaunch * 60_000).toISOString();
+const hours = (h: number) => h * 60;
+const days = (d: number) => d * 24 * 60;
 
 /* ── The main thread ──────────────────────────────────────────────────── */
 
@@ -77,7 +81,7 @@ We used the same warehouse and the same ten questions, with ground truth checked
 
 More compute: GPT-5.5 at max effort went from 44K to 491K tokens per answer and stayed at 16%.
 
-More context: both arms got the same business context, including instructions to resolve meetings by attendee domain. It didn't help. A prompt can say champions exist. It can't say who they are.`,
+More context: both arms got the same business context, including instructions to resolve meetings by attendee domain. It didn't help. A prompt can say champions exist, but it can't say who they are.`,
   },
 
   {
@@ -165,28 +169,29 @@ export const STORYTELLING_TWEETS = [
 
 export const CASE_STUDY_POST: XDraft = {
   author: ROX,
-  postedAt: at(60 * 24),
+  // Timeline: Day 3–5. Day 3 is the only weekday in that window.
+  postedAt: at(days(3)),
   text: `Salesforce said the account was dead. It wasn't.
 
 For eight months, one of [Customer]'s biggest accounts had been quietly emailing from a subsidiary domain nobody had mapped. The CRM saw silence. [Rep] was about to write it off in his QBR.
 
-Rox's agent had already resolved the domain, and surfaced 53 threads the CRM couldn't see. He kept the account, made his number, and this is him telling it.
-
-Full story below.`,
+Rox's agent had already resolved the domain, and surfaced 53 threads the CRM couldn't see. He kept the account, made his number, and this is him telling it.`,
   video: { spec: "45–60s · phone-shot · no music" },
 };
 
 /* Quote-tweets the anchor post, so it embeds THREAD[0] verbatim. */
 export const ISHAN_QT: XDraft = {
   author: ISHAN,
-  postedAt: at(45),
-  text: `Everyone in revenue AI is racing to the next model. The gap we found is in how data is represented, and the results are stark. Great work from @shriram_s and the research team at @rox_ai`,
+  // Timeline: within the first hour of the anchor.
+  postedAt: at(40),
+  text: `Everyone in revenue AI is racing to the next model. The gap we found is in how the data is represented, and it doesn't close with a bigger model. Great work from @shriram_s and the research team at @rox_ai`,
   quoted: THREAD[0],
 };
 
 export const SHRIRAM_POST: XDraft = {
   author: SHRIRAM,
-  postedAt: at(35),
+  // Timeline: later the same day, after the QT has run.
+  postedAt: at(hours(5)),
   text: `Rox agents don't read the CRM. They read a knowledge graph on top of it, with champions, domains, and subsidiaries resolved before any model is involved. We benchmarked against raw Salesforce across 8 model families and 3,100 runs. A 27B open-weight model on the graph beats GPT-5.5 on the tables. Reasoning effort didn't close the gap. Here is the run-down from the paper:`,
   article: {
     href: "/rox-trial/article",
