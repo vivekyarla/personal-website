@@ -54,7 +54,17 @@ export default async function RoxTrial() {
       <hr className="rox-rule" />
 
       <H2 n="01">The main thread</H2>
-      <div className="mt-5">
+      <p className="mt-3 leading-relaxed text-muted">
+        I started with an anchor post that goes up first on the main account.
+        It has a dumbbell chart as native media, then three short replies with
+        the paper link in the first. I modeled the format on how Ramp Labs and
+        Thinking Machines post research: one strong claim about the world in
+        the first line, one number the reader can check, and the product as a
+        fact in the last sentence rather than a pitch. This should be the main
+        native content that gets quote-tweeted by people outside Rox&apos;s
+        audience and tees up follow-up posts from other accounts.
+      </p>
+      <div className="mt-6">
         <DraftThread tweets={THREAD} />
       </div>
 
