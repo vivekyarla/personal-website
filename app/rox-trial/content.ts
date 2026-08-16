@@ -59,13 +59,6 @@ const at = (minutesAfterLaunch: number) =>
 
 /* ── The main thread ──────────────────────────────────────────────────── */
 
-const t = (text: string, media?: XMedia): XDraft => ({
-  author: ROX,
-  text,
-  media,
-  postedAt: "",
-});
-
 export const THREAD: XDraft[] = [
   {
     author: ROX,
@@ -95,101 +88,23 @@ Full paper below.`,
     text: `1/ Full paper: https://docs.google.com/document/d/1DpkVCJPsjDZVCqQZS1Xu-_3KCFGtRy_XwNXC5vZgmVM/edit?tab=t.0#heading=h.nveo3sf169tx
 
 We used the same warehouse and the same ten questions, with ground truth checked against our own production CRM. One arm writes SQL against raw Salesforce. The other queries a knowledge graph on top of it, with three relationships resolved in advance: emails to account, meetings to account, and champion. Eight model families, 31 configurations, 3,100 runs.`,
-    // TODO: swap for the dark Rox-branded architecture diagram.
     media: {
-      src: "/rox/fig-architecture.png",
-      alt: "Experiment architecture: one MCP client, a raw SQL arm and a knowledge graph arm, both against the same Salesforce data",
-      width: 1400,
-      height: 902,
+      src: "/rox/fig-architecture-dark.png",
+      alt: "Experiment architecture: one MCP client reaching a raw SQL MCP server and a knowledge graph MCP server, both executing against the same Salesforce data",
+      width: 1536,
+      height: 1024,
     },
   },
 
-  t(
-    `3,100 runs. 31 configurations across 8 model families. 10 questions pulled from our own revenue workflows, graded by an independent judge against our production system of record.
+  {
+    author: ROX,
+    postedAt: "",
+    text: `2/ We tried the two obvious fixes before touching the data.
 
-Two arms, one Snowflake:
+More compute: GPT-5.5 at max effort went from 44K to 491K tokens per answer and stayed at 16%.
 
-SQL over 11 Salesforce tables
-SPARQL over a graph of the same rows`,
-    FIG.architecture
-  ),
-
-  t(`Five of the questions are answerable with a foreign key. "What's the close date on the Verkada deal." Both arms score ~99% — and the graph is the more expensive one, by about 20% in tokens.
-
-Five aren't. "Who's the champion at Bynder."
-
-That's where everything happens.`),
-
-  t(
-    `Unkeyed questions, pooled across every model and setting:
-
-relational (SQL) — 8.9% accurate · 4.91 queries · 103.6K tokens
-graph (SPARQL) — 99.9% accurate · 1.21 queries · 5.0K tokens
-
-11x the accuracy at a twentieth of the cost.`,
-    FIG.grid
-  ),
-
-  t(`One failure worth sitting with.
-
-Cloud Software Group gets mail at cloud.com. Filter on that domain and you return 1,491 emails. The true number is 883.
-
-The other 608 belong to jumpcloud.com and icloud.com — companies that happen to end in the same nine characters.`),
-
-  t(`Blackhawk Network fails in both directions at once.
-
-They send from blackhawknetwork.com and from bhn.com. Match the first and you return 15 against a ground truth of 53. Add the second and you overcount, because a subsidiary uses it too.
-
-No domain rule gets this right.`),
-
-  t(`The obvious fix is a better model. It isn't.
-
-Unkeyed accuracy — reasoning ON over tables, reasoning OFF over the graph:
-
-MiniMax M3 · 16% → 100%
-Qwen3.6 27B · 16% → 100%
-DeepSeek V4-Pro · 8% → 100%
-Sonnet 5 · 9% → 100%
-Opus 4.8 · 9% → 100%`),
-
-  t(
-    `We gave GPT-5.5 more room to think. Minimum to maximum effort took it from 44K tokens to 491K.
-
-Accuracy didn't move.
-
-Past a point it got worse — the deeper it searched transcripts, the more it mistook someone being mentioned in a meeting for someone being the champion.`,
-    FIG.effort
-  ),
-
-  t(`The standard objection: just write the context down. Put it in the system prompt, put it in a skill file, let the model reason from there.
-
-We tested exactly that. Both arms got identical business context, including explicit instructions to resolve meetings by attendee domain.
-
-The relational arm still failed.`),
-
-  t(`Because a prompt carries type-level knowledge — that a champion relationship exists, and what it connects.
-
-It can't carry instance-level facts: who the champion is, which subsidiary rolls up to which parent, where that champion went after they changed jobs.
-
-High cardinality, changes weekly, untestable in a paragraph.`),
-
-  t(`This is the part we think is missing from the MCP conversation.
-
-More servers give an agent more surface area, not more understanding. Each one arrives with its own schema tax, and none of them resolve entities across each other.
-
-Resolution is a separate job. It runs once, offline, where a human can check it.`),
-
-  t(`And the number that should worry you isn't the 8.9%.
-
-It's that the other 91% came back fluent, sourced and confident. Nothing in the loop flags it.
-
-In a revenue workflow that's a forecast someone acts on Monday morning.`),
-
-  t(`Full paper — all 31 configurations, the 10 questions, the ontology, and every failure mode we hit:
-
-rox.com/research/agentic-retrieval
-
-Short version: we built the knowledge graph before we built the agents. This is why.`),
+More context: both arms got the same business context, including instructions to resolve meetings by attendee domain. It didn't help. A prompt can say champions exist. It can't say who they are.`,
+  },
 ].map((draft, i) => ({ ...draft, postedAt: at(i) }));
 
 /* ── Next steps ───────────────────────────────────────────────────────

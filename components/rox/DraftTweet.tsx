@@ -166,7 +166,7 @@ function MediaImg(props: React.ImgHTMLAttributes<HTMLImageElement>) {
     /* already relative */
   }
   // eslint-disable-next-line jsx-a11y/alt-text, @next/next/no-img-element
-  return <img {...props} src={src} />;
+  return <img {...props} src={src} loading="lazy" />;
 }
 
 /* X's summary_large_image card. react-tweet has no renderer for these, so
