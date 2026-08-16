@@ -17,8 +17,8 @@ const heading =
 
 function H2({ n, children }: { n: string; children: React.ReactNode }) {
   return (
-    <h2 className={`text-base tracking-tight ${heading}`}>
-      <span className="mr-2 text-[0.72rem] text-muted/70 tabular-nums align-middle">
+    <h2 className={`text-xl tracking-tight ${heading}`}>
+      <span className="mr-2 text-[0.85rem] text-muted/70 tabular-nums align-middle">
         {n}
       </span>
       {children}
@@ -46,8 +46,9 @@ export default async function RoxTrial() {
       </header>
 
       <p className="leading-relaxed">
-        <strong className="font-semibold">Goal:</strong> get Rox&apos;s paper on
-        knowledge graphs in CRM workflows to 100K organic views.
+        <strong className="font-semibold">Goal:</strong>{" "}
+        get Rox&apos;s paper on knowledge graphs in CRM workflows to 100K
+        organic views.
       </p>
 
       <hr className="rox-rule" />
@@ -76,7 +77,7 @@ export default async function RoxTrial() {
       <div className="mt-5 flex flex-col gap-7">
         {NEXT_STEPS.map((group) => (
           <section key={group.heading}>
-            <h3 className="mb-2 text-[0.8rem] font-semibold tracking-tight">
+            <h3 className="mb-2 text-[0.95rem] font-semibold tracking-tight">
               {group.heading}
             </h3>
             {group.items.length > 0 && (
