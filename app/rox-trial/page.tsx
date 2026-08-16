@@ -206,6 +206,53 @@ export default async function RoxTrial() {
       <hr className="rox-rule" />
 
       <H2 n="03">Distribution</H2>
+
+      <h3 className="mt-6 mb-2 text-[0.95rem] font-semibold tracking-tight">
+        Before launch
+      </h3>
+      <ul className="flex flex-col gap-2.5 pl-5 list-disc leading-relaxed text-muted">
+        <li>
+          Have the paper&apos;s authors and Rox engineers draft their own
+          one-line posts, ready for the first 24 hours. These don&apos;t need to
+          be meticulously drafted, just organic personal thoughts.
+        </li>
+        <li>
+          Reach out to Snowflake&apos;s devrel/partner team; the whole
+          experiment ran on their warehouse so a partner tweet could be in play.
+        </li>
+        <li>
+          Reach out to Juan Sequeda (co-author of the 2023 benchmark this paper
+          extends). Rox confirms his result at agent scale with a wider gap and
+          he&apos;s one of the most followed voices in knowledge-graph Twitter.
+          If we can get him to QT a paper that vindicates his, our
+          domain-specific reach will go way up.
+        </li>
+        <li>
+          If the case study is related to a specific customer company like Ramp
+          or MongoDB, would reach out to their team to see if we can co-create
+          some content.
+        </li>
+        <li>
+          Would also reach out to the Sequoia or General Catalyst content teams
+          to see if they&apos;d amplify portfolio research.
+        </li>
+      </ul>
+
+      <h3 className="mt-7 mb-2 text-[0.95rem] font-semibold tracking-tight">
+        How I&apos;d measure it
+      </h3>
+      <ul className="flex flex-col gap-2.5 pl-5 list-disc leading-relaxed text-muted">
+        <li>
+          Anchor views are the headline, but track QT ratio (people restating
+          it), saves (intent to read), replies from named KG and RevOps
+          accounts, and paper clicks.
+        </li>
+        <li>
+          100K is realistic across anchor + Ishan QT + Shriram&apos;s Article.
+          I&apos;d also want to track organic views on partner QTs/posts and
+          organic QTs.
+        </li>
+      </ul>
     </div>
   );
 }
