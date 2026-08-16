@@ -150,8 +150,10 @@ export default async function RoxTrial() {
 
       <p className="mt-6 leading-relaxed text-muted">
         For general storytelling I&apos;d also draw from a few other standalone
-        launch videos and ads that put people before the product and do it in a
-        compelling way:
+        launch videos. I think this general vibe of human-focused, simple
+        storytelling shown in the Grok Bot and OpenAI tweets is what works best
+        right now. I also think Rox&apos;s past post about enrichment
+        infrastructure did a great job at this!
       </p>
       <div className="mt-4 rox-carousel-center">
         <TweetCarousel tweets={STORYTELLING_TWEETS} />

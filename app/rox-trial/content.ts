@@ -160,6 +160,7 @@ export const BLAND_TWEET = "https://x.com/usebland/status/2084685910667649324";
 export const STORYTELLING_TWEETS = [
   "https://x.com/jxnlco/status/2082855170296205719",
   "https://x.com/bot/status/2087224798078517251",
+  "https://x.com/rox_ai/status/2075256586940080250",
 ].map(asCarouselTweet);
 
 export const CASE_STUDY_POST: XDraft = {
