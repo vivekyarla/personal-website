@@ -20,6 +20,18 @@ import {
 export const metadata = {
   title: "Rox · X strategy",
   robots: { index: false, follow: false },
+  // Without these the link preview inherits the site-wide card from the root
+  // layout, which reads "Vivek Yarlagedda".
+  openGraph: {
+    title: "Trial X Strategy for Rox",
+    description: "Password protected.",
+    url: "https://vivekyarla.com/rox-trial",
+  },
+  twitter: {
+    card: "summary_large_image" as const,
+    title: "Trial X Strategy for Rox",
+    description: "Password protected.",
+  },
 };
 
 const heading =
