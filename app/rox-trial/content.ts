@@ -1,4 +1,5 @@
 import type { XAuthor, XDraft } from "@/components/rox/DraftTweet";
+import type { TweetWithCategory } from "@/lib/tweets";
 
 export const ROX: XAuthor = {
   name: "Rox",
@@ -114,6 +115,41 @@ export const NEXT_STEPS: NextStepGroup[] = [
    still in public/rox/ if you want to attach one: fig-accuracy,
    fig-architecture, fig-unkeyed-grid, fig-tokens, fig-effort. */
 export const ADDITIONAL: XDraft[] = [];
+
+/* Real posts, embedded live through the same path /repository uses. The
+   carousel wants DB-shaped rows, so these are the minimum that satisfies it. */
+export const asCarouselTweet = (url: string): TweetWithCategory => ({
+  id: url,
+  url,
+  embed_html: null,
+  author_name: null,
+  author_url: null,
+  category_id: null,
+  note: null,
+  tweet_posted_at: null,
+  created_at: "2026-08-18T00:00:00.000Z",
+  category: null,
+});
+
+export const BLAND_TWEET = "https://x.com/usebland/status/2084685910667649324";
+export const STORYTELLING_TWEETS = [
+  "https://x.com/jxnlco/status/2082855170296205719",
+  "https://x.com/bot/status/2087224798078517251",
+].map(asCarouselTweet);
+
+export const CASE_STUDY_POST: XDraft = {
+  author: ROX,
+  postedAt: at(60 * 24),
+  label: "@rox_ai · Ishan quote-tweets",
+  text: `Salesforce said the account was dead. It wasn't.
+
+For eight months, one of [Customer]'s biggest accounts had been quietly emailing from a subsidiary domain nobody had mapped. The CRM saw silence. [Rep] was about to write it off in his QBR.
+
+Rox's agent had already resolved the domain, and surfaced 53 threads the CRM couldn't see. He kept the account, made his number, and this is him telling it.
+
+Full story below.`,
+  video: { spec: "45–60s · phone-shot · no music" },
+};
 
 export const SHRIRAM_POST: XDraft = {
   author: SHRIRAM,

@@ -53,6 +53,8 @@ export type XDraft = {
   /** A post gets either media or a link card — X never renders both. */
   card?: XCard;
   article?: XArticle;
+  /** Stands in for footage that doesn't exist yet. */
+  video?: { spec: string };
   /** ISO timestamp shown under the post, as X shows it. */
   postedAt: string;
   /** Small caption under the card, matching /repository's category labels. */
@@ -200,6 +202,20 @@ function LinkCard({ card }: { card: XCard }) {
   );
 }
 
+/* Placeholder for unshot footage, sized to X's video player. */
+function VideoSlot({ spec }: { spec: string }) {
+  return (
+    <div className="rox-video" role="img" aria-label={`Video placeholder: ${spec}`}>
+      <span className="rox-video-play">
+        <svg viewBox="0 0 24 24" aria-hidden>
+          <path d="M8 5v14l11-7z" />
+        </svg>
+      </span>
+      <span className="rox-video-spec">{spec}</span>
+    </div>
+  );
+}
+
 /* The card X shows when a post carries an Article. Internal link, so it
    opens the article view in place rather than a new tab. */
 function ArticleCard({ article }: { article: XArticle }) {
@@ -244,6 +260,7 @@ export function DraftTweet({ draft }: { draft: XDraft }) {
         {tweet.mediaDetails?.length ? (
           <TweetMedia tweet={tweet} components={{ MediaImg }} />
         ) : null}
+        {draft.video && <VideoSlot spec={draft.video.spec} />}
         {draft.card && <LinkCard card={draft.card} />}
         {draft.article && <ArticleCard article={draft.article} />}
         <TweetInfo tweet={tweet} />

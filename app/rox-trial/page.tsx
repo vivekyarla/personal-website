@@ -3,7 +3,18 @@ import Clock from "@/components/Clock";
 import RoxGate from "@/components/rox/RoxGate";
 import { DraftThread, DraftTweet } from "@/components/rox/DraftTweet";
 import { requireRoxAuth } from "@/lib/session";
-import { ADDITIONAL, NEXT_STEPS, SHRIRAM_POST, THREAD } from "./content";
+import RepoTweet from "@/components/RepoTweet";
+import TweetCarousel from "@/components/TweetCarousel";
+import { tweetIdFromUrl } from "@/lib/tweets";
+import {
+  ADDITIONAL,
+  BLAND_TWEET,
+  CASE_STUDY_POST,
+  NEXT_STEPS,
+  SHRIRAM_POST,
+  STORYTELLING_TWEETS,
+  THREAD,
+} from "./content";
 
 export const metadata = {
   title: "Rox · X strategy",
@@ -73,6 +84,79 @@ export default async function RoxTrial() {
       <H2 n="02">Additional posts</H2>
 
       <h3 className="mt-6 mb-3 text-[0.95rem] font-semibold tracking-tight">
+        Case study
+      </h3>
+      <DraftTweet draft={CASE_STUDY_POST} />
+
+      <h4 className="mt-7 mb-2 text-[0.85rem] font-semibold tracking-tight">
+        Approach
+      </h4>
+      <p className="leading-relaxed text-muted">
+        The story here should be about a person, not an account. Every Rox
+        customer story so far has been a logo and a metric. For this one, I&apos;d
+        want to go deeper, focus on one named character, their stakes, and a
+        moment where the graph knew something they didn&apos;t. A good litmus
+        test for the story is whether it&apos;s something you&apos;d tell at
+        dinner; if it belongs in a QBR it isn&apos;t the one. I&apos;d go to the
+        customer team and ask for the coolest stories they&apos;ve heard from
+        reps in the last year. Some examples of what I&apos;d be looking for:
+      </p>
+      <ul className="mt-3 flex flex-col gap-2.5 pl-5 list-disc leading-relaxed text-muted">
+        <li>
+          A rep who was close to being managed out found that one of his
+          &ldquo;dead&rdquo; accounts had been active the whole time, emailing
+          from a subsidiary domain nobody had mapped. The agent surfaced it, he
+          saved the account, and made his number.
+        </li>
+        <li>
+          A rep and her champion became friends over three years of working
+          together. The champion changed jobs and Salesforce never updated. The
+          agent resolved his new email at a company they&apos;d never sold to,
+          she reached out, and closed a deal there. They&apos;re still friends.
+        </li>
+        <li>
+          A rep in another time zone woke up to a message from the agent: the
+          champion at a big account had changed jobs overnight, here&apos;s
+          where they went and who on the buying committee is still there. A
+          deal he didn&apos;t know existed by breakfast.
+        </li>
+      </ul>
+      <p className="mt-3 leading-relaxed text-muted">
+        How the video flows: open on the person and the problem in their words,
+        no logo, no b-roll. Middle is the moment the agent showed them something
+        they didn&apos;t know, shown as one screenshot of the actual message.
+        Close is what happened after in one sentence, and the Rox mark appears
+        only in the last few seconds.
+      </p>
+
+      <h4 className="mt-7 mb-2 text-[0.85rem] font-semibold tracking-tight">
+        Inspiration
+      </h4>
+      <p className="leading-relaxed text-muted">
+        The Bland AI Speech v3 launch is the model for this. They shipped a
+        voice model that topped a realism benchmark, and the tweet gave that one
+        line before handing the whole thing to James, a 49-year-old father who
+        lost his voice to a stroke, hearing himself again from five seconds of
+        old footage. It worked because nothing in it was about voice AI. It was
+        about a human moment enabled by the product. That&apos;s the exact shape
+        I want for Rox: the paper says the finding, the video shows one person it
+        happened to. Even if not for this paper specifically, I&apos;d love to do
+        something like this for a different research or product launch.
+      </p>
+      <div className="mt-4">
+        <RepoTweet id={tweetIdFromUrl(BLAND_TWEET)!} url={BLAND_TWEET} />
+      </div>
+
+      <p className="mt-6 leading-relaxed text-muted">
+        For general storytelling I&apos;d also draw from a few other standalone
+        launch videos and ads that put people before the product and do it in a
+        compelling way:
+      </p>
+      <div className="mt-4">
+        <TweetCarousel tweets={STORYTELLING_TWEETS} />
+      </div>
+
+      <h3 className="mt-10 mb-3 text-[0.95rem] font-semibold tracking-tight">
         Shriram Sridharan
       </h3>
       <DraftTweet draft={SHRIRAM_POST} />

@@ -662,3 +662,38 @@ html.dark .rox-thread-link::before {
   font-size: 0.78rem;
   color: var(--tweet-font-color-secondary);
 }
+
+/* Video placeholder — X's player geometry, standing in for unshot footage. */
+.rox-video {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+  aspect-ratio: 16 / 9;
+  border: var(--tweet-border);
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--tweet-font-color) 6%, transparent);
+}
+.rox-video-play {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--tweet-font-color) 12%, transparent);
+}
+.rox-video-play svg {
+  width: 24px;
+  height: 24px;
+  fill: var(--tweet-font-color-secondary);
+  margin-left: 2px;
+}
+.rox-video-spec {
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  color: var(--tweet-font-color-secondary);
+}
