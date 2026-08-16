@@ -161,6 +161,24 @@ export default async function RoxTrial() {
       </h3>
       <DraftTweet draft={SHRIRAM_POST} />
 
+      <h4 className="mt-7 mb-2 text-[0.85rem] font-semibold tracking-tight">
+        Approach
+      </h4>
+      <p className="leading-relaxed text-muted">
+        I modeled this tweet on how Ramp Labs publishes research: a short
+        first-person post above the card, then the paper rewritten as a native
+        Article rather than a link to a Google Doc. Ramp&apos;s
+        highest-performing research posts (385K and 413K views) use exactly this
+        format. An Article is one object, so it gets quote-tweeted as one thing;
+        X ranks it as native content instead of an external link; and the charts
+        render inline where people are already reading. It also lets Rox say the
+        technical stuff, the effort-vs-accuracy finding, the SPARQL-to-SQL
+        rewriting, the failure modes, without the company account having to.
+        Coming from the CTO, it reads as an engineer explaining a design
+        decision, which is who the AI-infra and knowledge-graph audience will
+        actually engage with.
+      </p>
+
       {ADDITIONAL.length > 0 && (
         <div className="mt-5 flex flex-col gap-4">
           {ADDITIONAL.map((draft, i) => (

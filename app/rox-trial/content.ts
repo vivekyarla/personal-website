@@ -140,7 +140,6 @@ export const STORYTELLING_TWEETS = [
 export const CASE_STUDY_POST: XDraft = {
   author: ROX,
   postedAt: at(60 * 24),
-  label: "@rox_ai · Ishan quote-tweets",
   text: `Salesforce said the account was dead. It wasn't.
 
 For eight months, one of [Customer]'s biggest accounts had been quietly emailing from a subsidiary domain nobody had mapped. The CRM saw silence. [Rep] was about to write it off in his QBR.
