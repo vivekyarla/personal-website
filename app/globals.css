@@ -411,3 +411,42 @@ html.dark .reminder-highlight {
   border-top: 1px solid var(--rule);
   margin: 3.5rem 0 1.75rem;
 }
+
+/* X's summary_large_image link preview. Lives inside TweetContainer, so it
+   inherits the --tweet-* vars and tracks light/dark with the embeds. */
+.rox-linkcard {
+  display: block;
+  margin-top: 0.75rem;
+  border: var(--tweet-border);
+  border-radius: 12px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.2s;
+}
+.rox-linkcard:hover {
+  background-color: var(--tweet-color-blue-secondary-hover);
+}
+.rox-linkcard img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.rox-linkcard-body {
+  display: block;
+  padding: 0.6rem 0.75rem;
+  border-top: var(--tweet-border);
+}
+.rox-linkcard-domain {
+  display: block;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  color: var(--tweet-font-color-secondary);
+}
+.rox-linkcard-title {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.8rem;
+  line-height: 1.3;
+  color: var(--tweet-font-color);
+}

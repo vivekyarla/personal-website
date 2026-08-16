@@ -67,16 +67,26 @@ const t = (text: string, media?: XMedia): XDraft => ({
 });
 
 export const THREAD: XDraft[] = [
-  t(
-    `A 27B open-weight model just beat GPT-5.5, Claude Opus 4.8 and Sonnet 5 at answering questions about our own CRM.
+  {
+    author: ROX,
+    postedAt: "",
+    text: `AI sales agents don't fail on hard questions. They fail on the ones the CRM never recorded.
 
-Same warehouse. Same questions. Same business context in the prompt.
+"When does the Verkada deal close?" Nails it. "Who's our champion at Groq?" It makes one up, confidently.
 
-8.9% → 99.9%.
+We ran 3,100 experiments across every frontier model to find out why. The answer? It isn't the model, and it isn't the amount of compute.
 
-The only thing that changed was how the data was represented.`,
-    FIG.accuracy
-  ),
+Swap raw Salesforce for a knowledge graph and accuracy jumps from 8.9% to 99.9%, with a 27B open-weight model getting there at a twentieth of the cost.
+
+Reasoning is downstream of representation. For revenue agents, the edge isn't a bigger model, it's a system of record for relationships. Every Rox agent runs on one.`,
+    card: {
+      url: "https://www.rox.com/research",
+      domain: "rox.com",
+      title:
+        "Empirical Analysis of Agentic Retrieval: Knowledge Graphs vs. Relational Schemas in CRM Workflows",
+      image: "/rox/card-rox-research.png",
+    },
+  },
 
   t(
     `3,100 runs. 31 configurations across 8 model families. 10 questions pulled from our own revenue workflows, graded by an independent judge against our production system of record.

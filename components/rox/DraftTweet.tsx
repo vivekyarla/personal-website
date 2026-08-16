@@ -1,4 +1,13 @@
-import { EmbeddedTweet } from "react-tweet";
+import {
+  enrichTweet,
+  TweetActions,
+  TweetBody,
+  TweetContainer,
+  TweetHeader,
+  TweetInfo,
+  TweetMedia,
+  TweetReplies,
+} from "react-tweet";
 import type { Tweet } from "react-tweet/api";
 
 /* Drafts are rendered through react-tweet's own EmbeddedTweet — the same
@@ -20,10 +29,20 @@ export type XMedia = {
   height: number;
 };
 
+/** The summary_large_image link preview X builds from a URL in the post. */
+export type XCard = {
+  url: string;
+  domain: string;
+  title: string;
+  image: string;
+};
+
 export type XDraft = {
   author: XAuthor;
   text: string;
   media?: XMedia;
+  /** A post gets either media or a link card — X never renders both. */
+  card?: XCard;
   /** ISO timestamp shown under the post, as X shows it. */
   postedAt: string;
   /** Small caption under the card, matching /repository's category labels. */
@@ -145,12 +164,49 @@ function MediaImg(props: React.ImgHTMLAttributes<HTMLImageElement>) {
   return <img {...props} src={src} />;
 }
 
+/* X's summary_large_image card. react-tweet has no renderer for these, so
+   it's ours — but it sits inside TweetContainer and styles itself off the
+   same --tweet-* vars, so it matches the card it lives in. */
+function LinkCard({ card }: { card: XCard }) {
+  return (
+    <a
+      className="rox-linkcard"
+      href={card.url}
+      target="_blank"
+      rel="noreferrer"
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={card.image} alt="" loading="lazy" />
+      <span className="rox-linkcard-body">
+        <span className="rox-linkcard-domain">{card.domain}</span>
+        <span className="rox-linkcard-title">{card.title}</span>
+      </span>
+    </a>
+  );
+}
+
 /* ── public ──────────────────────────────────────────────────────────── */
 
+/* Mirrors react-tweet's own EmbeddedTweet composition, with the link card
+   inserted where X puts it — after the text, in place of media. Composing
+   by hand rather than calling EmbeddedTweet is the only way to get an
+   element in there; every part around it is still react-tweet's. */
 export function DraftTweet({ draft }: { draft: XDraft }) {
+  const tweet = enrichTweet(buildTweet(draft));
+
   return (
     <div>
-      <EmbeddedTweet tweet={buildTweet(draft)} components={{ MediaImg }} />
+      <TweetContainer>
+        <TweetHeader tweet={tweet} />
+        <TweetBody tweet={tweet} />
+        {tweet.mediaDetails?.length ? (
+          <TweetMedia tweet={tweet} components={{ MediaImg }} />
+        ) : null}
+        {draft.card && <LinkCard card={draft.card} />}
+        <TweetInfo tweet={tweet} />
+        <TweetActions tweet={tweet} />
+        <TweetReplies tweet={tweet} />
+      </TweetContainer>
       {draft.label && (
         <div className="mt-0.5 text-left text-[0.68rem] uppercase tracking-wide text-muted/80">
           {draft.label}
