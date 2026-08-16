@@ -63,8 +63,8 @@ export default async function RoxTrial() {
         organic views.
       </p>
 
-      <p className="mt-4 leading-relaxed text-muted">
-        <strong className="font-semibold text-foreground">TLDR:</strong>{" "}
+      <p className="mt-4 leading-relaxed">
+        <strong className="font-semibold">TLDR:</strong>{" "}
         I drafted a main anchor thread that serves as the base for marketing the
         paper. To supplement, I&apos;d work on a case study video, post an X
         article via Shriram&apos;s account, and have Ishan quote-tweet the
@@ -72,7 +72,7 @@ export default async function RoxTrial() {
         bunch of partners, related voices, etc., that are listed in detail
         below.
       </p>
-      <p className="mt-3 leading-relaxed text-muted">
+      <p className="mt-3 leading-relaxed">
         The thesis generally focuses on human-centered content, technical
         writing native on X, and focused partner distribution. In my experience,
         executing on each of those three items across several research pieces in
