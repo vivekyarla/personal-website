@@ -1,4 +1,4 @@
-import type { XAuthor, XDraft, XMedia } from "@/components/rox/DraftTweet";
+import type { XAuthor, XDraft } from "@/components/rox/DraftTweet";
 
 export const ROX: XAuthor = {
   name: "Rox",
@@ -16,39 +16,6 @@ export const AVANIKA: XAuthor = {
   name: "Avanika Narayan",
   handle: "Avanika15",
   avatar: "/rox/av-avanika15.jpg",
-};
-
-const FIG: Record<string, XMedia> = {
-  accuracy: {
-    src: "/rox/fig-accuracy.png",
-    alt: "Accuracy by model, keyed vs unkeyed questions, relational vs graph",
-    width: 1400,
-    height: 520,
-  },
-  architecture: {
-    src: "/rox/fig-architecture.png",
-    alt: "Experiment architecture: one MCP client, two arms, one warehouse",
-    width: 1400,
-    height: 902,
-  },
-  grid: {
-    src: "/rox/fig-unkeyed-grid.png",
-    alt: "Per-question accuracy on unkeyed questions, SQL above the line and KG below",
-    width: 1400,
-    height: 683,
-  },
-  tokens: {
-    src: "/rox/fig-tokens.png",
-    alt: "Tokens per run, log scale, keyed and unkeyed questions",
-    width: 1400,
-    height: 523,
-  },
-  effort: {
-    src: "/rox/fig-effort.png",
-    alt: "Frontier model reasoning effort vs accuracy and token spend",
-    width: 1400,
-    height: 609,
-  },
 };
 
 /* Launch is Tuesday 18 Aug 2026, 9:05am PT. Each post in the thread lands a
@@ -105,6 +72,16 @@ More compute: GPT-5.5 at max effort went from 44K to 491K tokens per answer and 
 
 More context: both arms got the same business context, including instructions to resolve meetings by attendee domain. It didn't help. A prompt can say champions exist. It can't say who they are.`,
   },
+
+  {
+    author: ROX,
+    postedAt: "",
+    text: `3/ Once the relationships exist as data, the model stops mattering much. Every family we tested hit 98–100% on the graph, in about one query, at a twentieth of the tokens. Nothing on raw Salesforce broke 20%.
+
+That's what runs under every Rox agent: entity resolution done once, offline, stored as edges the model reads instead of infers.
+
+For revenue agents, this means the graph is the thing to build. Once you have it, the model is a choice: swap it, run an open one, spend less. The map is the moat.`,
+  },
 ].map((draft, i) => ({ ...draft, postedAt: at(i) }));
 
 /* ── Next steps ───────────────────────────────────────────────────────
@@ -125,61 +102,9 @@ export const NEXT_STEPS: NextStepGroup[] = [
 
 /* ── Additional posts ─────────────────────────────────────────────────── */
 
-export const ADDITIONAL: XDraft[] = [
-  {
-    author: ISHAN,
-    postedAt: at(5),
-    label: "Quote-tweeting @rox_ai · T+5 min",
-    text: `For two years the question we got most was why we bothered building a knowledge graph instead of pointing an LLM at Salesforce like everyone else.
-
-Here's the answer, measured on our own production CRM, against the best models that exist.
-
-The model was never the bottleneck.`,
-  },
-  {
-    author: AVANIKA,
-    postedAt: at(20),
-    label: "T+20 min",
-    text: `Some notes on how we ran this, because "vendor benchmarks own product" deserves scrutiny.
-
-We deliberately reused the setup from Sequeda, Allemang & Jacob (2023): virtualize an ontology over the relational schema, zero-shot, each arm gets its own native schema description. Same shape, new models.
-
-What I'd attack about our result, and what survived:`,
-  },
-  {
-    author: ROX,
-    postedAt: at(60 * 48),
-    label: "Day 3",
-    text: `Cloud Software Group gets mail at cloud.com.
-
-Point an agent at that domain and it returns 1,491 emails. The real number is 883.
-
-The extra 608 are jumpcloud.com and icloud.com.
-
-This one substring is the entire reason "just connect the CRM" doesn't work.`,
-    media: FIG.grid,
-  },
-  {
-    author: ROX,
-    postedAt: at(60 * 72),
-    label: "Day 4",
-    text: `We put the benchmark up: the 10 questions, the OWL vocabulary, the 18 edge types, and the grading rubric the judge used.
-
-If your agent gets more than 8.9% on the unkeyed five without a resolution layer, we want to see the trace.
-
-github.com/rox-ai/agentic-retrieval-bench`,
-    media: FIG.tokens,
-  },
-  {
-    author: AVANIKA,
-    postedAt: at(60 * 96),
-    label: "Day 5",
-    text: `Best critique we've had so far: you picked the questions and you wrote the ontology, so of course the graph wins.
-
-Fair. Two answers.
-
-The five keyed questions are the control, and the graph loses them — it costs 20% more tokens for the same answer.
-
-And the ontology is in the paper. Point it at your CRM and tell us we're wrong.`,
-  },
-];
+/* Empty for now. Add drafts here and they render as standalone cards, with
+   `label` showing as a caption underneath (e.g. "Day 3", "T+20 min"). The
+   ISHAN and AVANIKA authors above are ready if you want posts from them.
+   Paper figures are still in public/rox/ if you want to attach one:
+   fig-accuracy, fig-architecture, fig-unkeyed-grid, fig-tokens, fig-effort. */
+export const ADDITIONAL: XDraft[] = [];
