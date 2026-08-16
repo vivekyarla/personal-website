@@ -166,6 +166,22 @@ rox.com/research/agentic-retrieval
 Short version: we built the knowledge graph before we built the agents. This is why.`),
 ].map((draft, i) => ({ ...draft, postedAt: at(i) }));
 
+/* ── Next steps ───────────────────────────────────────────────────────
+   Scaffold only. Group headings are placeholders — rename, reorder, drop
+   or add them. A group with no items renders as a bare heading, so the
+   section fills in as items get written. */
+
+export type NextStepGroup = {
+  heading: string;
+  items: string[];
+};
+
+export const NEXT_STEPS: NextStepGroup[] = [
+  { heading: "Questions for the research team", items: [] },
+  { heading: "Questions for GTM", items: [] },
+  { heading: "What I'd want to run first", items: [] },
+];
+
 /* ── Additional posts ─────────────────────────────────────────────────── */
 
 export const ADDITIONAL: XDraft[] = [

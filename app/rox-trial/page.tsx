@@ -3,7 +3,7 @@ import Clock from "@/components/Clock";
 import RoxGate from "@/components/rox/RoxGate";
 import { DraftThread, DraftTweet } from "@/components/rox/DraftTweet";
 import { requireRoxAuth } from "@/lib/session";
-import { ADDITIONAL, THREAD } from "./content";
+import { ADDITIONAL, NEXT_STEPS, THREAD } from "./content";
 
 export const metadata = {
   title: "Rox · X strategy",
@@ -69,6 +69,26 @@ export default async function RoxTrial() {
       <hr className="rox-rule" />
 
       <H2 n="03">Inspiration &amp; approach</H2>
+
+      <hr className="rox-rule" />
+
+      <H2 n="04">Next steps</H2>
+      <div className="mt-5 flex flex-col gap-7">
+        {NEXT_STEPS.map((group) => (
+          <section key={group.heading}>
+            <h3 className="mb-2 text-[0.8rem] font-semibold tracking-tight">
+              {group.heading}
+            </h3>
+            {group.items.length > 0 && (
+              <ul className="flex flex-col gap-2.5 text-[0.82rem] leading-relaxed text-muted">
+                {group.items.map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
+              </ul>
+            )}
+          </section>
+        ))}
+      </div>
     </div>
   );
 }
