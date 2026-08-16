@@ -3,7 +3,7 @@ import Clock from "@/components/Clock";
 import RoxGate from "@/components/rox/RoxGate";
 import { DraftThread, DraftTweet } from "@/components/rox/DraftTweet";
 import { requireRoxAuth } from "@/lib/session";
-import { ADDITIONAL, NEXT_STEPS, THREAD } from "./content";
+import { ADDITIONAL, NEXT_STEPS, SHRIRAM_POST, THREAD } from "./content";
 
 export const metadata = {
   title: "Rox · X strategy",
@@ -71,11 +71,19 @@ export default async function RoxTrial() {
       <hr className="rox-rule" />
 
       <H2 n="02">Additional posts</H2>
-      <div className="mt-5 flex flex-col gap-4">
-        {ADDITIONAL.map((draft, i) => (
-          <DraftTweet draft={draft} key={i} />
-        ))}
-      </div>
+
+      <h3 className="mt-6 mb-3 text-[0.95rem] font-semibold tracking-tight">
+        Shriram Sridharan
+      </h3>
+      <DraftTweet draft={SHRIRAM_POST} />
+
+      {ADDITIONAL.length > 0 && (
+        <div className="mt-5 flex flex-col gap-4">
+          {ADDITIONAL.map((draft, i) => (
+            <DraftTweet draft={draft} key={i} />
+          ))}
+        </div>
+      )}
 
       <hr className="rox-rule" />
 

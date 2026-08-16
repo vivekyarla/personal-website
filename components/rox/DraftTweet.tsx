@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   enrichTweet,
   TweetActions,
@@ -37,12 +38,21 @@ export type XCard = {
   image: string;
 };
 
+/** An X Article attached to a post — the card X shows for long-form. */
+export type XArticle = {
+  href: string;
+  title: string;
+  cover: string;
+  meta: string;
+};
+
 export type XDraft = {
   author: XAuthor;
   text: string;
   media?: XMedia;
   /** A post gets either media or a link card — X never renders both. */
   card?: XCard;
+  article?: XArticle;
   /** ISO timestamp shown under the post, as X shows it. */
   postedAt: string;
   /** Small caption under the card, matching /repository's category labels. */
@@ -190,6 +200,22 @@ function LinkCard({ card }: { card: XCard }) {
   );
 }
 
+/* The card X shows when a post carries an Article. Internal link, so it
+   opens the article view in place rather than a new tab. */
+function ArticleCard({ article }: { article: XArticle }) {
+  return (
+    <Link className="rox-article-card" href={article.href}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={article.cover} alt="" loading="lazy" />
+      <span className="rox-article-card-body">
+        <span className="rox-article-card-kicker">Article</span>
+        <span className="rox-article-card-title">{article.title}</span>
+        <span className="rox-article-card-meta">{article.meta}</span>
+      </span>
+    </Link>
+  );
+}
+
 /* ── public ──────────────────────────────────────────────────────────── */
 
 /* Mirrors react-tweet's own EmbeddedTweet composition, with the link card
@@ -219,6 +245,7 @@ export function DraftTweet({ draft }: { draft: XDraft }) {
           <TweetMedia tweet={tweet} components={{ MediaImg }} />
         ) : null}
         {draft.card && <LinkCard card={draft.card} />}
+        {draft.article && <ArticleCard article={draft.article} />}
         <TweetInfo tweet={tweet} />
         <TweetActions tweet={tweet} />
         <TweetReplies tweet={tweet} />

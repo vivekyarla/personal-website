@@ -18,6 +18,12 @@ export const AVANIKA: XAuthor = {
   avatar: "/rox/av-avanika15.jpg",
 };
 
+export const SHRIRAM: XAuthor = {
+  name: "Shriram Sridharan",
+  handle: "shriram_s",
+  avatar: "/rox/av-shriram_s.jpg",
+};
+
 /* Launch is Tuesday 18 Aug 2026, 9:05am PT. Each post in the thread lands a
    minute after the one before it, the way a real thread posts. */
 const LAUNCH = Date.UTC(2026, 7, 18, 16, 5);
@@ -102,9 +108,21 @@ export const NEXT_STEPS: NextStepGroup[] = [
 
 /* ── Additional posts ─────────────────────────────────────────────────── */
 
-/* Empty for now. Add drafts here and they render as standalone cards, with
-   `label` showing as a caption underneath (e.g. "Day 3", "T+20 min"). The
-   ISHAN and AVANIKA authors above are ready if you want posts from them.
-   Paper figures are still in public/rox/ if you want to attach one:
-   fig-accuracy, fig-architecture, fig-unkeyed-grid, fig-tokens, fig-effort. */
+/* Add drafts here and they render as standalone cards, with `label` showing
+   as a caption underneath (e.g. "Day 3", "T+20 min"). The ISHAN and AVANIKA
+   authors above are ready if you want posts from them. Paper figures are
+   still in public/rox/ if you want to attach one: fig-accuracy,
+   fig-architecture, fig-unkeyed-grid, fig-tokens, fig-effort. */
 export const ADDITIONAL: XDraft[] = [];
+
+export const SHRIRAM_POST: XDraft = {
+  author: SHRIRAM,
+  postedAt: at(35),
+  text: `Rox agents don't read the CRM. They read a knowledge graph on top of it, with champions, domains, and subsidiaries resolved before any model is involved. We benchmarked against raw Salesforce across 8 model families and 3,100 runs. A 27B open-weight model on the graph beats GPT-5.5 on the tables. Reasoning effort didn't close the gap. Here is the run-down from the paper:`,
+  article: {
+    href: "/rox-trial/article",
+    title: "Why revenue agents need a knowledge graph, not a bigger model",
+    cover: "/rox/article/fig1_architecture.png",
+    meta: "shriram_s · 6 min read",
+  },
+};

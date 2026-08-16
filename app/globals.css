@@ -472,3 +472,193 @@ html.dark .reminder-highlight {
 html.dark .rox-thread-link::before {
   background: rgb(66, 83, 100);
 }
+
+/* ── X Article reading view ───────────────────────────────────────────
+   Mirrors how X renders a long-form article: sticky back bar, cover
+   image, oversized title, author row, then one reading column. Colours
+   come from the .rox-x tokens so it matches the embeds and both themes. */
+.x-article-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin: 0 -1.5rem;
+  padding: 0.75rem 1.5rem;
+  background: color-mix(in oklab, var(--background) 85%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--rule);
+}
+.x-article-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.25rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--foreground);
+  text-decoration: none;
+}
+.x-article-back svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+.x-article {
+  padding-top: 1.5rem;
+}
+.x-article-cover {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 14px;
+  border: 1px solid var(--x-border);
+  background: #fff;
+}
+.x-article-title {
+  margin: 1.5rem 0 0;
+  font-size: clamp(1.75rem, 5vw, 2.15rem);
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--x-fg);
+}
+.x-article-byline {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 1.4rem 0 1.6rem;
+  padding-bottom: 1.4rem;
+  border-bottom: 1px solid var(--x-border);
+}
+.x-article-byline img {
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+}
+.x-article-author {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--x-fg);
+}
+.x-article-meta {
+  font-size: 0.82rem;
+  color: var(--x-fg2);
+}
+
+/* Body copy — X sets long-form noticeably larger than timeline text. */
+.x-article-body {
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: var(--x-fg);
+}
+.x-article-body p {
+  margin: 0 0 1.25rem;
+}
+.x-article-body h2 {
+  margin: 2.25rem 0 0.9rem;
+  font-size: 1.3rem;
+  line-height: 1.25;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.x-article-body ul {
+  margin: 0 0 1.25rem;
+  padding-left: 1.3rem;
+  list-style: disc;
+}
+.x-article-body li {
+  margin: 0.4rem 0;
+}
+.x-article-body a {
+  color: var(--x-blue);
+  text-decoration: none;
+}
+.x-article-body a:hover {
+  text-decoration: underline;
+}
+.x-article-body img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 1.75rem 0 0.6rem;
+  border-radius: 14px;
+  border: 1px solid var(--x-border);
+  background: #fff;
+}
+/* marked wraps a lone image in a paragraph; the alt text becomes the caption */
+.x-article-body p:has(> img) {
+  margin-bottom: 1.9rem;
+}
+.x-article-body p > img + em,
+.x-article-body figcaption {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--x-fg2);
+}
+.x-article-body table {
+  width: 100%;
+  margin: 0 0 1.6rem;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+.x-article-body th,
+.x-article-body td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--x-border);
+}
+.x-article-body th {
+  font-weight: 700;
+  background: color-mix(in oklab, var(--x-fg) 5%, transparent);
+}
+.x-article-table-wrap {
+  overflow-x: auto;
+}
+
+/* ── Article preview card inside a post ──────────────────────────────── */
+.rox-article-card {
+  display: block;
+  margin-top: 0.75rem;
+  border: var(--tweet-border);
+  border-radius: 12px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+}
+.rox-article-card:hover {
+  background-color: var(--tweet-color-blue-secondary-hover);
+}
+.rox-article-card img {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #fff;
+}
+.rox-article-card-body {
+  display: block;
+  padding: 0.7rem 0.85rem;
+  border-top: var(--tweet-border);
+}
+.rox-article-card-kicker {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--tweet-font-color-secondary);
+}
+.rox-article-card-title {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--tweet-font-color);
+}
+.rox-article-card-meta {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.78rem;
+  color: var(--tweet-font-color-secondary);
+}
