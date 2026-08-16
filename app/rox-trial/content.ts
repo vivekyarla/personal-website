@@ -81,12 +81,11 @@ Swap raw Salesforce for a knowledge graph and accuracy jumps from 8.9% to 99.9%,
 Reasoning is downstream of representation. For revenue agents, the edge isn't a bigger model, it's a system of record for relationships. Every Rox agent runs on one.
 
 Full paper below.`,
-    card: {
-      url: "https://www.rox.com/research",
-      domain: "rox.com",
-      title:
-        "Empirical Analysis of Agentic Retrieval: Knowledge Graphs vs. Relational Schemas in CRM Workflows",
-      image: "/rox/card-rox-research.png",
+    media: {
+      src: "/rox/fig-11x-accuracy.png",
+      alt: "11x more accurate on the questions that matter — unkeyed accuracy per model, raw Salesforce 8.9% average vs knowledge graph 99.9% average",
+      width: 1512,
+      height: 1004,
     },
   },
 
