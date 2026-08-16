@@ -711,3 +711,73 @@ html.dark .rox-thread-link::before {
 .rox-carousel-center .tweet-spot-item:last-child {
   padding-right: 0;
 }
+
+/* ── Launch timeline ─────────────────────────────────────────────────
+   Hairline rail with a node per event, in the same register as the rest
+   of the site: no fills, no chrome, the line doing the work. Pairs with
+   .blur-group/.blur-item so hovering one entry dims the others. */
+.rox-timeline {
+  margin: 0.85rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.rox-timeline-item {
+  display: grid;
+  grid-template-columns: 15px minmax(0, 1fr);
+  gap: 0.85rem;
+  padding: 0 0 1.5rem;
+}
+.rox-timeline-item:last-child {
+  padding-bottom: 0;
+}
+.rox-timeline-rail {
+  position: relative;
+  display: block;
+}
+.rox-timeline-dot {
+  position: absolute;
+  top: 4px;
+  left: 3px;
+  width: 9px;
+  height: 9px;
+  border-radius: 9999px;
+  background: var(--background);
+  border: 1.5px solid var(--muted);
+  box-sizing: border-box;
+}
+/* Launch day reads as the origin point. */
+.rox-timeline-item:first-child .rox-timeline-dot {
+  background: var(--foreground);
+  border-color: var(--foreground);
+}
+.rox-timeline-line {
+  position: absolute;
+  top: 17px;
+  bottom: -1.5rem;
+  left: 7px;
+  width: 1px;
+  background: var(--rule);
+}
+.rox-timeline-item:last-child .rox-timeline-line {
+  display: none;
+}
+.rox-timeline-day {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  line-height: 1.2;
+}
+.rox-timeline-title {
+  margin-top: 3px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.rox-timeline-body {
+  margin-top: 5px;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--muted);
+}

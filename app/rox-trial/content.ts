@@ -91,6 +91,47 @@ For revenue agents, this means the graph is the thing to build. Once you have it
   },
 ].map((draft, i) => ({ ...draft, postedAt: at(i) }));
 
+/* ── Launch timeline ──────────────────────────────────────────────────── */
+
+export type TimelineEntry = {
+  day: string;
+  title: string;
+  body: string;
+};
+
+export const TIMELINE: TimelineEntry[] = [
+  {
+    day: "Day 0",
+    title: "Anchor thread, @rox_ai",
+    body: "Anchor with the dumbbell chart, then the three replies. Goes first because everything else quote-tweets or builds on it. Midweek launch, so it has the full week of conversation ahead of it.",
+  },
+  {
+    day: "Day 0",
+    title: "Ishan QT",
+    body: "One line quote-tweeting the anchor, within the first hour. A founder QT gets the anchor into his followers' feeds while it's still ranking, and it's the cheapest reach multiplier available.",
+  },
+  {
+    day: "Day 0",
+    title: "Shriram X Article",
+    body: "Short post above the card, full Article underneath, later the same day. Catches the people who saw the finding and want the engineering, and gives the technical audience their own native object to share.",
+  },
+  {
+    day: "Day 0–1",
+    title: "Authors' and engineers' personal posts",
+    body: "Organic one-liners from the people who ran it, spread across the first 24 hours rather than all at once, so the paper keeps surfacing in different feeds.",
+  },
+  {
+    day: "Day 1–2",
+    title: "Replies and QTs",
+    body: "Shriram on technical, Ishan on strategy, company account on facts. Most of a research post's reach happens in the first 48 hours of conversation.",
+  },
+  {
+    day: "Day 3–5",
+    title: "Case study video, @rox_ai, Ishan QT",
+    body: "After the paper has landed, so the human story reads as proof of a finding people have already seen and not as a marketing clip that happens to be near a paper.",
+  },
+];
+
 /* ── Additional posts ─────────────────────────────────────────────────── */
 
 /* Add drafts here and they render as standalone cards, with `label` showing

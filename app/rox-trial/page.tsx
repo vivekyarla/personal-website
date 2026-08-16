@@ -14,6 +14,7 @@ import {
   SHRIRAM_POST,
   STORYTELLING_TWEETS,
   THREAD,
+  TIMELINE,
 } from "./content";
 
 export const metadata = {
@@ -207,7 +208,26 @@ export default async function RoxTrial() {
 
       <H2 n="03">Distribution</H2>
 
-      <h3 className="mt-6 mb-2 text-[0.95rem] font-semibold tracking-tight">
+      <h3 className="mt-6 mb-1 text-[0.95rem] font-semibold tracking-tight">
+        Timeline
+      </h3>
+      <ol className="rox-timeline blur-group">
+        {TIMELINE.map((entry, i) => (
+          <li className="rox-timeline-item blur-item" key={i}>
+            <span className="rox-timeline-rail" aria-hidden>
+              <span className="rox-timeline-dot" />
+              <span className="rox-timeline-line" />
+            </span>
+            <div>
+              <div className="rox-timeline-day">{entry.day}</div>
+              <div className="rox-timeline-title">{entry.title}</div>
+              <p className="rox-timeline-body">{entry.body}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+
+      <h3 className="mt-8 mb-2 text-[0.95rem] font-semibold tracking-tight">
         Before launch
       </h3>
       <ul className="flex flex-col gap-2.5 pl-5 list-disc leading-relaxed text-muted">
