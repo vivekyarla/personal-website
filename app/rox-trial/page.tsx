@@ -152,7 +152,7 @@ export default async function RoxTrial() {
         launch videos and ads that put people before the product and do it in a
         compelling way:
       </p>
-      <div className="mt-4">
+      <div className="mt-4 rox-carousel-center">
         <TweetCarousel tweets={STORYTELLING_TWEETS} />
       </div>
 

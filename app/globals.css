@@ -697,3 +697,17 @@ html.dark .rox-thread-link::before {
   letter-spacing: 0.02em;
   color: var(--tweet-font-color-secondary);
 }
+
+/* The /rox-trial reference carousel holds only two cards, so they'd sit
+   left-aligned in a full-bleed track. `safe center` centres them when they
+   fit and reverts to start-alignment once they overflow, which keeps the
+   first card reachable on narrow screens. Scoped so /repository is
+   unaffected — its carousels are long enough to always overflow. */
+.rox-carousel-center .tweet-spot-group {
+  justify-content: safe center;
+}
+/* Items carry a trailing gutter; on the last one it would throw the
+   centring off by half its width. */
+.rox-carousel-center .tweet-spot-item:last-child {
+  padding-right: 0;
+}
