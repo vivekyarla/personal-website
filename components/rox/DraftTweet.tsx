@@ -192,7 +192,18 @@ function LinkCard({ card }: { card: XCard }) {
    by hand rather than calling EmbeddedTweet is the only way to get an
    element in there; every part around it is still react-tweet's. */
 export function DraftTweet({ draft }: { draft: XDraft }) {
-  const tweet = enrichTweet(buildTweet(draft));
+  // A draft has no status URL, so enrichTweet derives a dead /status/0 for
+  // every link in the card. Point them at the author's account instead —
+  // that covers the avatar, display name, @handle and the X logo in the
+  // header, plus the timestamp, media and "Read more on X" below it.
+  const profileUrl = `https://x.com/${draft.author.handle}`;
+  const enriched = enrichTweet(buildTweet(draft));
+  const tweet = {
+    ...enriched,
+    url: profileUrl,
+    like_url: profileUrl,
+    reply_url: profileUrl,
+  };
 
   return (
     <div>
