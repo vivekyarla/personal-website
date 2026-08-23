@@ -30,14 +30,18 @@ export function addDays(iso: string, n: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+const HISTORY_DAYS = 14;
+
 // The task window: today, tomorrow, and the remaining days of the current
 // week (weeks run Sunday–Saturday, matching the habit grid). `week` may be
-// empty (e.g. when today is Friday or Saturday).
+// empty (e.g. when today is Friday or Saturday). `historyStart` bounds the
+// past-days history view.
 export function taskWindow(): {
   today: string;
   tomorrow: string;
   week: string[];
   weekEnd: string;
+  historyStart: string;
 } {
   const today = ptToday();
   const tomorrow = addDays(today, 1);
@@ -50,17 +54,20 @@ export function taskWindow(): {
   // The visible window extends at least through tomorrow even when tomorrow
   // rolls into next week (today = Saturday).
   const weekEnd = week.length > 0 ? week[week.length - 1] : tomorrow;
-  return { today, tomorrow, week, weekEnd };
+  return { today, tomorrow, week, weekEnd, historyStart: addDays(today, -HISTORY_DAYS) };
 }
 
-// All tasks visible on the board: everything due in the window, plus overdue
-// tasks that are still open (they surface under Today).
-export async function fetchTasks(weekEnd: string, today: string): Promise<Task[]> {
+// All tasks on the board: the visible window plus the trailing history days.
+// Tasks never roll over — each day keeps its own record.
+export async function fetchTasks(
+  historyStart: string,
+  weekEnd: string
+): Promise<Task[]> {
   const { data, error } = await supabaseAdmin
     .from("tasks")
     .select("*")
+    .gte("due_date", historyStart)
     .lte("due_date", weekEnd)
-    .or(`done.eq.false,due_date.gte.${today}`)
     .order("due_date", { ascending: true })
     .order("position", { ascending: true })
     .order("created_at", { ascending: true });

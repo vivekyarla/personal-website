@@ -17,6 +17,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import Collapsible from "@/components/Collapsible";
 
 export type Task = {
   id: string;
@@ -42,6 +43,7 @@ type Props = {
   today: string;
   tomorrow: string;
   week: string[];
+  historyDates: string[]; // past days that have tasks, newest first
   calendarConfigured: boolean;
 };
 
@@ -57,6 +59,7 @@ export default function TasksBoard({
   today,
   tomorrow,
   week,
+  historyDates,
   calendarConfigured,
 }: Props) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
@@ -68,13 +71,10 @@ export default function TasksBoard({
     return [...s].sort();
   }, [tasks]);
 
+  // Strict day buckets — tasks never roll over between days.
   function bucket(date: string): Task[] {
     return tasks
-      .filter((t) =>
-        date === today
-          ? t.due_date === today || (t.due_date < today && !t.done)
-          : t.due_date === date
-      )
+      .filter((t) => t.due_date === date)
       .sort((a, b) => a.position - b.position || a.id.localeCompare(b.id));
   }
 
@@ -200,6 +200,45 @@ export default function TasksBoard({
           onReorder={reorder}
           onRenameEvent={renameEvent}
         />
+      )}
+
+      {historyDates.length > 0 && (
+        <Collapsible title="History">
+          <div className="flex flex-col gap-5 pt-1">
+            {historyDates.map((d) => {
+              const list = bucket(d);
+              if (list.length === 0) return null;
+              const doneCount = list.filter((t) => t.done).length;
+              return (
+                <div key={d}>
+                  <div className="flex items-baseline justify-between mb-1">
+                    <span className="text-[0.68rem] uppercase tracking-wide text-muted/80">
+                      {fmtDay(d, {
+                        weekday: "long",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                    <span className="text-[0.68rem] text-muted/60 tabular-nums">
+                      {doneCount}/{list.length}
+                    </span>
+                  </div>
+                  <DayTaskList
+                    date={d}
+                    today={today}
+                    bucket={bucket}
+                    knownTags={knownTags}
+                    onToggle={toggle}
+                    onDelete={del}
+                    onAdd={add}
+                    onReorder={reorder}
+                    allowAdd={false}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </Collapsible>
       )}
     </div>
   );
@@ -331,8 +370,9 @@ function DayTaskList(props: {
   onDelete: (id: string) => void;
   onAdd: (due: string, title: string, tag: string) => Promise<void>;
   onReorder: (date: string, activeId: string, overId: string) => void;
+  allowAdd?: boolean;
 }) {
-  const { date, today } = props;
+  const { date, allowAdd = true } = props;
   const list = props.bucket(date);
 
   const sensors = useSensors(
@@ -357,7 +397,6 @@ function DayTaskList(props: {
                 <TaskRow
                   key={t.id}
                   task={t}
-                  overdue={t.due_date < today && !t.done}
                   onToggle={() => props.onToggle(t.id)}
                   onDelete={() => props.onDelete(t.id)}
                 />
@@ -366,11 +405,9 @@ function DayTaskList(props: {
           </SortableContext>
         </DndContext>
       )}
-      <AddTaskRow
-        due={date}
-        knownTags={props.knownTags}
-        onAdd={props.onAdd}
-      />
+      {allowAdd && (
+        <AddTaskRow due={date} knownTags={props.knownTags} onAdd={props.onAdd} />
+      )}
     </div>
   );
 }
@@ -379,12 +416,10 @@ function DayTaskList(props: {
 
 function TaskRow({
   task: t,
-  overdue,
   onToggle,
   onDelete,
 }: {
   task: Task;
-  overdue: boolean;
   onToggle: () => void;
   onDelete: () => void;
 }) {
@@ -434,11 +469,9 @@ function TaskRow({
       </button>
       <div className="min-w-0 flex-1 leading-snug">
         <span className="task-title text-[0.9rem]">{t.title}</span>
-        {(t.tag || overdue) && (
+        {t.tag && (
           <div className="mt-0.5 text-[0.68rem] uppercase tracking-wide text-muted/80">
             {t.tag}
-            {t.tag && overdue && <span className="mx-1.5 normal-case">·</span>}
-            {overdue && <span>overdue</span>}
           </div>
         )}
       </div>

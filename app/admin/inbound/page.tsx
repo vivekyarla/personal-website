@@ -12,16 +12,7 @@ export default async function AdminInbound() {
   const items = await fetchInbound();
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <Link
-          href="/admin"
-          className="text-xs text-muted/70 hover:text-foreground transition-colors"
-        >
-          ← admin
-        </Link>
-      </div>
-
+    <div className="waterfall flex flex-col gap-6">
       <header className="flex items-baseline justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">Inbound</h1>
         <Link

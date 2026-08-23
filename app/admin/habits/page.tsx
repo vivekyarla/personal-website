@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/session";
 import {
@@ -25,16 +24,7 @@ export default async function AdminHabits() {
   ]);
 
   return (
-    <div className="flex flex-col gap-10">
-      <div>
-        <Link
-          href="/admin"
-          className="text-xs text-muted/70 hover:text-foreground transition-colors"
-        >
-          ← admin
-        </Link>
-      </div>
-
+    <div className="waterfall flex flex-col gap-10">
       <HabitTracker
         habits={habits}
         entries={entries}

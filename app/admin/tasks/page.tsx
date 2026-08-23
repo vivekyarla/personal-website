@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/session";
 import { fetchTasks, taskWindow } from "@/lib/tasks";
@@ -11,25 +10,22 @@ export const dynamic = "force-dynamic";
 export default async function AdminTasks() {
   if (!(await requireAuth())) redirect("/admin/login");
 
-  const { today, tomorrow, week, weekEnd } = taskWindow();
+  const { today, tomorrow, week, weekEnd, historyStart } = taskWindow();
   const [tasks, events] = await Promise.all([
-    fetchTasks(weekEnd, today),
+    fetchTasks(historyStart, weekEnd),
     fetchCalendarEvents([today, tomorrow]),
   ]);
+
+  const historyDates = [
+    ...new Set(tasks.filter((t) => t.due_date < today).map((t) => t.due_date)),
+  ]
+    .sort()
+    .reverse();
 
   const hasCalendar = calendarConfigured();
 
   return (
-    <div className="flex flex-col gap-8">
-      <div>
-        <Link
-          href="/admin"
-          className="text-xs text-muted/70 hover:text-foreground transition-colors"
-        >
-          ← admin
-        </Link>
-      </div>
-
+    <div className="waterfall flex flex-col gap-8">
       <h1 className="text-2xl font-semibold tracking-tight">Tasks</h1>
 
       {!hasCalendar && (
@@ -45,6 +41,7 @@ export default async function AdminTasks() {
         today={today}
         tomorrow={tomorrow}
         week={week}
+        historyDates={historyDates}
         calendarConfigured={hasCalendar}
       />
     </div>
