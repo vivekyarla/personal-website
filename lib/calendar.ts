@@ -63,14 +63,18 @@ export async function fetchCalendarEvents(
 
   const events: CalEvent[] = [];
 
-  for (const url of urls) {
-    let parsed: Awaited<ReturnType<typeof ical.async.fromURL>>;
-    try {
-      parsed = await ical.async.fromURL(url);
-    } catch (err) {
-      console.error("[calendar] fetch failed:", err);
-      continue;
-    }
+  // Fetch all calendars in parallel; a failing feed never blocks the rest.
+  const parsedAll = await Promise.all(
+    urls.map((url) =>
+      ical.async.fromURL(url).catch((err) => {
+        console.error("[calendar] fetch failed:", err);
+        return null;
+      })
+    )
+  );
+
+  for (const parsed of parsedAll) {
+    if (!parsed) continue;
     for (const ev of Object.values(parsed)) {
       try {
         if (!ev || ev.type !== "VEVENT") continue;
