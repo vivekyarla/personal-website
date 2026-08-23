@@ -95,6 +95,43 @@ body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* Task cross-off: strikethrough draws left→right on check, retracts on
+   uncheck; text settles to muted. */
+.task-title {
+  position: relative;
+  transition: color 0.3s ease;
+}
+.task-title::after {
+  content: "";
+  position: absolute;
+  left: -0.08em;
+  right: -0.08em;
+  top: 55%;
+  height: 1.5px;
+  background: var(--muted);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.task-done .task-title {
+  color: var(--muted);
+}
+.task-done .task-title::after {
+  transform: scaleX(1);
+}
+@keyframes check-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+.task-check-on {
+  animation: check-pop 0.3s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .task-title::after { transition: none; }
+  .task-check-on { animation: none; }
+}
+
 /* Highlighter sweep for inbound quotes — width hugs the text on each line */
 .quote-line .quote-text {
   background-image: linear-gradient(#f7e58a, #f7e58a);

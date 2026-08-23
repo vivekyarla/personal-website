@@ -18,6 +18,18 @@ export default async function AdminHome() {
 
       <section>
         <h2 className="text-base font-semibold tracking-tight mb-2">
+          Tasks
+        </h2>
+        <Link
+          href="/admin/tasks"
+          className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
+        >
+          Open tasks →
+        </Link>
+      </section>
+
+      <section>
+        <h2 className="text-base font-semibold tracking-tight mb-2">
           Inbound
         </h2>
         <ul className="space-y-1.5">
