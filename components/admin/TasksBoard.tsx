@@ -8,7 +8,10 @@ import {
   TouchSensor,
   useSensor,
   useSensors,
+  useDroppable,
   type DragEndEvent,
+  type DragOverEvent,
+  type DragStartEvent,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -54,6 +57,9 @@ function fmtDay(iso: string, opts: Intl.DateTimeFormatOptions): string {
   );
 }
 
+const byPos = (a: Task, b: Task) =>
+  a.position - b.position || a.id.localeCompare(b.id);
+
 export default function TasksBoard({
   initialTasks,
   initialEvents,
@@ -67,6 +73,12 @@ export default function TasksBoard({
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [events, setEvents] = useState(initialEvents);
   const [newTaskSignal, setNewTaskSignal] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const tasksRef = useRef(tasks);
+  tasksRef.current = tasks;
+  const dragOrigin = useRef<{ id: string; date: string; pos: number } | null>(
+    null
+  );
 
   const knownTags = useMemo(() => {
     const s = new Set<string>(allTags);
@@ -98,9 +110,7 @@ export default function TasksBoard({
 
   // Strict day buckets — tasks never roll over between days.
   function bucket(date: string): Task[] {
-    return tasks
-      .filter((t) => t.due_date === date)
-      .sort((a, b) => a.position - b.position || a.id.localeCompare(b.id));
+    return tasks.filter((t) => t.due_date === date).sort(byPos);
   }
 
   async function toggle(id: string) {
@@ -113,7 +123,9 @@ export default function TasksBoard({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ done }),
     }).catch(() =>
-      setTasks((prev) => prev.map((x) => (x.id === id ? { ...x, done: !done } : x)))
+      setTasks((prev) =>
+        prev.map((x) => (x.id === id ? { ...x, done: !done } : x))
+      )
     );
   }
 
@@ -139,23 +151,6 @@ export default function TasksBoard({
     }
   }
 
-  async function reorder(date: string, activeId: string, overId: string) {
-    const list = bucket(date);
-    const oldIndex = list.findIndex((t) => t.id === activeId);
-    const newIndex = list.findIndex((t) => t.id === overId);
-    if (oldIndex < 0 || newIndex < 0) return;
-    const next = arrayMove(list, oldIndex, newIndex);
-    const posById = new Map(next.map((t, i) => [t.id, i]));
-    setTasks((prev) =>
-      prev.map((t) => (posById.has(t.id) ? { ...t, position: posById.get(t.id)! } : t))
-    );
-    await fetch("/api/tasks/reorder", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ids: next.map((t) => t.id) }),
-    });
-  }
-
   async function renameEvent(uid: string, dateKey: string, title: string) {
     const list = events[dateKey] ?? [];
     const ev = list.find((e) => e.uid === uid);
@@ -177,56 +172,187 @@ export default function TasksBoard({
     });
   }
 
+  /* ---- Cross-section drag & drop (one context over all main sections) ---- */
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 6 } })
+  );
+
+  function overDateOf(overId: string): string | null {
+    if (overId.startsWith("day:")) return overId.slice(4);
+    return tasksRef.current.find((x) => x.id === overId)?.due_date ?? null;
+  }
+
+  function onDragStart(e: DragStartEvent) {
+    const t = tasksRef.current.find((x) => x.id === String(e.active.id));
+    if (t) dragOrigin.current = { id: t.id, date: t.due_date, pos: t.position };
+    setDragging(true);
+  }
+
+  // While hovering over another day, move the task there optimistically so
+  // the lists make room (fractional positions; normalized on drop).
+  function onDragOver(e: DragOverEvent) {
+    const { active, over } = e;
+    if (!over) return;
+    const activeId = String(active.id);
+    const overId = String(over.id);
+    if (activeId === overId) return;
+    setTasks((prev) => {
+      const t = prev.find((x) => x.id === activeId);
+      if (!t) return prev;
+      const overDate = overId.startsWith("day:")
+        ? overId.slice(4)
+        : prev.find((x) => x.id === overId)?.due_date;
+      if (!overDate || t.due_date === overDate) return prev;
+      let pos: number;
+      if (overId.startsWith("day:")) {
+        const others = prev.filter(
+          (x) => x.due_date === overDate && x.id !== activeId
+        );
+        pos = others.length
+          ? Math.max(...others.map((x) => x.position)) + 1
+          : 0;
+      } else {
+        pos = (prev.find((x) => x.id === overId)?.position ?? 0) - 0.5;
+      }
+      return prev.map((x) =>
+        x.id === activeId ? { ...x, due_date: overDate, position: pos } : x
+      );
+    });
+  }
+
+  function onDragEnd(e: DragEndEvent) {
+    const { active, over } = e;
+    const origin = dragOrigin.current;
+    dragOrigin.current = null;
+    setDragging(false);
+    const activeId = String(active.id);
+
+    if (!over || !origin) {
+      // Cancelled / dropped outside — put it back where it started.
+      if (origin) {
+        setTasks((prev) =>
+          prev.map((x) =>
+            x.id === activeId
+              ? { ...x, due_date: origin.date, position: origin.pos }
+              : x
+          )
+        );
+      }
+      return;
+    }
+
+    const cur = tasksRef.current;
+    const t = cur.find((x) => x.id === activeId);
+    if (!t) return;
+    const targetDate = t.due_date; // set by onDragOver (or unchanged)
+    const overId = String(over.id);
+
+    let targetList = cur.filter((x) => x.due_date === targetDate).sort(byPos);
+    if (!overId.startsWith("day:") && overId !== activeId) {
+      const o = cur.find((x) => x.id === overId);
+      if (o && o.due_date === targetDate) {
+        const oldIndex = targetList.findIndex((x) => x.id === activeId);
+        const newIndex = targetList.findIndex((x) => x.id === overId);
+        if (oldIndex >= 0 && newIndex >= 0) {
+          targetList = arrayMove(targetList, oldIndex, newIndex);
+        }
+      }
+    }
+
+    // Normalize positions in target (and source if the task changed days).
+    const posById = new Map(targetList.map((x, i) => [x.id, i]));
+    let sourceIds: string[] = [];
+    const dateChanged = origin.date !== targetDate;
+    if (dateChanged) {
+      const sourceList = cur
+        .filter((x) => x.due_date === origin.date && x.id !== activeId)
+        .sort(byPos);
+      sourceList.forEach((x, i) => posById.set(x.id, i));
+      sourceIds = sourceList.map((x) => x.id);
+    }
+    setTasks((prev) =>
+      prev.map((x) =>
+        posById.has(x.id) ? { ...x, position: posById.get(x.id)! } : x
+      )
+    );
+
+    // Persist
+    if (dateChanged) {
+      fetch(`/api/tasks/${activeId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ due_date: targetDate }),
+      });
+    }
+    fetch("/api/tasks/reorder", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: targetList.map((x) => x.id) }),
+    });
+    if (sourceIds.length) {
+      fetch("/api/tasks/reorder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: sourceIds }),
+      });
+    }
+  }
+
+  const shared = {
+    bucket,
+    knownTags,
+    dragging,
+    onToggle: toggle,
+    onDelete: del,
+    onAdd: add,
+  };
+
   return (
     <div className="flex flex-col gap-10">
-      <DaySection
-        label="Today"
-        sub={fmtDay(today, { weekday: "long", month: "long", day: "numeric" })}
-        dates={[today]}
-        events={events[today] ?? []}
-        focusSignal={newTaskSignal}
-        showCalendar={calendarConfigured}
-        bucket={bucket}
-        today={today}
-        knownTags={knownTags}
-        onToggle={toggle}
-        onDelete={del}
-        onAdd={add}
-        onReorder={reorder}
-        onRenameEvent={renameEvent}
-      />
-      <DaySection
-        label="Tomorrow"
-        sub={fmtDay(tomorrow, { weekday: "long", month: "long", day: "numeric" })}
-        dates={[tomorrow]}
-        events={events[tomorrow] ?? []}
-        showCalendar={calendarConfigured}
-        bucket={bucket}
-        today={today}
-        knownTags={knownTags}
-        onToggle={toggle}
-        onDelete={del}
-        onAdd={add}
-        onReorder={reorder}
-        onRenameEvent={renameEvent}
-      />
-      {week.length > 0 && (
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={onDragStart}
+        onDragOver={onDragOver}
+        onDragEnd={onDragEnd}
+      >
         <DaySection
-          label="This week"
-          sub={`${fmtDay(week[0], { weekday: "short", month: "short", day: "numeric" })} – ${fmtDay(week[week.length - 1], { weekday: "short", month: "short", day: "numeric" })}`}
-          dates={week}
-          events={[]}
-          showCalendar={false}
-          bucket={bucket}
-          today={today}
-          knownTags={knownTags}
-          onToggle={toggle}
-          onDelete={del}
-          onAdd={add}
-          onReorder={reorder}
+          label="Today"
+          sub={fmtDay(today, { weekday: "long", month: "long", day: "numeric" })}
+          dates={[today]}
+          events={events[today] ?? []}
+          focusSignal={newTaskSignal}
+          showCalendar={calendarConfigured}
           onRenameEvent={renameEvent}
+          {...shared}
         />
-      )}
+        <DaySection
+          label="Tomorrow"
+          sub={fmtDay(tomorrow, {
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+          })}
+          dates={[tomorrow]}
+          events={events[tomorrow] ?? []}
+          showCalendar={calendarConfigured}
+          onRenameEvent={renameEvent}
+          {...shared}
+        />
+        {week.length > 0 && (
+          <DaySection
+            label="This week"
+            sub={`${fmtDay(week[0], { weekday: "short", month: "short", day: "numeric" })} – ${fmtDay(week[week.length - 1], { weekday: "short", month: "short", day: "numeric" })}`}
+            dates={week}
+            events={[]}
+            showCalendar={false}
+            onRenameEvent={renameEvent}
+            {...shared}
+          />
+        )}
+      </DndContext>
 
       {historyDates.length > 0 && (
         <Collapsible title="History">
@@ -249,16 +375,10 @@ export default function TasksBoard({
                       {doneCount}/{list.length}
                     </span>
                   </div>
-                  <DayTaskList
-                    date={d}
-                    today={today}
-                    bucket={bucket}
-                    knownTags={knownTags}
+                  <HistoryList
+                    tasks={list}
                     onToggle={toggle}
                     onDelete={del}
-                    onAdd={add}
-                    onReorder={reorder}
-                    allowAdd={false}
                   />
                 </div>
               );
@@ -280,16 +400,20 @@ function DaySection(props: {
   showCalendar: boolean;
   focusSignal?: number;
   bucket: (d: string) => Task[];
-  today: string;
   knownTags: string[];
+  dragging: boolean;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onAdd: (due: string, title: string, tag: string) => Promise<void>;
-  onReorder: (date: string, activeId: string, overId: string) => void;
   onRenameEvent: (uid: string, dateKey: string, title: string) => void;
 }) {
-  const { label, sub, dates, events } = props;
+  const { label, sub, dates, events, dragging } = props;
   const multiDay = dates.length > 1;
+  // Multi-day (This week): show only days that have tasks — except while
+  // dragging, when every day appears as a drop target.
+  const visibleDates = multiDay
+    ? dates.filter((d) => dragging || props.bucket(d).length > 0)
+    : dates;
 
   return (
     <section>
@@ -308,16 +432,43 @@ function DaySection(props: {
       )}
 
       {multiDay ? (
-        dates.map((d) => (
-          <div key={d} className="mb-4 last:mb-0">
-            <div className="text-[0.68rem] uppercase tracking-wide text-muted/80 mb-1.5">
-              {fmtDay(d, { weekday: "long", month: "short", day: "numeric" })}
+        <>
+          {visibleDates.map((d) => (
+            <div key={d} className="mb-3 last:mb-1">
+              <div className="text-[0.68rem] uppercase tracking-wide text-muted/80 mb-1">
+                {fmtDay(d, { weekday: "long", month: "short", day: "numeric" })}
+              </div>
+              <DayList
+                date={d}
+                bucket={props.bucket}
+                dragging={dragging}
+                onToggle={props.onToggle}
+                onDelete={props.onDelete}
+              />
             </div>
-            <DayTaskList {...props} date={d} />
-          </div>
-        ))
+          ))}
+          <AddTaskRow
+            dayOptions={dates}
+            knownTags={props.knownTags}
+            onAdd={props.onAdd}
+          />
+        </>
       ) : (
-        <DayTaskList {...props} date={dates[0]} focusSignal={props.focusSignal} />
+        <>
+          <DayList
+            date={dates[0]}
+            bucket={props.bucket}
+            dragging={dragging}
+            onToggle={props.onToggle}
+            onDelete={props.onDelete}
+          />
+          <AddTaskRow
+            due={dates[0]}
+            knownTags={props.knownTags}
+            onAdd={props.onAdd}
+            focusSignal={props.focusSignal}
+          />
+        </>
       )}
     </section>
   );
@@ -342,7 +493,10 @@ function CalendarList({
   return (
     <ul className="mb-4 flex flex-col gap-1">
       {events.map((e) => (
-        <li key={`${e.uid}-${e.timeLabel}`} className="flex items-baseline gap-2 leading-snug">
+        <li
+          key={`${e.uid}-${e.timeLabel}`}
+          className="flex items-baseline gap-2 leading-snug"
+        >
           {e.allDay ? (
             <span
               aria-hidden
@@ -386,62 +540,74 @@ function CalendarList({
   );
 }
 
-/* ---------- Task list for one day ---------- */
+/* ---------- Droppable day list (shares the board's DndContext) ---------- */
 
-function DayTaskList(props: {
+function DayList({
+  date,
+  bucket,
+  dragging,
+  onToggle,
+  onDelete,
+}: {
   date: string;
-  today: string;
   bucket: (d: string) => Task[];
-  knownTags: string[];
+  dragging: boolean;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
-  onAdd: (due: string, title: string, tag: string) => Promise<void>;
-  onReorder: (date: string, activeId: string, overId: string) => void;
-  allowAdd?: boolean;
-  focusSignal?: number;
 }) {
-  const { date, allowAdd = true } = props;
-  const list = props.bucket(date);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 6 } })
-  );
-
-  function onDragEnd(e: DragEndEvent) {
-    const { active, over } = e;
-    if (over && active.id !== over.id) {
-      props.onReorder(date, String(active.id), String(over.id));
-    }
-  }
+  const list = bucket(date);
+  const { setNodeRef, isOver } = useDroppable({ id: `day:${date}` });
 
   return (
-    <div className="flex flex-col">
-      {list.length > 0 && (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-          <SortableContext items={list.map((t) => t.id)} strategy={verticalListSortingStrategy}>
-            <ul className="flex flex-col">
-              {list.map((t) => (
-                <TaskRow
-                  key={t.id}
-                  task={t}
-                  onToggle={() => props.onToggle(t.id)}
-                  onDelete={() => props.onDelete(t.id)}
-                />
-              ))}
-            </ul>
-          </SortableContext>
-        </DndContext>
-      )}
-      {allowAdd && (
-        <AddTaskRow
-          due={date}
-          knownTags={props.knownTags}
-          onAdd={props.onAdd}
-          focusSignal={props.focusSignal}
+    <div ref={setNodeRef}>
+      <SortableContext
+        items={list.map((t) => t.id)}
+        strategy={verticalListSortingStrategy}
+      >
+        <ul className="flex flex-col">
+          {list.map((t) => (
+            <TaskRow
+              key={t.id}
+              task={t}
+              onToggle={() => onToggle(t.id)}
+              onDelete={() => onDelete(t.id)}
+            />
+          ))}
+        </ul>
+      </SortableContext>
+      {dragging && list.length === 0 && (
+        <div
+          className={`h-8 rounded-sm border border-dashed transition-colors ${
+            isOver ? "border-foreground/60" : "border-rule"
+          }`}
         />
       )}
     </div>
+  );
+}
+
+/* ---------- History (isolated: reorder-only within its own day) ---------- */
+
+function HistoryList({
+  tasks,
+  onToggle,
+  onDelete,
+}: {
+  tasks: Task[];
+  onToggle: (id: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  return (
+    <ul className="flex flex-col">
+      {tasks.map((t) => (
+        <li
+          key={t.id}
+          className={`group flex items-start gap-2.5 py-1.5 ${t.done ? "task-done" : ""}`}
+        >
+          <TaskRowBody task={t} onToggle={() => onToggle(t.id)} onDelete={() => onDelete(t.id)} />
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -473,11 +639,27 @@ function TaskRow({
         type="button"
         {...attributes}
         {...listeners}
-        aria-label="Drag to reorder"
+        aria-label="Drag to reorder or move to another day"
         className="shrink-0 text-muted/50 hover:text-foreground cursor-grab active:cursor-grabbing touch-none leading-none pt-1"
       >
         ⠿
       </button>
+      <TaskRowBody task={t} onToggle={onToggle} onDelete={onDelete} />
+    </li>
+  );
+}
+
+function TaskRowBody({
+  task: t,
+  onToggle,
+  onDelete,
+}: {
+  task: Task;
+  onToggle: () => void;
+  onDelete: () => void;
+}) {
+  return (
+    <>
       <button
         type="button"
         onClick={onToggle}
@@ -516,7 +698,7 @@ function TaskRow({
       >
         ✕
       </button>
-    </li>
+    </>
   );
 }
 
@@ -524,11 +706,13 @@ function TaskRow({
 
 function AddTaskRow({
   due,
+  dayOptions,
   knownTags,
   onAdd,
   focusSignal,
 }: {
-  due: string;
+  due?: string;
+  dayOptions?: string[]; // multi-day sections: pick the day from a select
   knownTags: string[];
   onAdd: (due: string, title: string, tag: string) => Promise<void>;
   focusSignal?: number;
@@ -536,6 +720,7 @@ function AddTaskRow({
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [tag, setTag] = useState("");
+  const [day, setDay] = useState(dayOptions?.[0] ?? due ?? "");
   const [busy, setBusy] = useState(false);
 
   const titleRef = useRef<HTMLInputElement>(null);
@@ -550,13 +735,14 @@ function AddTaskRow({
   }, [focusSignal]);
 
   async function submit() {
-    if (!title.trim() || busy) return;
+    const target = due ?? day;
+    if (!title.trim() || !target || busy) return;
     setBusy(true);
-    await onAdd(due, title.trim(), tag.trim());
+    await onAdd(target, title.trim(), tag.trim());
     setTitle("");
     setBusy(false);
-    // Rapid entry: cursor returns to the title field (tag sticks around so
-    // several tasks can share it).
+    // Rapid entry: cursor returns to the title field (tag + day stick around
+    // so several tasks can share them).
     requestAnimationFrame(() => titleRef.current?.focus());
   }
 
@@ -574,7 +760,10 @@ function AddTaskRow({
 
   return (
     <div className="flex items-center gap-2 py-1.5">
-      <span aria-hidden className="w-[18px] shrink-0 border border-rule rounded-sm h-[18px] opacity-40" />
+      <span
+        aria-hidden
+        className="w-[18px] shrink-0 border border-rule rounded-sm h-[18px] opacity-40"
+      />
       <input
         ref={titleRef}
         autoFocus
@@ -598,6 +787,23 @@ function AddTaskRow({
         }}
         className="w-24 bg-transparent text-[0.8rem] border-b border-rule focus:outline-none focus:border-foreground py-0.5"
       />
+      {dayOptions && (
+        <select
+          value={day}
+          onChange={(e) => setDay(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") submit();
+            if (e.key === "Escape") setOpen(false);
+          }}
+          className="bg-transparent text-[0.8rem] text-muted border-b border-rule focus:outline-none focus:border-foreground py-0.5 cursor-pointer"
+        >
+          {dayOptions.map((d) => (
+            <option key={d} value={d}>
+              {fmtDay(d, { weekday: "short", month: "short", day: "numeric" })}
+            </option>
+          ))}
+        </select>
+      )}
       <datalist id="task-tags">
         {knownTags.map((t) => (
           <option key={t} value={t} />
