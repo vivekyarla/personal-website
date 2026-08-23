@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   DndContext,
   closestCenter,
@@ -44,6 +44,7 @@ type Props = {
   tomorrow: string;
   week: string[];
   historyDates: string[]; // past days that have tasks, newest first
+  allTags: string[]; // every tag ever used (from the DB)
   calendarConfigured: boolean;
 };
 
@@ -60,16 +61,40 @@ export default function TasksBoard({
   tomorrow,
   week,
   historyDates,
+  allTags,
   calendarConfigured,
 }: Props) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [events, setEvents] = useState(initialEvents);
+  const [newTaskSignal, setNewTaskSignal] = useState(0);
 
   const knownTags = useMemo(() => {
-    const s = new Set<string>();
+    const s = new Set<string>(allTags);
     for (const t of tasks) if (t.tag) s.add(t.tag);
     return [...s].sort();
-  }, [tasks]);
+  }, [tasks, allTags]);
+
+  // Keyboard: `n` opens a new-task row under Today (ignored while typing).
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const t = e.target as HTMLElement | null;
+      if (
+        t &&
+        (t.tagName === "INPUT" ||
+          t.tagName === "TEXTAREA" ||
+          t.tagName === "SELECT" ||
+          t.isContentEditable)
+      )
+        return;
+      if (e.key === "n") {
+        e.preventDefault();
+        setNewTaskSignal((s) => s + 1);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   // Strict day buckets — tasks never roll over between days.
   function bucket(date: string): Task[] {
@@ -159,6 +184,7 @@ export default function TasksBoard({
         sub={fmtDay(today, { weekday: "long", month: "long", day: "numeric" })}
         dates={[today]}
         events={events[today] ?? []}
+        focusSignal={newTaskSignal}
         showCalendar={calendarConfigured}
         bucket={bucket}
         today={today}
@@ -252,6 +278,7 @@ function DaySection(props: {
   dates: string[];
   events: CalEvent[];
   showCalendar: boolean;
+  focusSignal?: number;
   bucket: (d: string) => Task[];
   today: string;
   knownTags: string[];
@@ -290,7 +317,7 @@ function DaySection(props: {
           </div>
         ))
       ) : (
-        <DayTaskList {...props} date={dates[0]} />
+        <DayTaskList {...props} date={dates[0]} focusSignal={props.focusSignal} />
       )}
     </section>
   );
@@ -371,6 +398,7 @@ function DayTaskList(props: {
   onAdd: (due: string, title: string, tag: string) => Promise<void>;
   onReorder: (date: string, activeId: string, overId: string) => void;
   allowAdd?: boolean;
+  focusSignal?: number;
 }) {
   const { date, allowAdd = true } = props;
   const list = props.bucket(date);
@@ -406,7 +434,12 @@ function DayTaskList(props: {
         </DndContext>
       )}
       {allowAdd && (
-        <AddTaskRow due={date} knownTags={props.knownTags} onAdd={props.onAdd} />
+        <AddTaskRow
+          due={date}
+          knownTags={props.knownTags}
+          onAdd={props.onAdd}
+          focusSignal={props.focusSignal}
+        />
       )}
     </div>
   );
@@ -493,15 +526,28 @@ function AddTaskRow({
   due,
   knownTags,
   onAdd,
+  focusSignal,
 }: {
   due: string;
   knownTags: string[];
   onAdd: (due: string, title: string, tag: string) => Promise<void>;
+  focusSignal?: number;
 }) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [tag, setTag] = useState("");
   const [busy, setBusy] = useState(false);
+
+  const titleRef = useRef<HTMLInputElement>(null);
+
+  // `n` shortcut: open this row and put the cursor in the title field
+  // (re-focuses if it's already open).
+  useEffect(() => {
+    if (focusSignal && focusSignal > 0) {
+      setOpen(true);
+      requestAnimationFrame(() => titleRef.current?.focus());
+    }
+  }, [focusSignal]);
 
   async function submit() {
     if (!title.trim() || busy) return;
@@ -509,6 +555,9 @@ function AddTaskRow({
     await onAdd(due, title.trim(), tag.trim());
     setTitle("");
     setBusy(false);
+    // Rapid entry: cursor returns to the title field (tag sticks around so
+    // several tasks can share it).
+    requestAnimationFrame(() => titleRef.current?.focus());
   }
 
   if (!open) {
@@ -527,6 +576,7 @@ function AddTaskRow({
     <div className="flex items-center gap-2 py-1.5">
       <span aria-hidden className="w-[18px] shrink-0 border border-rule rounded-sm h-[18px] opacity-40" />
       <input
+        ref={titleRef}
         autoFocus
         placeholder="Task"
         value={title}

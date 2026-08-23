@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 const items = [
@@ -12,15 +12,25 @@ const items = [
 
 // Persistent quick-switcher for the daily-use admin surfaces. Lives in the
 // admin layout so it never remounts on navigation — the hairline underline
-// slides between items while the page content swaps underneath.
+// slides between items while the page content swaps underneath. The slide is
+// optimistic: it starts the moment you click (or press 1/2/3), not when the
+// server responds.
 export default function AdminSwitcher() {
   const pathname = usePathname();
+  const router = useRouter();
   const wrapRef = useRef<HTMLDivElement>(null);
   const refs = useRef<(HTMLAnchorElement | null)[]>([]);
   const [bar, setBar] = useState<{ left: number; width: number } | null>(null);
+  const [pending, setPending] = useState<number | null>(null);
   const animate = useRef(false);
 
-  const activeIdx = items.findIndex((i) => pathname.startsWith(i.href));
+  const pathIdx = items.findIndex((i) => pathname.startsWith(i.href));
+  const activeIdx = pending ?? pathIdx;
+
+  // Navigation landed — clear the optimistic index.
+  useEffect(() => {
+    setPending(null);
+  }, [pathname]);
 
   useEffect(() => {
     function measure() {
@@ -35,7 +45,6 @@ export default function AdminSwitcher() {
       }
     }
     measure();
-    // Enable the slide only after the first paint so initial load doesn't sweep in.
     const t = window.setTimeout(() => (animate.current = true), 60);
     window.addEventListener("resize", measure);
     return () => {
@@ -44,7 +53,30 @@ export default function AdminSwitcher() {
     };
   }, [activeIdx]);
 
-  if (activeIdx < 0) return null;
+  // Keyboard: 1/2/3 jump between Tasks/Habits/Readings (ignored while typing).
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const t = e.target as HTMLElement | null;
+      if (
+        t &&
+        (t.tagName === "INPUT" ||
+          t.tagName === "TEXTAREA" ||
+          t.tagName === "SELECT" ||
+          t.isContentEditable)
+      )
+        return;
+      const idx = ["1", "2", "3"].indexOf(e.key);
+      if (idx < 0) return;
+      e.preventDefault();
+      setPending(idx);
+      router.push(items[idx].href);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [router]);
+
+  if (pathIdx < 0) return null;
 
   return (
     <nav className="flex items-baseline justify-between gap-4">
@@ -55,6 +87,8 @@ export default function AdminSwitcher() {
             <Link
               key={it.href}
               href={it.href}
+              prefetch
+              onClick={() => setPending(i)}
               ref={(el) => {
                 refs.current[i] = el;
               }}

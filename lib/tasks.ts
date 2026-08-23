@@ -57,6 +57,20 @@ export function taskWindow(): {
   return { today, tomorrow, week, weekEnd, historyStart: addDays(today, -HISTORY_DAYS) };
 }
 
+// Every tag ever used, across all tasks — powers the tag dropdown so tags
+// persist beyond the visible window.
+export async function fetchAllTags(): Promise<string[]> {
+  const { data, error } = await supabaseAdmin
+    .from("tasks")
+    .select("tag")
+    .not("tag", "is", null);
+  if (error) {
+    console.error("[tasks] tags:", error.message);
+    return [];
+  }
+  return [...new Set((data ?? []).map((r) => r.tag as string))].sort();
+}
+
 // All tasks on the board: the visible window plus the trailing history days.
 // Tasks never roll over — each day keeps its own record.
 export async function fetchTasks(

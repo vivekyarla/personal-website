@@ -39,18 +39,20 @@ function localDateKey(d: Date): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
-// Expand events from all configured calendars for the given PT date keys.
-// Returns { dateKey -> events sorted all-day-first-then-time }.
-export async function fetchCalendarEvents(
-  dateKeys: string[]
-): Promise<Record<string, CalEvent[]>> {
-  const out: Record<string, CalEvent[]> = {};
-  for (const k of dateKeys) out[k] = [];
+// Feed expansion is the slow part (7 ICS downloads) — cache it in-module for
+// 5 minutes. Overrides are applied fresh on every request so renames show
+// instantly.
+const CAL_TTL_MS = 5 * 60 * 1000;
+let calCache: { key: string; exp: number; events: CalEvent[] } | null = null;
+
+// Fetch + expand all configured calendars into a flat event list (no
+// overrides applied).
+async function expandAll(dateKeys: string[]): Promise<CalEvent[]> {
   const urls = (process.env.GCAL_ICS_URLS ?? "")
     .split(",")
     .map((u) => u.trim())
     .filter(Boolean);
-  if (urls.length === 0 || dateKeys.length === 0) return out;
+  if (urls.length === 0 || dateKeys.length === 0) return [];
 
   const wanted = new Set(dateKeys);
   // Expansion window: from start of first day to end of last, padded a day on
@@ -129,8 +131,30 @@ export async function fetchCalendarEvents(
       }
     }
   }
+  return events;
+}
 
-  // Apply local rename overrides
+// Expand events (cached) + apply local renames + bucket per date key.
+// Returns { dateKey -> events sorted all-day-first-then-time }.
+export async function fetchCalendarEvents(
+  dateKeys: string[]
+): Promise<Record<string, CalEvent[]>> {
+  const out: Record<string, CalEvent[]> = {};
+  for (const k of dateKeys) out[k] = [];
+  if (dateKeys.length === 0) return out;
+
+  const cacheKey = [...dateKeys].sort().join(",");
+  let raw: CalEvent[];
+  if (calCache && calCache.key === cacheKey && calCache.exp > Date.now()) {
+    raw = calCache.events;
+  } else {
+    raw = await expandAll(dateKeys);
+    calCache = { key: cacheKey, exp: Date.now() + CAL_TTL_MS, events: raw };
+  }
+  // Copy before mutating titles so the cache keeps originals.
+  const events = raw.map((e) => ({ ...e }));
+
+  // Apply local rename overrides (always fresh)
   const { data: overrides } = await supabaseAdmin
     .from("calendar_overrides")
     .select("uid, custom_title");
@@ -148,7 +172,7 @@ export async function fetchCalendarEvents(
     const key = `${e.uid}|${e.dateKey}|${e.timeLabel ?? "allday"}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    out[e.dateKey].push(e);
+    out[e.dateKey]?.push(e);
   }
   for (const k of dateKeys) {
     out[k].sort((a, b) =>
