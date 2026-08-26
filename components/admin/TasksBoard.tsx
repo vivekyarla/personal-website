@@ -497,16 +497,15 @@ function CalendarList({
           key={`${e.uid}-${e.timeLabel}`}
           className="flex items-baseline gap-2 leading-snug"
         >
-          {e.allDay ? (
-            <span
-              aria-hidden
-              className="shrink-0 self-stretch w-[3px] rounded-full bg-foreground/50 translate-y-0.5"
-            />
-          ) : (
-            <span className="shrink-0 w-11 font-mono text-[0.72rem] text-muted tabular-nums">
-              {e.timeLabel}
-            </span>
-          )}
+          <span className="shrink-0 w-11 font-mono text-[0.72rem] text-muted tabular-nums">
+            {e.allDay ? (
+              <span className="text-[0.6rem] uppercase tracking-tight">
+                All day
+              </span>
+            ) : (
+              e.timeLabel
+            )}
+          </span>
           {editing === e.uid ? (
             <input
               autoFocus
