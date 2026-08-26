@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 
-// Hard-pinned to Pacific Time — the clock reads "08:25:48 PM in Stanford, CA"
-// no matter where the viewer is.
+// Hard-pinned to Pacific Time — "08:25:48 PM in Stanford, CA · Thursday,
+// August 28" no matter where the viewer is.
 const TZ = "America/Los_Angeles";
 
 function getParts(d: Date) {
@@ -20,11 +20,27 @@ function getParts(d: Date) {
     if (p.type !== "literal") map[p.type] = p.value;
   }
 
+  const date = new Intl.DateTimeFormat("en-US", {
+    timeZone: TZ,
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  }).format(d);
+
+  const dateShort = new Intl.DateTimeFormat("en-US", {
+    timeZone: TZ,
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  }).format(d);
+
   return {
     hour: map.hour ?? "--",
     minute: map.minute ?? "--",
     second: map.second ?? "--",
     dayPeriod: map.dayPeriod ?? "",
+    date,
+    dateShort,
   };
 }
 
@@ -41,14 +57,22 @@ export default function Clock() {
     return <div className="text-xs text-muted/70 h-[1.1em]" />;
   }
 
-  const { hour, minute, second, dayPeriod } = getParts(now);
+  const { hour, minute, second, dayPeriod, date, dateShort } = getParts(now);
 
   return (
     <div className="text-xs text-muted/70 tabular-nums tracking-tight whitespace-nowrap">
+      {/* AM/PM sits outside the mono span so the gaps around it are the same
+          width (mono spaces are wider than the text face's). */}
       <span className="font-mono">
-        {hour}:{minute}:{second} {dayPeriod}
+        {hour}:{minute}:{second}
       </span>{" "}
-      <span className="text-[0.8rem]">in Stanford, CA</span>
+      <span className="text-[0.8rem]">
+        {dayPeriod}
+        <span className="hidden sm:inline"> in Stanford, CA</span>
+      </span>
+      <span className="mx-2 text-foreground">·</span>
+      <span className="text-[0.8rem] sm:hidden">{dateShort}</span>
+      <span className="text-[0.8rem] hidden sm:inline">{date}</span>
     </div>
   );
 }
