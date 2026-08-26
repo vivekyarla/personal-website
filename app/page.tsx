@@ -57,7 +57,7 @@ const personLd = {
 
 export default function Home() {
   return (
-    <div className="namespot waterfall w-full max-w-xl mx-auto flex flex-1 flex-col gap-[clamp(0.875rem,2.4vh,2rem)] text-[0.9rem] pt-[clamp(1.5rem,7vh,6rem)] pb-6">
+    <div className="namespot waterfall w-full max-w-[600px] mx-auto flex flex-1 flex-col gap-[clamp(0.875rem,2.4vh,2rem)] text-[0.9rem] pt-[clamp(1.5rem,7vh,6rem)] pb-6">
       <HomeViewport />
       <script
         type="application/ld+json"
@@ -164,7 +164,7 @@ export default function Home() {
                 </span>
               </div>
               <div className="italic text-muted text-[0.85rem] mt-1">
-                Tracking the full-stack AI economy with a live deal map
+                Live deal map to track the full-stack AI economy
               </div>
             </div>
             <span className="text-muted text-[0.8rem] whitespace-nowrap tabular-nums">
@@ -198,7 +198,7 @@ export default function Home() {
                 </span>
               </div>
               <div className="italic text-muted text-[0.85rem] mt-1">
-                Built an ascending clock auction to solve GPU market failures
+                Ascending clock auction proposal to solve GPU market failures
               </div>
             </div>
             <span className="text-muted text-[0.8rem] whitespace-nowrap tabular-nums">
