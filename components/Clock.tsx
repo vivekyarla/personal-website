@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-// Hard-pinned to Pacific Time — "08:25:48 PM in Stanford, CA · Thursday,
+// Hard-pinned to Pacific Time — "08:25:48 PM in Palo Alto, CA · Thursday,
 // August 28" no matter where the viewer is.
 const TZ = "America/Los_Angeles";
 
@@ -60,7 +60,7 @@ export default function Clock() {
         <span className="font-mono">
           {hour}:{minute}:{second}
         </span>{" "}
-        <span>{dayPeriod} in Stanford, CA</span>
+        <span>{dayPeriod} in Palo Alto, CA</span>
       </div>
     </div>
   );
