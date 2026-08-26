@@ -60,7 +60,7 @@ export default function Clock() {
         <span className="font-mono">
           {hour}:{minute}:{second}
         </span>{" "}
-        <span className="text-[0.8rem]">{dayPeriod} in Stanford, CA</span>
+        <span>{dayPeriod} in Stanford, CA</span>
       </div>
     </div>
   );
