@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from "react";
 
-// Viewer-local time — no fixed timezone. Clock only renders after mount,
-// so it always reflects the visitor's own clock.
+// Hard-pinned to Pacific Time — the clock reads "08:25:48 PM in Stanford, CA"
+// no matter where the viewer is.
+const TZ = "America/Los_Angeles";
+
 function getParts(d: Date) {
   const timeParts = new Intl.DateTimeFormat("en-US", {
+    timeZone: TZ,
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
@@ -17,25 +20,11 @@ function getParts(d: Date) {
     if (p.type !== "literal") map[p.type] = p.value;
   }
 
-  const date = new Intl.DateTimeFormat("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  }).format(d);
-
-  const dateShort = new Intl.DateTimeFormat("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  }).format(d);
-
   return {
     hour: map.hour ?? "--",
     minute: map.minute ?? "--",
     second: map.second ?? "--",
     dayPeriod: map.dayPeriod ?? "",
-    date,
-    dateShort,
   };
 }
 
@@ -52,16 +41,14 @@ export default function Clock() {
     return <div className="text-xs text-muted/70 h-[1.1em]" />;
   }
 
-  const { hour, minute, second, dayPeriod, date, dateShort } = getParts(now);
+  const { hour, minute, second, dayPeriod } = getParts(now);
 
   return (
     <div className="text-xs text-muted/70 tabular-nums tracking-tight whitespace-nowrap">
       <span className="font-mono">
         {hour}:{minute}:{second} {dayPeriod}
-      </span>
-      <span className="mx-2 text-foreground">·</span>
-      <span className="text-[0.8rem] sm:hidden">{dateShort}</span>
-      <span className="text-[0.8rem] hidden sm:inline">{date}</span>
+      </span>{" "}
+      <span className="text-[0.8rem]">in Stanford, CA</span>
     </div>
   );
 }
