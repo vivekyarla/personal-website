@@ -114,7 +114,7 @@ export default function Home() {
           <HoverReveal
             title="Writing"
             href="/writing"
-            description="Pieces I've read that changed my worldview, and I'd send to a friend."
+            description="Pieces I've read that changed my worldview, and I'd send to friends."
           />
         </div>
         <div className="blur-item">
