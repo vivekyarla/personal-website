@@ -121,7 +121,13 @@ export default function Home() {
           <HoverReveal
             title="Repository"
             href="/repository"
-            description="Tweets that capture what I'm curious about at the moment."
+            description={
+              <>
+                Tweets that capture what I&apos;m curious
+                <br />
+                about at the moment.
+              </>
+            }
           />
         </div>
       </section>

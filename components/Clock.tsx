@@ -52,9 +52,9 @@ export default function Clock() {
   const { hour, minute, second, dayPeriod, date } = getParts(now);
 
   return (
-    <div className="text-right tracking-tight whitespace-nowrap leading-tight tabular-nums">
-      <div className="text-[0.8rem] text-muted/70">{date}</div>
-      <div className="text-[0.8rem] text-muted/70">
+    <div className="text-right tracking-tight whitespace-nowrap leading-tight tabular-nums space-y-1">
+      <div className="text-[0.72rem] text-muted/70">{date}</div>
+      <div className="text-[0.72rem] text-muted/70">
         {/* AM/PM sits outside the mono span so the gaps around it are the
             same width (mono spaces are wider than the text face's). */}
         <span className="font-mono">

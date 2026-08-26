@@ -3,7 +3,7 @@ import Link from "next/link";
 type Props = {
   title: string;
   href: string;
-  description: string;
+  description: React.ReactNode;
 };
 
 const isDev = process.env.NODE_ENV === "development";
