@@ -67,10 +67,28 @@ export default function Home() {
       <section className="name-dim">
         <p className="leading-relaxed">
           I&apos;m 19 years old and a student at Stanford studying Economics
-          &amp; Computer Science. Currently, I&apos;m learning about frontier
-          markets, post-AGI governance, and predictive decision modeling. This
-          summer I will be based in San Francisco, working on AI rollouts at
-          McKinsey.
+          &amp; Computer Science. Currently, I&apos;m learning about
+          non-traditional markets, globalization, and morality. I&apos;m also
+          an intern at{" "}
+          <a
+            href="https://rox.com"
+            target="_blank"
+            rel="noreferrer"
+            className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
+          >
+            Rox
+          </a>
+          , working on special projects across product, research, and GTM for
+          revenue agents. Previously, I worked at{" "}
+          <a
+            href="https://www.mckinsey.com/"
+            target="_blank"
+            rel="noreferrer"
+            className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
+          >
+            McKinsey
+          </a>{" "}
+          on AI rollouts and various venture firms on diligences.
         </p>
       </section>
 
