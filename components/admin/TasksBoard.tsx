@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   DndContext,
+  DragOverlay,
   closestCenter,
   PointerSensor,
   TouchSensor,
@@ -74,6 +75,7 @@ export default function TasksBoard({
   const [events, setEvents] = useState(initialEvents);
   const [newTaskSignal, setNewTaskSignal] = useState(0);
   const [dragging, setDragging] = useState(false);
+  const [activeTask, setActiveTask] = useState<Task | null>(null);
   const tasksRef = useRef(tasks);
   tasksRef.current = tasks;
   const dragOrigin = useRef<{ id: string; date: string; pos: number } | null>(
@@ -186,8 +188,27 @@ export default function TasksBoard({
 
   function onDragStart(e: DragStartEvent) {
     const t = tasksRef.current.find((x) => x.id === String(e.active.id));
-    if (t) dragOrigin.current = { id: t.id, date: t.due_date, pos: t.position };
+    if (t) {
+      dragOrigin.current = { id: t.id, date: t.due_date, pos: t.position };
+      setActiveTask(t);
+    }
     setDragging(true);
+  }
+
+  function onDragCancel() {
+    const origin = dragOrigin.current;
+    dragOrigin.current = null;
+    setDragging(false);
+    setActiveTask(null);
+    if (origin) {
+      setTasks((prev) =>
+        prev.map((x) =>
+          x.id === origin.id
+            ? { ...x, due_date: origin.date, position: origin.pos }
+            : x
+        )
+      );
+    }
   }
 
   // While hovering over another day, move the task there optimistically so
@@ -205,6 +226,8 @@ export default function TasksBoard({
         ? overId.slice(4)
         : prev.find((x) => x.id === overId)?.due_date;
       if (!overDate || t.due_date === overDate) return prev;
+      // One-way street: tasks can leave history but never enter the past.
+      if (overDate < today) return prev;
       let pos: number;
       if (overId.startsWith("day:")) {
         const others = prev.filter(
@@ -227,6 +250,7 @@ export default function TasksBoard({
     const origin = dragOrigin.current;
     dragOrigin.current = null;
     setDragging(false);
+    setActiveTask(null);
     const activeId = String(active.id);
 
     if (!over || !origin) {
@@ -317,6 +341,7 @@ export default function TasksBoard({
         onDragStart={onDragStart}
         onDragOver={onDragOver}
         onDragEnd={onDragEnd}
+        onDragCancel={onDragCancel}
       >
         <DaySection
           label="Today"
@@ -352,40 +377,66 @@ export default function TasksBoard({
             {...shared}
           />
         )}
-      </DndContext>
 
-      {historyDates.length > 0 && (
-        <Collapsible title="History">
-          <div className="flex flex-col gap-5 pt-1">
-            {historyDates.map((d) => {
-              const list = bucket(d);
-              if (list.length === 0) return null;
-              const doneCount = list.filter((t) => t.done).length;
-              return (
-                <div key={d}>
-                  <div className="flex items-baseline justify-between mb-1">
-                    <span className="text-[0.68rem] uppercase tracking-wide text-muted/80">
-                      {fmtDay(d, {
-                        weekday: "long",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </span>
-                    <span className="text-[0.68rem] text-muted/60 tabular-nums">
-                      {doneCount}/{list.length}
-                    </span>
+        {historyDates.length > 0 && (
+          <Collapsible title="History">
+            <div className="flex flex-col gap-5 pt-1">
+              {historyDates.map((d) => {
+                const list = bucket(d);
+                if (list.length === 0) return null;
+                const doneCount = list.filter((t) => t.done).length;
+                return (
+                  <div key={d}>
+                    <div className="flex items-baseline justify-between mb-1">
+                      <span className="text-[0.68rem] uppercase tracking-wide text-muted/80">
+                        {fmtDay(d, {
+                          weekday: "long",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </span>
+                      <span className="text-[0.68rem] text-muted/60 tabular-nums">
+                        {doneCount}/{list.length}
+                      </span>
+                    </div>
+                    <DayList
+                      date={d}
+                      bucket={bucket}
+                      dragging={false}
+                      onToggle={toggle}
+                      onDelete={del}
+                    />
                   </div>
-                  <HistoryList
-                    tasks={list}
-                    onToggle={toggle}
-                    onDelete={del}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        </Collapsible>
-      )}
+                );
+              })}
+            </div>
+          </Collapsible>
+        )}
+
+        {/* Dragged row rendered in a portal so it isn't clipped when pulled
+            out of the History collapsible. */}
+        <DragOverlay>
+          {activeTask ? (
+            <div
+              className={`flex items-start gap-2.5 py-1.5 bg-background ${
+                activeTask.done ? "task-done" : ""
+              }`}
+            >
+              <span
+                aria-hidden
+                className="shrink-0 text-muted/50 leading-none pt-1"
+              >
+                ⠿
+              </span>
+              <TaskRowBody
+                task={activeTask}
+                onToggle={() => {}}
+                onDelete={() => {}}
+              />
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
     </div>
   );
 }
@@ -585,31 +636,6 @@ function DayList({
   );
 }
 
-/* ---------- History (isolated: reorder-only within its own day) ---------- */
-
-function HistoryList({
-  tasks,
-  onToggle,
-  onDelete,
-}: {
-  tasks: Task[];
-  onToggle: (id: string) => void;
-  onDelete: (id: string) => void;
-}) {
-  return (
-    <ul className="flex flex-col">
-      {tasks.map((t) => (
-        <li
-          key={t.id}
-          className={`group flex items-start gap-2.5 py-1.5 ${t.done ? "task-done" : ""}`}
-        >
-          <TaskRowBody task={t} onToggle={() => onToggle(t.id)} onDelete={() => onDelete(t.id)} />
-        </li>
-      ))}
-    </ul>
-  );
-}
-
 /* ---------- Single task row ---------- */
 
 function TaskRow({
@@ -630,7 +656,8 @@ function TaskRow({
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
-        opacity: isDragging ? 0.6 : 1,
+        // The DragOverlay carries the visual; fade the in-list original.
+        opacity: isDragging ? 0.3 : 1,
       }}
       className={`group flex items-start gap-2.5 py-1.5 bg-background ${t.done ? "task-done" : ""}`}
     >
