@@ -52,7 +52,10 @@ export default function CollapsibleCategory({
         {/* min-h-0 lets the 0fr row actually collapse (overflow-x:visible
             disables the automatic min-height:0); y-clip for the reveal,
             x visible so the full-bleed carousel can escape the column. */}
-        <div className="min-h-0 overflow-y-clip overflow-x-visible">
+        {/* min-h-0 AND min-w-0: grid items default to min-size:auto, which
+            lets the full-bleed carousel inflate the column and shove it off
+            viewport-center. */}
+        <div className="min-h-0 min-w-0 overflow-y-clip overflow-x-visible">
           <div className="pt-4">{children}</div>
         </div>
       </div>
