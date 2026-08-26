@@ -34,7 +34,7 @@ export default async function WritingIndex() {
       </div>
 
       {/* Header */}
-      <header className="flex items-baseline justify-between gap-3">
+      <header className="flex items-center justify-between gap-3">
         <h1
           className={`text-2xl tracking-tight ${
             process.env.NODE_ENV === "development" ? "font-serif font-normal" : "font-semibold"

@@ -64,7 +64,7 @@ export default function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(personLd) }}
       />
       {/* Name + live clock */}
-      <header className="flex items-baseline justify-between gap-3">
+      <header className="flex items-center justify-between gap-3">
         <NameToggle />
         <Clock />
       </header>

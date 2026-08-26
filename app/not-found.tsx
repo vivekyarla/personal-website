@@ -6,7 +6,7 @@ export default function NotFound() {
   return (
     <div className="waterfall flex flex-1 flex-col gap-8 text-[0.9rem] pt-[clamp(1.5rem,7vh,6rem)] pb-12">
       {/* Name + live clock — same header as home */}
-      <header className="flex items-baseline justify-between gap-3">
+      <header className="flex items-center justify-between gap-3">
         <NameToggle />
         <Clock />
       </header>
