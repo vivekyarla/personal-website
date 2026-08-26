@@ -27,20 +27,12 @@ function getParts(d: Date) {
     day: "numeric",
   }).format(d);
 
-  const dateShort = new Intl.DateTimeFormat("en-US", {
-    timeZone: TZ,
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  }).format(d);
-
   return {
     hour: map.hour ?? "--",
     minute: map.minute ?? "--",
     second: map.second ?? "--",
     dayPeriod: map.dayPeriod ?? "",
     date,
-    dateShort,
   };
 }
 
@@ -54,25 +46,22 @@ export default function Clock() {
   }, []);
 
   if (!now) {
-    return <div className="text-xs text-muted/70 h-[1.1em]" />;
+    return <div className="h-[1.9rem]" />;
   }
 
-  const { hour, minute, second, dayPeriod, date, dateShort } = getParts(now);
+  const { hour, minute, second, dayPeriod, date } = getParts(now);
 
   return (
-    <div className="text-xs text-muted/70 tabular-nums tracking-tight whitespace-nowrap">
-      {/* AM/PM sits outside the mono span so the gaps around it are the same
-          width (mono spaces are wider than the text face's). */}
-      <span className="font-mono">
-        {hour}:{minute}:{second}
-      </span>{" "}
-      <span className="text-[0.8rem]">
-        {dayPeriod}
-        <span className="hidden sm:inline"> in Stanford, CA</span>
-      </span>
-      <span className="mx-2 text-foreground">·</span>
-      <span className="text-[0.8rem] sm:hidden">{dateShort}</span>
-      <span className="text-[0.8rem] hidden sm:inline">{date}</span>
+    <div className="text-right tracking-tight whitespace-nowrap leading-tight tabular-nums">
+      <div className="text-[0.72rem] text-muted/60">{date}</div>
+      <div className="text-xs text-muted/70">
+        {/* AM/PM sits outside the mono span so the gaps around it are the
+            same width (mono spaces are wider than the text face's). */}
+        <span className="font-mono">
+          {hour}:{minute}:{second}
+        </span>{" "}
+        <span className="text-[0.8rem]">{dayPeriod} in Stanford, CA</span>
+      </div>
     </div>
   );
 }
