@@ -57,7 +57,7 @@ const personLd = {
 
 export default function Home() {
   return (
-    <div className="namespot waterfall flex flex-1 flex-col gap-[clamp(0.875rem,2.4vh,2rem)] text-[0.9rem] pt-[clamp(1.5rem,7vh,6rem)] pb-6">
+    <div className="namespot waterfall w-full max-w-xl mx-auto flex flex-1 flex-col gap-[clamp(0.875rem,2.4vh,2rem)] text-[0.9rem] pt-[clamp(1.5rem,7vh,6rem)] pb-6">
       <HomeViewport />
       <script
         type="application/ld+json"
