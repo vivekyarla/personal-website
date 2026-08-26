@@ -14,6 +14,12 @@ type ExperienceItem = {
 
 const experience: ExperienceItem[] = [
   {
+    org: "Rox",
+    role: "Special Projects",
+    year: "Fall 2026",
+    href: "https://rox.com",
+  },
+  {
     org: "McKinsey & Company",
     role: "Summer Analyst",
     year: "Summer 2026",
