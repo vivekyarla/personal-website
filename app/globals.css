@@ -95,6 +95,33 @@ body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* Inline emphasis link: underline visible in BOTH themes (decoration-rule
+   disappears on dark), and on hover the site's highlighter sweeps behind the
+   word while the underline fades. */
+.hl-link {
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, var(--foreground) 35%, transparent);
+  text-underline-offset: 4px;
+  background-image: linear-gradient(#f7e58a, #f7e58a);
+  background-repeat: no-repeat;
+  background-position: 0 0.08em;
+  background-size: 0% 95%;
+  padding: 0 0.1em;
+  margin: 0 -0.1em;
+  transition: background-size 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    text-decoration-color 0.2s ease;
+}
+.hl-link:hover {
+  background-size: 100% 95%;
+  text-decoration-color: transparent;
+}
+html.dark .hl-link {
+  background-image: linear-gradient(
+    rgba(247, 229, 138, 0.4),
+    rgba(247, 229, 138, 0.4)
+  );
+}
+
 /* Task cross-off: strikethrough draws left→right on check, retracts on
    uncheck; text settles to muted. */
 .task-title {

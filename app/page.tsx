@@ -80,7 +80,7 @@ export default function Home() {
             href="https://rox.com"
             target="_blank"
             rel="noreferrer"
-            className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
+            className="hl-link"
           >
             Rox
           </a>
@@ -90,7 +90,7 @@ export default function Home() {
             href="https://www.mckinsey.com/"
             target="_blank"
             rel="noreferrer"
-            className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
+            className="hl-link"
           >
             McKinsey
           </a>{" "}
