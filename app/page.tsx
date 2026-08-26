@@ -114,14 +114,14 @@ export default function Home() {
           <HoverReveal
             title="Writing"
             href="/writing"
-            description="I curate a running list of my favorite readings, with quotes and short analysis. I also sometimes write re: AI, startups, economics, and life."
+            description="Pieces I've read that changed my worldview, and I'd send to a friend."
           />
         </div>
         <div className="blur-item">
           <HoverReveal
             title="Repository"
             href="/repository"
-            description="I'm a heavy Twitter user; I believe that there's abundant alpha on the platform. Here, I collect and sort the tweets that I find most interesting."
+            description="Tweets that keep my finger on the Valley's pulse"
           />
         </div>
       </section>
