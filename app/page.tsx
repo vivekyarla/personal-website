@@ -100,11 +100,10 @@ export default function Home() {
       {/* Interests */}
       <section className="name-dim">
         <p className="leading-relaxed">
-          The world I&apos;m growing up in is changing at an unprecedented
-          pace. I believe that how things are done today, even at the
-          cutting-edge, will look archaic in under a decade. Through
-          understanding technology, markets, culture, and society, I want to
-          figure out what to spend my twenties on.
+          The world we live in is changing rapidly. I believe that how things
+          are done today, even at the frontier, will rapidly become archaic.
+          Through understanding technology, markets, culture, and society, I
+          want to figure out what to spend my twenties on.
         </p>
       </section>
 
