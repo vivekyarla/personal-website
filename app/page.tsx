@@ -72,10 +72,9 @@ export default function Home() {
       {/* Bio */}
       <section className="name-dim">
         <p className="leading-relaxed">
-          I&apos;m 19 years old and a student at Stanford studying Economics
-          &amp; Computer Science. Currently, I&apos;m learning about
-          non-traditional markets, globalization, and morality. I&apos;m also
-          an intern at{" "}
+          I&apos;m 19 and a student at Stanford studying Economics &amp;
+          Computer Science. Currently, I&apos;m learning about non-traditional
+          markets, globalization, and morality. I&apos;m also an intern at{" "}
           <a
             href="https://rox.com"
             target="_blank"
@@ -84,8 +83,8 @@ export default function Home() {
           >
             Rox
           </a>
-          , working on special projects across product, research, and GTM for
-          revenue agents. Previously, I worked at{" "}
+          , a Sequoia-backed AI unicorn, working across product, research, and
+          GTM. Previously, I worked on AI rollouts at{" "}
           <a
             href="https://www.mckinsey.com/"
             target="_blank"
@@ -94,7 +93,7 @@ export default function Home() {
           >
             McKinsey
           </a>{" "}
-          on AI rollouts and various venture firms on diligences.
+          and diligence at several venture firms.
         </p>
       </section>
 
