@@ -256,7 +256,7 @@ export default function Home() {
               target="_blank"
               rel="noreferrer"
             >
-              <span className="line-through decoration-foreground/60">Twitter</span> X
+              X
             </a>
           </li>
           <li>
