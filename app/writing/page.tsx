@@ -7,11 +7,11 @@ import { fetchInbound } from "@/lib/inbound";
 export const revalidate = 60;
 
 export const metadata = {
-  title: "Writing",
+  title: "Reading",
   description:
     "Readings in, essays out — a running list of my favorite pieces with quotes and short analysis, plus my own writing on AI, startups, economics, and life.",
   openGraph: {
-    title: "Writing — Vivek Yarlagedda",
+    title: "Reading — Vivek Yarlagedda",
     description:
       "Readings in, essays out — a running list of my favorite pieces with quotes and short analysis, plus my own writing on AI, startups, economics, and life.",
     url: "https://vivekyarla.com/writing",
@@ -40,23 +40,14 @@ export default async function WritingIndex() {
             process.env.NODE_ENV === "development" ? "font-serif font-normal" : "font-semibold"
           }`}
         >
-          Writing
+          Reading
         </h1>
         <Clock />
       </header>
 
-      {/* Description */}
+      {/* Collection index — mirrors the repository page */}
       <section>
-        <p className="leading-relaxed italic text-center text-muted">
-          &ldquo;The truth is not for all men but only for those who seek
-          it.&rdquo;
-          <span className="block not-italic mt-1 text-muted/70">
-            — Ayn Rand
-          </span>
-        </p>
-
-        {/* Collection index — mirrors the repository page */}
-        <p className="mt-4 text-center text-[0.72rem] text-muted/80 tabular-nums">
+        <p className="text-center text-[0.72rem] text-muted/80 tabular-nums">
           {inbound.length} in · {posts.length} out
         </p>
       </section>

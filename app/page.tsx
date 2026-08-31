@@ -73,8 +73,7 @@ export default function Home() {
       <section className="name-dim">
         <p className="leading-relaxed">
           I&apos;m 19 and a student at Stanford studying Economics &amp;
-          Computer Science. Currently, I&apos;m learning about non-traditional
-          markets, globalization, and morality. I&apos;m also an intern at{" "}
+          Computer Science. I&apos;m also an intern at{" "}
           <a
             href="https://rox.com"
             target="_blank"
@@ -112,7 +111,7 @@ export default function Home() {
       <section className="name-dim blur-group grid grid-cols-2 gap-8 sm:gap-12">
         <div className="blur-item">
           <HoverReveal
-            title="Writing"
+            title="Reading"
             href="/writing"
             description={
               <>
