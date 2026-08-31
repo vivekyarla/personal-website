@@ -3,13 +3,14 @@ import { supabasePublic } from "@/lib/supabase";
 export type InboundReading = {
   id: string;
   title: string;
-  url: string;
-  source: string | null;
+  url: string | null; // optional for books
+  source: string | null; // author, for books
   tag: string | null;
-  date_published: string; // ISO yyyy-mm-dd
+  date_published: string; // ISO yyyy-mm-dd (books: date finished)
   summary: string;
   quotes: string[];
   pinned: boolean;
+  kind: "article" | "book";
   created_at: string;
 };
 

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { InboundReading } from "@/lib/inbound";
 import { formatInboundDate } from "@/lib/inbound";
+import { useScrollSpotlight } from "@/components/useScrollSpotlight";
 
 function stripOuterQuotes(s: string): string {
   return s.replace(/^[\s"'“”‘’]+|[\s"'“”‘’]+$/g, "");
@@ -16,52 +17,8 @@ export default function InboundList({ items }: { items: InboundReading[] }) {
     setOpen(open === id ? null : id);
   }
 
-  // Class-driven spotlight (same technique as the tweet carousels): :hover
-  // freezes during scroll, so we track the pointer and recompute the row under
-  // it on every pointer move AND every page-scroll frame.
-  useEffect(() => {
-    const group = ulRef.current;
-    if (!group) return;
-    let raf = 0;
-    let pt: { x: number; y: number } | null = null;
-
-    function paint() {
-      raf = 0;
-      if (!group) return;
-      let active: Element | null = null;
-      if (pt) {
-        const el = document.elementFromPoint(pt.x, pt.y);
-        const item = el?.closest(".tweet-spot-item");
-        if (item && group.contains(item)) active = item;
-      }
-      group
-        .querySelectorAll(".tweet-spot-item")
-        .forEach((it) => it.classList.toggle("tw-active", it === active));
-      group.classList.toggle("tw-spot", !!active);
-    }
-    function schedule() {
-      if (!raf) raf = requestAnimationFrame(paint);
-    }
-    function onMove(e: PointerEvent) {
-      if (e.pointerType !== "mouse") return;
-      pt = { x: e.clientX, y: e.clientY };
-      schedule();
-    }
-    function onLeave() {
-      pt = null;
-      schedule();
-    }
-
-    group.addEventListener("pointermove", onMove);
-    group.addEventListener("pointerleave", onLeave);
-    window.addEventListener("scroll", schedule, { passive: true });
-    return () => {
-      group.removeEventListener("pointermove", onMove);
-      group.removeEventListener("pointerleave", onLeave);
-      window.removeEventListener("scroll", schedule);
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, []);
+  // Scroll-fluid spotlight (shared with tweet carousels / books).
+  useScrollSpotlight(ulRef);
 
   if (items.length === 0) {
     return (
@@ -94,15 +51,19 @@ export default function InboundList({ items }: { items: InboundReading[] }) {
                 {item.pinned && (
                   <span title="Pinned" className="text-[0.75rem] leading-none mr-1.5">📌</span>
                 )}
-                <a
-                  href={item.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="font-medium underline decoration-rule underline-offset-4 hover:decoration-foreground"
-                >
-                  {item.title}
-                </a>
+                {item.url ? (
+                  <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="font-medium underline decoration-rule underline-offset-4 hover:decoration-foreground"
+                  >
+                    {item.title}
+                  </a>
+                ) : (
+                  <span className="font-medium">{item.title}</span>
+                )}
               </div>
               <div className="mt-1 text-[0.72rem] text-muted/80 tabular-nums">
                 {item.tag && (

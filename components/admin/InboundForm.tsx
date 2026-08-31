@@ -8,6 +8,7 @@ type Props = { initial?: InboundReading };
 
 export default function InboundForm({ initial }: Props) {
   const router = useRouter();
+  const [kind, setKind] = useState<"article" | "book">(initial?.kind ?? "article");
   const [title, setTitle] = useState(initial?.title ?? "");
   const [url, setUrl] = useState(initial?.url ?? "");
   const [source, setSource] = useState(initial?.source ?? "");
@@ -39,13 +40,17 @@ export default function InboundForm({ initial }: Props) {
     setBusy(true);
     try {
       const payload = {
+        kind,
         title: title.trim(),
-        url: url.trim(),
+        url: url.trim() || null,
         source: source.trim() || null,
         tag: tag.trim() || null,
         date_published: dateRead,
         summary: summary.trim(),
-        quotes: quotes.map((q) => q.trim()).filter((q) => q.length > 0),
+        quotes:
+          kind === "book"
+            ? []
+            : quotes.map((q) => q.trim()).filter((q) => q.length > 0),
         pinned,
       };
       const endpoint = initial ? `/api/inbound/${initial.id}` : "/api/inbound";
@@ -73,6 +78,25 @@ export default function InboundForm({ initial }: Props) {
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-4">
+      {/* Article / Book toggle */}
+      <div className="flex gap-2">
+        {(["article", "book"] as const).map((k) => (
+          <button
+            key={k}
+            type="button"
+            onClick={() => setKind(k)}
+            aria-pressed={kind === k}
+            className={`text-[0.75rem] uppercase tracking-wide px-2.5 py-1 border rounded-sm transition-colors ${
+              kind === k
+                ? "border-foreground bg-foreground text-background"
+                : "border-rule text-muted hover:text-foreground"
+            }`}
+          >
+            {k}
+          </button>
+        ))}
+      </div>
+
       <Field label="Title">
         <input
           required
@@ -81,9 +105,9 @@ export default function InboundForm({ initial }: Props) {
           onChange={(e) => setTitle(e.target.value)}
         />
       </Field>
-      <Field label="URL">
+      <Field label={kind === "book" ? "URL (optional)" : "URL"}>
         <input
-          required
+          required={kind === "article"}
           type="url"
           className={inputClass}
           value={url}
@@ -92,12 +116,12 @@ export default function InboundForm({ initial }: Props) {
         />
       </Field>
       <div className="grid grid-cols-2 gap-4">
-        <Field label="Source">
+        <Field label={kind === "book" ? "Author" : "Source"}>
           <input
             className={inputClass}
             value={source}
             onChange={(e) => setSource(e.target.value)}
-            placeholder="Stratechery"
+            placeholder={kind === "book" ? "Ayn Rand" : "Stratechery"}
           />
         </Field>
         <Field label="Tag">
@@ -109,7 +133,7 @@ export default function InboundForm({ initial }: Props) {
           />
         </Field>
       </div>
-      <Field label="Date published">
+      <Field label={kind === "book" ? "Date finished" : "Date published"}>
         <input
           required
           type="date"
@@ -128,6 +152,7 @@ export default function InboundForm({ initial }: Props) {
         />
       </Field>
 
+      {kind === "article" && (
       <div>
         <div className="text-xs uppercase tracking-wide text-muted mb-2">
           Quotes
@@ -162,16 +187,19 @@ export default function InboundForm({ initial }: Props) {
           </button>
         </div>
       </div>
+      )}
 
-      <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
-        <input
-          type="checkbox"
-          checked={pinned}
-          onChange={(e) => setPinned(e.target.checked)}
-          className="w-4 h-4 accent-foreground"
-        />
-        <span>Pin to top of inbound</span>
-      </label>
+      {kind === "article" && (
+        <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={pinned}
+            onChange={(e) => setPinned(e.target.checked)}
+            className="w-4 h-4 accent-foreground"
+          />
+          <span>Pin to top of articles</span>
+        </label>
+      )}
 
       {error && <p className="text-xs text-red-600">{error}</p>}
 

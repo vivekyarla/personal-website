@@ -31,18 +31,22 @@ export async function POST(request: Request) {
     summary,
     quotes,
     pinned,
+    kind,
   } = body as {
     title?: string;
-    url?: string;
+    url?: string | null;
     source?: string;
     tag?: string;
     date_published?: string;
     summary?: string;
     quotes?: string[];
     pinned?: boolean;
+    kind?: "article" | "book";
   };
 
-  if (!title || !url || !summary) {
+  const resolvedKind = kind === "book" ? "book" : "article";
+  // Books don't need a URL; articles do.
+  if (!title || !summary || (resolvedKind === "article" && !url)) {
     return NextResponse.json({ error: "missing fields" }, { status: 400 });
   }
 
@@ -50,13 +54,18 @@ export async function POST(request: Request) {
     .from("inbound_readings")
     .insert({
       title,
-      url,
+      url: url || null,
       source: source ?? null,
       tag: tag ?? null,
       date_published: date_published ?? new Date().toISOString().slice(0, 10),
       summary,
-      quotes: Array.isArray(quotes) ? quotes.filter((q) => q.trim().length > 0) : [],
+      // Books never carry quotes.
+      quotes:
+        resolvedKind === "book" || !Array.isArray(quotes)
+          ? []
+          : quotes.filter((q) => q.trim().length > 0),
       pinned: !!pinned,
+      kind: resolvedKind,
     })
     .select()
     .single();

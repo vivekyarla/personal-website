@@ -40,8 +40,15 @@ export default async function AdminInbound() {
                   {item.title}
                 </div>
                 <div className="text-[0.8rem] text-muted leading-tight">
-                  {item.tag ?? "—"} · {formatInboundDate(item.date_published)} ·{" "}
-                  {item.quotes.length} quote{item.quotes.length === 1 ? "" : "s"}
+                  {item.kind === "book" ? "book" : "article"} ·{" "}
+                  {item.tag ?? "—"} · {formatInboundDate(item.date_published)}
+                  {item.kind !== "book" && (
+                    <>
+                      {" "}
+                      · {item.quotes.length} quote
+                      {item.quotes.length === 1 ? "" : "s"}
+                    </>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-3 shrink-0">
