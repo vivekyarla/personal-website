@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import GeoTheme from "@/components/GeoTheme";
+import VisitLogger from "@/components/VisitLogger";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -75,6 +76,7 @@ apply(lat,lon);
       </head>
       <body className="min-h-full flex flex-col">
         <GeoTheme />
+        <VisitLogger />
         <div className="mx-auto w-full max-w-2xl px-6 sm:px-8 flex-1 flex flex-col">
           <main className="flex-1 flex flex-col">{children}</main>
           <footer className="py-6 text-[0.7rem] text-muted/60 text-center">

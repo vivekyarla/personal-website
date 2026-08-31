@@ -90,6 +90,18 @@ export default async function AdminHome() {
 
       <section>
         <h2 className="text-base font-semibold tracking-tight mb-2">
+          Analytics
+        </h2>
+        <Link
+          href="/admin/analytics"
+          className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
+        >
+          Open analytics →
+        </Link>
+      </section>
+
+      <section>
+        <h2 className="text-base font-semibold tracking-tight mb-2">
           Security
         </h2>
         <EnrollPasskeyButton />
