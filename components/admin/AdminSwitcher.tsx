@@ -16,7 +16,11 @@ const items = [
 // slides between items while the page content swaps underneath. The slide is
 // optimistic: it starts the moment you click (or press 1–4), not when the
 // server responds.
-export default function AdminSwitcher() {
+export default function AdminSwitcher({
+  showAdminLink = true,
+}: {
+  showAdminLink?: boolean;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -116,12 +120,14 @@ export default function AdminSwitcher() {
           />
         )}
       </div>
-      <Link
-        href="/admin"
-        className="text-xs text-muted/70 hover:text-foreground transition-colors"
-      >
-        admin ↩
-      </Link>
+      {showAdminLink && (
+        <Link
+          href="/admin"
+          className="text-xs text-muted/70 hover:text-foreground transition-colors"
+        >
+          admin ↩
+        </Link>
+      )}
     </nav>
   );
 }

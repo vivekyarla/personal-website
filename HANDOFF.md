@@ -117,7 +117,11 @@ Supabase URL/keys, `ADMIN_PASSWORD`, `SESSION_SECRET` (must be 32+ chars),
 `requireAuthOrAgent` in `lib/session.ts`) only by the tasks, calendar,
 calendar-override, habits, habit-entries and inbound routes — read and write.
 Everything else stays admin-session-only. `GET /api/tasks` and
-`GET /api/habits` exist for it. Endpoint guide: `docs/instinct-api.md`.
+`GET /api/habits` exist for it. Browser agents whose vault only fills forms
+sign in at `/admin/instinct` (token in a password field → `session.agentAuthed`),
+which opens those pages (`requireAuthOrAgentSession`) and their APIs; the
+admin home, tweets, categories and analytics stay `authed`-only. Endpoint
+guide: `docs/instinct-api.md`.
 Revoke by rotating/unsetting the env var in Vercel.
 
 ## API routes (`app/api/`)

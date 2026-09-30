@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
-import { requireAuth } from "@/lib/session";
+import { requireAuthOrAgentSession } from "@/lib/session";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import InboundForm from "@/components/admin/InboundForm";
 import type { InboundReading } from "@/lib/inbound";
@@ -13,7 +13,7 @@ export default async function EditInbound({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  if (!(await requireAuth())) redirect("/admin/login");
+  if (!(await requireAuthOrAgentSession())) redirect("/admin/login");
   const { id } = await params;
   const { data, error } = await supabaseAdmin
     .from("inbound_readings")

@@ -3,16 +3,25 @@
 Read/write access to the four areas of Vivek's admin (Tasks, Calendar,
 Habits, Readings) on `https://vivekyarla.com`.
 
-## Auth
+## Auth — two options
 
-Send the token on every request:
+**Browser (for agents whose vault fills form fields):** open
+`https://vivekyarla.com/admin/instinct`, fill the token into the password
+field (username is `instinct`), and submit. That sets a session cookie for
+the browser, then lands on `/admin/tasks`. From there you can use the pages
+(`/admin/tasks`, `/admin/calendar`, `/admin/habits`, `/admin/inbound`) or call
+the endpoints below from the same browser. The cookie authenticates them, and
+no header is needed.
+
+**HTTP header:** send the token on every request:
 
 ```
 Authorization: Bearer <INSTINCT_TOKEN>
 ```
 
-The token only works for the endpoints below. Anything else (tweets,
-categories, analytics, admin login) returns `401`. Bodies are JSON
+Either way, access covers only the pages and endpoints below. Anything else
+(admin home, tweets, categories, analytics) redirects to the admin login or
+returns `401`. Bodies are JSON
 (`Content-Type: application/json`); errors come back as `{ "error": "..." }`.
 
 ## Conventions

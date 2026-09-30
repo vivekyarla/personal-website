@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { requireAuth } from "@/lib/session";
+import { requireAuthOrAgentSession } from "@/lib/session";
 import { fetchAllTags, fetchTasks, taskWindow } from "@/lib/tasks";
 import { fetchCalendar, calendarConfigured } from "@/lib/calendar";
 import TasksBoard from "@/components/admin/TasksBoard";
@@ -9,7 +9,7 @@ export const metadata = { title: "Admin · Tasks" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminTasks() {
-  if (!(await requireAuth())) redirect("/admin/login");
+  if (!(await requireAuthOrAgentSession())) redirect("/admin/login");
 
   const { today, tomorrow, week, weekEnd, historyStart } = taskWindow();
   const [tasks, calendar, allTags] = await Promise.all([

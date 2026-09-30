@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { requireAuth } from "@/lib/session";
+import { requireAuthOrAgentSession } from "@/lib/session";
 import { addDays, ptToday } from "@/lib/tasks";
 import { fetchCalendar, calendarConfigured } from "@/lib/calendar";
 import CalendarStrip from "@/components/admin/CalendarStrip";
@@ -12,7 +12,7 @@ export default async function AdminCalendar({
 }: {
   searchParams: Promise<{ focus?: string | string[] }>;
 }) {
-  if (!(await requireAuth())) redirect("/admin/login");
+  if (!(await requireAuthOrAgentSession())) redirect("/admin/login");
   // ?focus=<eventKey> — set by event links on the Tasks page.
   const { focus } = await searchParams;
 

@@ -1,4 +1,5 @@
 import AdminSwitcher from "@/components/admin/AdminSwitcher";
+import { requireAuth } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
@@ -7,7 +8,7 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -17,7 +18,8 @@ export default function AdminLayout({
       {/* Renders only on /admin/tasks, /admin/calendar, /admin/habits,
           /admin/inbound* — persists across those navigations so the
           underline slides. */}
-      <AdminSwitcher />
+      {/* Instinct's session can't open the admin home — hide its link. */}
+      <AdminSwitcher showAdminLink={await requireAuth()} />
       {children}
     </div>
   );

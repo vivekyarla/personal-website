@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { requireAuth } from "@/lib/session";
+import { requireAuthOrAgentSession } from "@/lib/session";
 import { fetchInbound, formatInboundDate } from "@/lib/inbound";
 import DeleteInboundButton from "@/components/admin/DeleteInboundButton";
 
@@ -8,7 +8,7 @@ export const metadata = { title: "Admin · Inbound" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminInbound() {
-  if (!(await requireAuth())) redirect("/admin/login");
+  if (!(await requireAuthOrAgentSession())) redirect("/admin/login");
   const items = await fetchInbound();
 
   return (

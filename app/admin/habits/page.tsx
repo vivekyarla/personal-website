@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { requireAuth } from "@/lib/session";
+import { requireAuthOrAgentSession } from "@/lib/session";
 import {
   fetchHabits,
   fetchEntriesSince,
@@ -14,7 +14,7 @@ export const metadata = { title: "Admin · Habits" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminHabits() {
-  if (!(await requireAuth())) redirect("/admin/login");
+  if (!(await requireAuthOrAgentSession())) redirect("/admin/login");
 
   const { dates, weekStartIndex, todayIndex } = gridDateRange();
   const today = ptToday();
