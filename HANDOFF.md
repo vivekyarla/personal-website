@@ -97,6 +97,9 @@ Supabase URL/keys, `ADMIN_PASSWORD`, `SESSION_SECRET` (must be 32+ chars),
   sized by duration (overlaps packed side by side), spotlight blur on hover,
   today marked by the switcher's hairline underline, monochrome now-line. Tap
   a block for its full title. Renames/hides from Tasks apply.
+  Event locations (Google `location`) show in short form on a block's own line
+  when it fits (else after the time); the tap-detail line shows the full
+  location linked to Google Maps, or to the meeting URL if it is one.
   `?focus=<eventKey>` (date|uid|HH:MM or allday) highlights and scrolls to an
   event — Tasks-page event titles link there; renaming on Tasks is the pencil
   beside ✕.

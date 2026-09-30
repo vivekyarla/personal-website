@@ -63,6 +63,7 @@ function fromApi(items: GcalItem[], win: Window): CalEvent[] {
     const base = {
       uid: it.iCalUID ?? it.id,
       title: it.summary ?? "(untitled)",
+      location: it.location?.trim() || null,
       recurring: !!it.recurringEventId,
     };
     if (it.start?.date) {
@@ -101,6 +102,12 @@ function fromApi(items: GcalItem[], win: Window): CalEvent[] {
 
 /* ---------- iCal feed source (fallback; Google's feed can lag) ---------- */
 
+// node-ical text props are a string or { val, params }.
+function icsText(v: unknown): string | null {
+  const s = typeof v === "string" ? v : (v as { val?: unknown } | null)?.val;
+  return typeof s === "string" && s.trim() ? s.trim() : null;
+}
+
 function fromIcs(parsed: CalendarResponse, win: Window): CalEvent[] {
   const events: CalEvent[] = [];
   for (const ev of Object.values(parsed)) {
@@ -119,11 +126,13 @@ function fromIcs(parsed: CalendarResponse, win: Window): CalEvent[] {
           ? Math.max(0, (e.end as Date).getTime() - (e.start as Date).getTime())
           : 0;
       const baseDuration = durationOf(ev);
+      const baseLocation = icsText(ev.location);
 
       const pushOccurrence = (
         start: Date,
         title: string,
-        duration = baseDuration
+        duration = baseDuration,
+        location = baseLocation
       ) => {
         const dateKey = keyOf(start);
         if (!win.wanted.has(dateKey)) return;
@@ -134,6 +143,7 @@ function fromIcs(parsed: CalendarResponse, win: Window): CalEvent[] {
           timeLabel: isAllDay ? null : ptTimeLabel(start),
           startMs: start.getTime(),
           endMs: start.getTime() + duration,
+          location,
           allDay: isAllDay,
           recurring,
         });
@@ -156,7 +166,8 @@ function fromIcs(parsed: CalendarResponse, win: Window): CalEvent[] {
           pushOccurrence(
             r.start as Date,
             String(r.summary ?? summary),
-            durationOf(r)
+            durationOf(r),
+            icsText(r.location) ?? baseLocation
           );
         }
       } else {

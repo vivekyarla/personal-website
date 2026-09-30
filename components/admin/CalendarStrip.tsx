@@ -33,6 +33,7 @@ const MIN_BLOCK_MIN = 20; // shortest drawn block, in minutes
 // many lines as fit above the time (then "…"), never a half-cut line.
 const TITLE_LINE_PX = 14;
 const TIME_LINE_PX = 12;
+const LOCATION_LINE_PX = 12;
 const DEFAULT_START_HOUR = 8;
 const DEFAULT_END_HOUR = 20;
 const EXTEND_DAYS = 28; // days added when scrolling near either end
@@ -88,6 +89,29 @@ function ptNow(): { dateKey: string; min: number } {
     dateKey: `${p.year}-${p.month}-${p.day}`,
     min: Number(p.hour) * 60 + Number(p.minute),
   };
+}
+
+// Locations: blocks show a short form ("Landau 101" from a full address,
+// "Zoom" for a meeting link); the tap-detail line shows it all, linked.
+const URL_RE = /https?:\/\/\S+/;
+function shortLocation(loc: string): string {
+  const url = loc.match(URL_RE)?.[0];
+  if (url && loc.trim() === url) {
+    const host = url.replace(/^https?:\/\/(www\.)?/, "").split(/[/?#]/)[0];
+    if (/zoom\.us$/.test(host)) return "Zoom";
+    if (host === "meet.google.com") return "Meet";
+    if (/teams\.microsoft\.com$/.test(host)) return "Teams";
+    return host;
+  }
+  // Text with a link mixed in ("Room 200 / https://zoom.us/…"): keep the text.
+  const text = loc.replace(URL_RE, "").replace(/[\s/|·,;-]+$/, "").trim();
+  return (text || loc).split(",")[0].trim();
+}
+function locationHref(loc: string): string {
+  return (
+    loc.match(URL_RE)?.[0] ??
+    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`
+  );
 }
 
 type Placed = {
@@ -430,16 +454,24 @@ export default function CalendarStrip({
       : "";
   const atToday = first === homeIdx;
 
-  const selectedLabel = (() => {
+  const selected = (() => {
     if (!selectedKey) return null;
     const date = selectedKey.slice(0, 10);
     const c = cols.find((x) => x.date === date);
     const when = fmtDay(date, { weekday: "short", month: "short", day: "numeric" });
     const allDay = c?.allDay.find((e) => eventKey(e) === selectedKey);
-    if (allDay) return `${allDay.displayTitle} · ${when}, all day`;
+    if (allDay) {
+      return {
+        text: `${allDay.displayTitle} · ${when}, all day`,
+        location: allDay.location ?? null,
+      };
+    }
     const p = c?.timed.find((x) => eventKey(x.e) === selectedKey);
     if (p) {
-      return `${p.e.displayTitle} · ${when}, ${fmtClock(p.start)} – ${fmtClock(p.end)}`;
+      return {
+        text: `${p.e.displayTitle} · ${when}, ${fmtClock(p.start)} – ${fmtClock(p.end)}`,
+        location: p.e.location ?? null,
+      };
     }
     return null;
   })();
@@ -487,10 +519,23 @@ export default function CalendarStrip({
       <p
         aria-live="polite"
         className={`-my-3 min-h-[1.1rem] truncate text-[0.78rem] transition-opacity ${
-          selectedLabel ? "opacity-100" : "opacity-0"
+          selected ? "opacity-100" : "opacity-0"
         }`}
       >
-        {selectedLabel}
+        {selected?.text}
+        {selected?.location && (
+          <>
+            {" · "}
+            <a
+              href={locationHref(selected.location)}
+              target="_blank"
+              rel="noreferrer"
+              className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
+            >
+              {selected.location}
+            </a>
+          </>
+        )}
       </p>
 
       <div className="flex">
@@ -575,7 +620,9 @@ export default function CalendarStrip({
                             type="button"
                             key={key}
                             data-key={key}
-                            title={e.displayTitle}
+                            title={[e.displayTitle, e.location]
+                              .filter(Boolean)
+                              .join("\n")}
                             onClick={() => toggleSelected(key)}
                             className={`blur-item max-w-full truncate text-left text-[0.64rem] transition-colors hover:text-foreground sm:text-[0.7rem] ${
                               selectedKey === key
@@ -610,8 +657,18 @@ export default function CalendarStrip({
                           now !== null &&
                           (c.date < now.dateKey ||
                             (c.date === now.dateKey && p.end <= now.min));
+                        // Location gets its own line when a title line still
+                        // fits; otherwise it rides on the time line.
+                        const locationLine =
+                          !!p.e.location &&
+                          height - 3 - TIME_LINE_PX - LOCATION_LINE_PX >=
+                            TITLE_LINE_PX;
                         const titleLines = Math.floor(
-                          (height - 3 - TIME_LINE_PX) / TITLE_LINE_PX
+                          (height -
+                            3 -
+                            TIME_LINE_PX -
+                            (locationLine ? LOCATION_LINE_PX : 0)) /
+                            TITLE_LINE_PX
                         );
                         const roomy = titleLines >= 1;
                         const key = eventKey(p.e);
@@ -621,7 +678,9 @@ export default function CalendarStrip({
                             type="button"
                             key={key}
                             data-key={key}
-                            title={`${p.e.displayTitle}\n${times}`}
+                            title={[p.e.displayTitle, times, p.e.location]
+                              .filter(Boolean)
+                              .join("\n")}
                             onClick={() => toggleSelected(key)}
                             className={`blur-item absolute overflow-hidden border-l pl-1 text-left sm:pl-1.5 ${
                               isSelected
@@ -657,11 +716,22 @@ export default function CalendarStrip({
                                   {p.e.displayTitle}
                                 </span>
                                 <span
-                                  className="shrink-0 whitespace-nowrap text-[0.58rem] text-muted/70 tabular-nums sm:text-[0.62rem]"
+                                  className="block shrink-0 truncate text-[0.58rem] text-muted/70 tabular-nums sm:text-[0.62rem]"
                                   style={{ lineHeight: `${TIME_LINE_PX}px` }}
                                 >
                                   {times}
+                                  {p.e.location &&
+                                    !locationLine &&
+                                    ` · ${shortLocation(p.e.location)}`}
                                 </span>
+                                {locationLine && (
+                                  <span
+                                    className="block shrink-0 truncate text-[0.58rem] text-muted/70 sm:text-[0.62rem]"
+                                    style={{ lineHeight: `${LOCATION_LINE_PX}px` }}
+                                  >
+                                    {shortLocation(p.e.location!)}
+                                  </span>
+                                )}
                               </>
                             ) : (
                               <span

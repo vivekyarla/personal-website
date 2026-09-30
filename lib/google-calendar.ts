@@ -12,6 +12,7 @@ export type GcalItem = {
   id: string;
   iCalUID?: string;
   summary?: string;
+  location?: string;
   status?: string;
   recurringEventId?: string;
   start?: { date?: string; dateTime?: string };
@@ -107,7 +108,7 @@ export async function listEvents(
       orderBy: "startTime",
       maxResults: "250",
       fields:
-        "accessRole,nextPageToken,items(id,iCalUID,summary,status,recurringEventId,start,end)",
+        "accessRole,nextPageToken,items(id,iCalUID,summary,location,status,recurringEventId,start,end)",
     });
     if (pageToken) params.set("pageToken", pageToken);
     const res = await fetch(
