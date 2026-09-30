@@ -73,12 +73,17 @@ Supabase URL/keys, `ADMIN_PASSWORD`, `SESSION_SECRET` (must be 32+ chars),
   to its iCal feed, which Google can serve stale.
 - The board polls `GET /api/calendar` every 20s while visible and on tab
   focus (`useCalendarPolling`), so Google edits land within seconds.
-- `/admin/calendar` (`WeekCalendar.tsx`) is a read-only Sun–Sat week grid of
-  the same data: blocks sized by duration, overlaps packed side by side,
-  hairline-rail events (no fills or gridlines), spotlight-blur hover, now-line,
-  all-day row, ←/→/t to change week, tap a block for its full
-  title. Renames/hides from Tasks apply there too. Uses `.writing-bleed` to
-  break out of the text column.
+- `/admin/calendar` (`CalendarStrip.tsx`) is a read-only day strip of the
+  same data: 5 days across (3 on phones), opening on today. Built like the
+  tweet carousel — native horizontal scroll with per-day snap points, hidden
+  scrollbar, `.tweet-edge` fog (shown only while moving) — so trackpad/swipe
+  glide; ‹ › and ←/→ glide a page, `t` returns to today. The rendered window
+  grows by 28 days near either end; days lazy-load via `/api/calendar` in
+  ≤7-date chunks and the visible days are polled. Styled in the site's
+  hairline register: no gridlines or fills, each event a left rail sized by
+  duration (overlaps packed side by side), spotlight blur on hover, today
+  marked by the switcher's hairline underline, monochrome now-line. Tap a
+  block for its full title. Renames/hides from Tasks apply.
 - Renames/hides are **local only** (never written to Google) in Supabase
   `calendar_event_overrides` (`uid` = iCal UID shared by a recurring series,
   `date_key` = `""` for every occurrence or `YYYY-MM-DD` for one day,
