@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
+import { createPortal } from "react-dom";
 import {
   DndContext,
   DragOverlay,
@@ -25,6 +32,11 @@ import Link from "next/link";
 import Collapsible from "@/components/Collapsible";
 import { useCalendarPolling } from "@/components/admin/useCalendarPolling";
 import {
+  toggleTaskView,
+  useTaskView,
+  type TaskView,
+} from "@/components/admin/taskView";
+import {
   eventKey,
   patchOverrides,
   resolveEvents,
@@ -39,6 +51,9 @@ export type Task = {
   due_date: string;
   done: boolean;
   position: number;
+  // Label view: the tag a task had before being dragged into Rox/McK, restored
+  // when it's dragged back into All.
+  prev_tag?: string | null;
 };
 
 // Override patch for one calendar event: `scope` "series" hits every
@@ -73,6 +88,24 @@ function fmtDay(iso: string, opts: Intl.DateTimeFormatOptions): string {
 const byPos = (a: Task, b: Task) =>
   a.position - b.position || a.id.localeCompare(b.id);
 
+const noopSubscribe = () => () => {};
+
+/* ---- Label view: each day split into All / Rox / McK ---- */
+
+type Group = "all" | "rox" | "mck";
+const GROUPS: { key: Group; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "rox", label: "Rox" },
+  { key: "mck", label: "McK" },
+];
+const DEFAULT_SPELLING: Record<Group, string> = { all: "", rox: "Rox", mck: "McK" };
+
+// Rox/McK match any capitalization; every other tag (or none) is All.
+function groupOf(tag: string | null): Group {
+  const t = tag?.trim().toLowerCase();
+  return t === "rox" || t === "mck" ? t : "all";
+}
+
 export default function TasksBoard({
   initialTasks,
   initialCalendar,
@@ -94,8 +127,19 @@ export default function TasksBoard({
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const tasksRef = useRef(tasks);
   tasksRef.current = tasks;
-  const dragOrigin = useRef<{ id: string; date: string; pos: number } | null>(
-    null
+  const dragOrigin = useRef<{
+    id: string;
+    date: string;
+    pos: number;
+    tag: string | null;
+    prev_tag: string | null;
+  } | null>(null);
+  const view = useTaskView();
+  // Client-only flag for the drag overlay portal (no document during SSR).
+  const mounted = useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false
   );
 
   const knownTags = useMemo(() => {
@@ -120,6 +164,9 @@ export default function TasksBoard({
       if (e.key === "n") {
         e.preventDefault();
         setNewTaskSignal((s) => s + 1);
+      } else if (e.key === "g") {
+        e.preventDefault();
+        toggleTaskView();
       }
     }
     window.addEventListener("keydown", onKey);
@@ -129,6 +176,29 @@ export default function TasksBoard({
   // Strict day buckets — tasks never roll over between days.
   function bucket(date: string): Task[] {
     return tasks.filter((t) => t.due_date === date).sort(byPos);
+  }
+
+  // Drag/drop container: the day, or in label view (current days only —
+  // history stays plain) the day + group, e.g. "2026-10-01#rox".
+  function containerOf(t: Task): string {
+    return view === "label" && t.due_date >= today
+      ? `${t.due_date}#${groupOf(t.tag)}`
+      : t.due_date;
+  }
+  function bucketIn(container: string): Task[] {
+    return tasks.filter((t) => containerOf(t) === container).sort(byPos);
+  }
+
+  // Tag change for moving a task into group `g`: into Rox/McK remembers the
+  // All tag it came from; back into All restores it.
+  function retag(t: Task, g: Group): Pick<Task, "tag" | "prev_tag"> {
+    const from = groupOf(t.tag);
+    if (from === g) return { tag: t.tag, prev_tag: t.prev_tag ?? null };
+    if (g === "all") return { tag: t.prev_tag ?? null, prev_tag: null };
+    return {
+      tag: DEFAULT_SPELLING[g],
+      prev_tag: from === "all" ? t.tag : (t.prev_tag ?? null),
+    };
   }
 
   async function toggle(id: string) {
@@ -228,13 +298,20 @@ export default function TasksBoard({
   function onDragStart(e: DragStartEvent) {
     const t = tasksRef.current.find((x) => x.id === String(e.active.id));
     if (t) {
-      dragOrigin.current = { id: t.id, date: t.due_date, pos: t.position };
+      dragOrigin.current = {
+        id: t.id,
+        date: t.due_date,
+        pos: t.position,
+        tag: t.tag,
+        prev_tag: t.prev_tag ?? null,
+      };
       setActiveTask(t);
     }
     setDragging(true);
   }
 
-  function onDragCancel() {
+  // Put the dragged task back exactly as it started.
+  function restoreOrigin() {
     const origin = dragOrigin.current;
     dragOrigin.current = null;
     setDragging(false);
@@ -243,15 +320,26 @@ export default function TasksBoard({
       setTasks((prev) =>
         prev.map((x) =>
           x.id === origin.id
-            ? { ...x, due_date: origin.date, position: origin.pos }
+            ? {
+                ...x,
+                due_date: origin.date,
+                position: origin.pos,
+                tag: origin.tag,
+                prev_tag: origin.prev_tag,
+              }
             : x
         )
       );
     }
   }
 
-  // While hovering over another day, move the task there optimistically so
-  // the lists make room (fractional positions; normalized on drop).
+  function onDragCancel() {
+    restoreOrigin();
+  }
+
+  // While hovering over another day (or, in label view, another group), move
+  // the task there optimistically so the lists make room (fractional
+  // positions; normalized on drop). Entering a group retags the task.
   function onDragOver(e: DragOverEvent) {
     const { active, over } = e;
     if (!over) return;
@@ -261,25 +349,36 @@ export default function TasksBoard({
     setTasks((prev) => {
       const t = prev.find((x) => x.id === activeId);
       if (!t) return prev;
-      const overDate = overId.startsWith("day:")
+      const onContainer = overId.startsWith("day:");
+      const overTask = onContainer ? null : prev.find((x) => x.id === overId);
+      const overC = onContainer
         ? overId.slice(4)
-        : prev.find((x) => x.id === overId)?.due_date;
-      if (!overDate || t.due_date === overDate) return prev;
+        : overTask && containerOf(overTask);
+      if (!overC || containerOf(t) === overC) return prev;
+      const [overDate, overGroup] = overC.split("#") as [string, Group?];
       // One-way street: tasks can leave history but never enter the past.
       if (overDate < today) return prev;
       let pos: number;
-      if (overId.startsWith("day:")) {
+      if (onContainer) {
         const others = prev.filter(
-          (x) => x.due_date === overDate && x.id !== activeId
+          (x) => x.id !== activeId && containerOf(x) === overC
+        );
+        const sameDay = prev.filter(
+          (x) => x.id !== activeId && x.due_date === overDate
         );
         pos = others.length
-          ? Math.max(...others.map((x) => x.position)) + 1
-          : 0;
+          ? Math.max(...others.map((x) => x.position)) + 0.5
+          : sameDay.length
+            ? Math.max(...sameDay.map((x) => x.position)) + 1
+            : 0;
       } else {
-        pos = (prev.find((x) => x.id === overId)?.position ?? 0) - 0.5;
+        pos = (overTask?.position ?? 0) - 0.5;
       }
+      const tagPatch = overGroup ? retag(t, overGroup) : {};
       return prev.map((x) =>
-        x.id === activeId ? { ...x, due_date: overDate, position: pos } : x
+        x.id === activeId
+          ? { ...x, due_date: overDate, position: pos, ...tagPatch }
+          : x
       );
     });
   }
@@ -287,35 +386,28 @@ export default function TasksBoard({
   function onDragEnd(e: DragEndEvent) {
     const { active, over } = e;
     const origin = dragOrigin.current;
-    dragOrigin.current = null;
-    setDragging(false);
-    setActiveTask(null);
     const activeId = String(active.id);
 
     if (!over || !origin) {
       // Cancelled / dropped outside — put it back where it started.
-      if (origin) {
-        setTasks((prev) =>
-          prev.map((x) =>
-            x.id === activeId
-              ? { ...x, due_date: origin.date, position: origin.pos }
-              : x
-          )
-        );
-      }
+      restoreOrigin();
       return;
     }
+    dragOrigin.current = null;
+    setDragging(false);
+    setActiveTask(null);
 
     const cur = tasksRef.current;
     const t = cur.find((x) => x.id === activeId);
     if (!t) return;
     const targetDate = t.due_date; // set by onDragOver (or unchanged)
+    const targetC = containerOf(t);
     const overId = String(over.id);
 
-    let targetList = cur.filter((x) => x.due_date === targetDate).sort(byPos);
+    let targetList = cur.filter((x) => containerOf(x) === targetC).sort(byPos);
     if (!overId.startsWith("day:") && overId !== activeId) {
       const o = cur.find((x) => x.id === overId);
-      if (o && o.due_date === targetDate) {
+      if (o && containerOf(o) === targetC) {
         const oldIndex = targetList.findIndex((x) => x.id === activeId);
         const newIndex = targetList.findIndex((x) => x.id === overId);
         if (oldIndex >= 0 && newIndex >= 0) {
@@ -324,8 +416,16 @@ export default function TasksBoard({
       }
     }
 
-    // Normalize positions in target (and source if the task changed days).
-    const posById = new Map(targetList.map((x, i) => [x.id, i]));
+    // Days keep one ordering across views: write the container's new order
+    // back into the slots its tasks occupy in the day (identity in day view).
+    let gi = 0;
+    const dayOrder = cur
+      .filter((x) => x.due_date === targetDate)
+      .sort(byPos)
+      .map((x) => (containerOf(x) === targetC ? targetList[gi++] : x));
+
+    // Normalize positions in the target day (and the source day if it changed).
+    const posById = new Map(dayOrder.map((x, i) => [x.id, i]));
     let sourceIds: string[] = [];
     const dateChanged = origin.date !== targetDate;
     if (dateChanged) {
@@ -342,17 +442,23 @@ export default function TasksBoard({
     );
 
     // Persist
-    if (dateChanged) {
+    const patch: Record<string, unknown> = {};
+    if (dateChanged) patch.due_date = targetDate;
+    if (t.tag !== origin.tag) {
+      patch.tag = t.tag;
+      patch.prev_tag = t.prev_tag ?? null;
+    }
+    if (Object.keys(patch).length) {
       fetch(`/api/tasks/${activeId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ due_date: targetDate }),
+        body: JSON.stringify(patch),
       });
     }
     fetch("/api/tasks/reorder", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ids: targetList.map((x) => x.id) }),
+      body: JSON.stringify({ ids: dayOrder.map((x) => x.id) }),
     });
     if (sourceIds.length) {
       fetch("/api/tasks/reorder", {
@@ -364,7 +470,9 @@ export default function TasksBoard({
   }
 
   const shared = {
+    view,
     bucket,
+    bucketIn,
     knownTags,
     dragging,
     onToggle: toggle,
@@ -439,8 +547,8 @@ export default function TasksBoard({
                       </span>
                     </div>
                     <DayList
-                      date={d}
-                      bucket={bucket}
+                      id={d}
+                      list={list}
                       dragging={false}
                       onToggle={toggle}
                       onDelete={del}
@@ -452,29 +560,41 @@ export default function TasksBoard({
           </Collapsible>
         )}
 
-        {/* Dragged row rendered in a portal so it isn't clipped when pulled
-            out of the History collapsible. */}
-        <DragOverlay>
-          {activeTask ? (
-            <div
-              className={`flex items-start gap-2.5 py-1.5 bg-background ${
-                activeTask.done ? "task-done" : ""
-              }`}
-            >
-              <span
-                aria-hidden
-                className="shrink-0 text-muted/50 leading-none pt-1"
-              >
-                ⠿
-              </span>
-              <TaskRowBody
-                task={activeTask}
-                onToggle={() => {}}
-                onDelete={() => {}}
-              />
-            </div>
-          ) : null}
-        </DragOverlay>
+        {/* Dragged row portaled to <body>: the page's .waterfall animation
+            leaves a transform on our ancestor, which would make the overlay's
+            position:fixed relative to it — offsetting the drag's collision
+            rect (drops landed a group/row low). Also keeps it from being
+            clipped when pulled out of the History collapsible. */}
+        {mounted &&
+          createPortal(
+            <DragOverlay>
+              {activeTask ? (
+                <div
+                  className={`flex items-start gap-2.5 py-1.5 bg-background ${
+                    activeTask.done ? "task-done" : ""
+                  }`}
+                >
+                  <span
+                    aria-hidden
+                    className="shrink-0 text-muted/50 leading-none pt-1"
+                  >
+                    ⠿
+                  </span>
+                  <TaskRowBody
+                    task={activeTask}
+                    hideTag={
+                      view === "label" &&
+                      activeTask.due_date >= today &&
+                      groupOf(activeTask.tag) !== "all"
+                    }
+                    onToggle={() => {}}
+                    onDelete={() => {}}
+                  />
+                </div>
+              ) : null}
+            </DragOverlay>,
+            document.body
+          )}
       </DndContext>
     </div>
   );
@@ -489,7 +609,9 @@ function DaySection(props: {
   events: ShownEvent[];
   showCalendar: boolean;
   focusSignal?: number;
+  view: TaskView;
   bucket: (d: string) => Task[];
+  bucketIn: (container: string) => Task[];
   knownTags: string[];
   dragging: boolean;
   onToggle: (id: string) => void;
@@ -524,13 +646,7 @@ function DaySection(props: {
               <div className="text-[0.68rem] uppercase tracking-wide text-muted/80 mb-1">
                 {fmtDay(d, { weekday: "long", month: "short", day: "numeric" })}
               </div>
-              <DayList
-                date={d}
-                bucket={props.bucket}
-                dragging={dragging}
-                onToggle={props.onToggle}
-                onDelete={props.onDelete}
-              />
+              <DayTasks date={d} {...props} />
             </div>
           ))}
           <AddTaskRow
@@ -541,13 +657,7 @@ function DaySection(props: {
         </>
       ) : (
         <>
-          <DayList
-            date={dates[0]}
-            bucket={props.bucket}
-            dragging={dragging}
-            onToggle={props.onToggle}
-            onDelete={props.onDelete}
-          />
+          <DayTasks date={dates[0]} {...props} />
           <AddTaskRow
             due={dates[0]}
             knownTags={props.knownTags}
@@ -796,21 +906,86 @@ function CalendarRow({
 
 /* ---------- Droppable day list (shares the board's DndContext) ---------- */
 
-function DayList({
+// One day's tasks: a single list, or (label view) All / Rox / McK groups in
+// that order. Empty groups hide except while dragging (as drop targets).
+function DayTasks({
   date,
+  view,
   bucket,
+  bucketIn,
   dragging,
   onToggle,
   onDelete,
 }: {
   date: string;
+  view: TaskView;
   bucket: (d: string) => Task[];
+  bucketIn: (container: string) => Task[];
   dragging: boolean;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
 }) {
-  const list = bucket(date);
-  const { setNodeRef, isOver } = useDroppable({ id: `day:${date}` });
+  if (view === "day") {
+    return (
+      <DayList
+        id={date}
+        list={bucket(date)}
+        dragging={dragging}
+        onToggle={onToggle}
+        onDelete={onDelete}
+      />
+    );
+  }
+  return (
+    <div className="flex flex-col gap-2.5">
+      {GROUPS.map((g) => {
+        const id = `${date}#${g.key}`;
+        const list = bucketIn(id);
+        if (list.length === 0 && !dragging) return null;
+        const done = list.filter((t) => t.done).length;
+        return (
+          <div key={g.key}>
+            <div className="flex items-baseline justify-between">
+              <span className="text-[0.62rem] uppercase tracking-wide text-muted/80">
+                {g.label}
+              </span>
+              {list.length > 0 && (
+                <span className="text-[0.62rem] text-muted/60 tabular-nums">
+                  {done}/{list.length}
+                </span>
+              )}
+            </div>
+            <DayList
+              id={id}
+              list={list}
+              dragging={dragging}
+              hideTag={g.key !== "all"}
+              onToggle={onToggle}
+              onDelete={onDelete}
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function DayList({
+  id,
+  list,
+  dragging,
+  hideTag = false,
+  onToggle,
+  onDelete,
+}: {
+  id: string; // date, or date#group in label view
+  list: Task[];
+  dragging: boolean;
+  hideTag?: boolean; // group heading already says Rox/McK
+  onToggle: (id: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id: `day:${id}` });
 
   return (
     <div ref={setNodeRef}>
@@ -823,6 +998,7 @@ function DayList({
             <TaskRow
               key={t.id}
               task={t}
+              hideTag={hideTag}
               onToggle={() => onToggle(t.id)}
               onDelete={() => onDelete(t.id)}
             />
@@ -844,10 +1020,12 @@ function DayList({
 
 function TaskRow({
   task: t,
+  hideTag,
   onToggle,
   onDelete,
 }: {
   task: Task;
+  hideTag?: boolean;
   onToggle: () => void;
   onDelete: () => void;
 }) {
@@ -874,17 +1052,24 @@ function TaskRow({
       >
         ⠿
       </button>
-      <TaskRowBody task={t} onToggle={onToggle} onDelete={onDelete} />
+      <TaskRowBody
+        task={t}
+        hideTag={hideTag}
+        onToggle={onToggle}
+        onDelete={onDelete}
+      />
     </li>
   );
 }
 
 function TaskRowBody({
   task: t,
+  hideTag,
   onToggle,
   onDelete,
 }: {
   task: Task;
+  hideTag?: boolean;
   onToggle: () => void;
   onDelete: () => void;
 }) {
@@ -914,7 +1099,7 @@ function TaskRowBody({
       </button>
       <div className="min-w-0 flex-1 leading-snug">
         <span className="task-title text-[0.9rem]">{t.title}</span>
-        {t.tag && (
+        {t.tag && !hideTag && (
           <div className="mt-0.5 text-[0.68rem] uppercase tracking-wide text-muted/80">
             {t.tag}
           </div>

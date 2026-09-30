@@ -62,6 +62,19 @@ Supabase URL/keys, `ADMIN_PASSWORD`, `SESSION_SECRET` (must be 32+ chars),
   SimpleWebAuthn; guarded by `requireAuth()` from `lib/session.ts`.
 - `not-found.tsx` — custom 404 ("This page does not exist. What a tragedy.").
 
+## Tasks labels (`/admin/tasks`)
+
+- **Day · Label** switch beside the heading (`g`; remembered per browser in
+  `localStorage` via `components/admin/taskView.ts`). Label view splits each
+  current day into All / Rox / McK (Rox/McK match any case; everything else,
+  including untagged, is All). History stays plain.
+- Dragging between groups retags: into Rox/McK sets `tag` to "Rox"/"McK" and
+  stores the All tag it came from in `tasks.prev_tag`; back into All restores
+  it. Days keep one ordering across views (a group's new order is written
+  back into its slots in the day).
+- The drag overlay is portaled to `<body>` — `.waterfall`'s lingering
+  transform otherwise re-anchors its `position: fixed` and offsets drops.
+
 ## Tasks calendar (`/admin/tasks`)
 
 - Events for Today/Tomorrow come from the calendars listed in `GCAL_ICS_URLS`

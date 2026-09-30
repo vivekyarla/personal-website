@@ -12,7 +12,8 @@ export async function PATCH(
   const { id } = await params;
   const body = await request.json().catch(() => ({}));
   const update: Record<string, unknown> = {};
-  for (const k of ["title", "tag", "due_date", "position"] as const) {
+  const fields = ["title", "tag", "prev_tag", "due_date", "position"] as const;
+  for (const k of fields) {
     if (k in body) update[k] = body[k];
   }
   if ("done" in body) {

@@ -29,6 +29,10 @@ const HOUR_PX = 44;
 const HEADER_PX = 44;
 const ALLDAY_ROW_PX = 16;
 const MIN_BLOCK_MIN = 20; // shortest drawn block, in minutes
+// Fixed line heights so each block can fit whole lines: the title gets as
+// many lines as fit above the time (then "…"), never a half-cut line.
+const TITLE_LINE_PX = 14;
+const TIME_LINE_PX = 12;
 const DEFAULT_START_HOUR = 8;
 const DEFAULT_END_HOUR = 20;
 const EXTEND_DAYS = 28; // days added when scrolling near either end
@@ -599,7 +603,10 @@ export default function CalendarStrip({
                           now !== null &&
                           (c.date < now.dateKey ||
                             (c.date === now.dateKey && p.end <= now.min));
-                        const roomy = height >= 30;
+                        const titleLines = Math.floor(
+                          (height - 3 - TIME_LINE_PX) / TITLE_LINE_PX
+                        );
+                        const roomy = titleLines >= 1;
                         const key = eventKey(p.e);
                         const isSelected = selectedKey === key;
                         return (
@@ -629,13 +636,23 @@ export default function CalendarStrip({
                                 {/* Whole words only — narrow columns clip
                                     rather than splitting "CS229" mid-word. */}
                                 <span
-                                  className={`text-[0.64rem] leading-tight tracking-tight [overflow-wrap:normal] sm:text-[0.72rem] ${
+                                  className={`text-[0.64rem] tracking-tight [overflow-wrap:normal] sm:text-[0.72rem] ${
                                     past && !isSelected ? "text-muted" : "text-foreground"
                                   }`}
+                                  style={{
+                                    lineHeight: `${TITLE_LINE_PX}px`,
+                                    display: "-webkit-box",
+                                    WebkitBoxOrient: "vertical",
+                                    WebkitLineClamp: titleLines,
+                                    overflow: "hidden",
+                                  }}
                                 >
                                   {p.e.displayTitle}
                                 </span>
-                                <span className="mt-0.5 whitespace-nowrap text-[0.58rem] leading-tight text-muted/70 tabular-nums sm:text-[0.62rem]">
+                                <span
+                                  className="shrink-0 whitespace-nowrap text-[0.58rem] text-muted/70 tabular-nums sm:text-[0.62rem]"
+                                  style={{ lineHeight: `${TIME_LINE_PX}px` }}
+                                >
                                   {times}
                                 </span>
                               </>
