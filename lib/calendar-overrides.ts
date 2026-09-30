@@ -8,6 +8,7 @@ export type CalEvent = {
   dateKey: string; // YYYY-MM-DD in PT
   timeLabel: string | null; // "07:00" (PT, 24h) — null for all-day
   startMs: number;
+  endMs: number; // == startMs when the source gives no end
   allDay: boolean;
   recurring: boolean;
 };

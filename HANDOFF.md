@@ -55,7 +55,8 @@ Supabase URL/keys, `ADMIN_PASSWORD`, `SESSION_SECRET` (must be 32+ chars),
 - `/repository` — quotes, `N tweets · M categories` index, collapsible
   **Latest** (defaultOpen, category labels) + collapsible category sections,
   each a full-bleed horizontal tweet carousel with edge fog.
-- `/admin` — passkey (TouchID/FaceID) or password auth. Manages inbound
+- `/admin` — Tasks / Calendar / Habits / Readings switcher (keys 1–4);
+  passkey (TouchID/FaceID) or password auth. Manages inbound
   readings, tweet categories/tweets, and a habit tracker (Today quick-check,
   grid, momentum charts, perfect days). Auth: iron-session cookie +
   SimpleWebAuthn; guarded by `requireAuth()` from `lib/session.ts`.
@@ -71,7 +72,12 @@ Supabase URL/keys, `ADMIN_PASSWORD`, `SESSION_SECRET` (must be 32+ chars),
   email, "See all event details"). Any calendar the API can't read falls back
   to its iCal feed, which Google can serve stale.
 - The board polls `GET /api/calendar` every 20s while visible and on tab
-  focus, so Google edits land within seconds.
+  focus (`useCalendarPolling`), so Google edits land within seconds.
+- `/admin/calendar` (`WeekCalendar.tsx`) is a read-only Sun–Sat week grid of
+  the same data: blocks sized by duration, overlaps packed side by side,
+  now-line, all-day strip, ←/→/t to change week, tap a block for its full
+  title. Renames/hides from Tasks apply there too. Uses `.writing-bleed` to
+  break out of the text column.
 - Renames/hides are **local only** (never written to Google) in Supabase
   `calendar_event_overrides` (`uid` = iCal UID shared by a recurring series,
   `date_key` = `""` for every occurrence or `YYYY-MM-DD` for one day,

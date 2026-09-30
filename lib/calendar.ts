@@ -76,6 +76,7 @@ function fromApi(items: GcalItem[], win: Window): CalEvent[] {
             dateKey: d,
             timeLabel: null,
             startMs: Date.parse(d + "T00:00:00Z"),
+            endMs: Date.parse(d + "T00:00:00Z"),
             allDay: true,
           });
         }
@@ -84,11 +85,13 @@ function fromApi(items: GcalItem[], win: Window): CalEvent[] {
       const start = new Date(it.start.dateTime);
       const dateKey = ptDateKey(start);
       if (!win.wanted.has(dateKey)) continue;
+      const end = it.end?.dateTime ? Date.parse(it.end.dateTime) : NaN;
       out.push({
         ...base,
         dateKey,
         timeLabel: ptTimeLabel(start),
         startMs: start.getTime(),
+        endMs: Number.isNaN(end) ? start.getTime() : end,
         allDay: false,
       });
     }
@@ -111,8 +114,17 @@ function fromIcs(parsed: CalendarResponse, win: Window): CalEvent[] {
       const keyOf = (d: Date) => (isAllDay ? localDateKey(d) : ptDateKey(d));
       const uid = String(ev.uid ?? summary);
       const recurring = !!ev.rrule;
+      const durationOf = (e: typeof ev) =>
+        e.end && e.start
+          ? Math.max(0, (e.end as Date).getTime() - (e.start as Date).getTime())
+          : 0;
+      const baseDuration = durationOf(ev);
 
-      const pushOccurrence = (start: Date, title: string) => {
+      const pushOccurrence = (
+        start: Date,
+        title: string,
+        duration = baseDuration
+      ) => {
         const dateKey = keyOf(start);
         if (!win.wanted.has(dateKey)) return;
         events.push({
@@ -121,6 +133,7 @@ function fromIcs(parsed: CalendarResponse, win: Window): CalEvent[] {
           dateKey,
           timeLabel: isAllDay ? null : ptTimeLabel(start),
           startMs: start.getTime(),
+          endMs: start.getTime() + duration,
           allDay: isAllDay,
           recurring,
         });
@@ -140,7 +153,11 @@ function fromIcs(parsed: CalendarResponse, win: Window): CalEvent[] {
         // Modified single occurrences (moved/renamed instances)
         for (const rec of Object.values(ev.recurrences ?? {})) {
           const r = rec as typeof ev;
-          pushOccurrence(r.start as Date, String(r.summary ?? summary));
+          pushOccurrence(
+            r.start as Date,
+            String(r.summary ?? summary),
+            durationOf(r)
+          );
         }
       } else {
         pushOccurrence(ev.start as Date, summary);

@@ -22,6 +22,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import Collapsible from "@/components/Collapsible";
+import { useCalendarPolling } from "@/components/admin/useCalendarPolling";
 import {
   patchOverrides,
   resolveEvents,
@@ -49,9 +50,6 @@ type OnEventOverride = (
   scope: "series" | "day",
   patch: EventPatch
 ) => void;
-
-// How often the open board re-pulls Google Calendar (also on tab focus).
-const CAL_POLL_MS = 20 * 1000;
 
 type Props = {
   initialTasks: Task[];
@@ -171,45 +169,17 @@ export default function TasksBoard({
 
   /* ---- Calendar: live refresh + local renames/hides ---- */
 
-  // Re-pull while the tab is visible, and immediately on returning to it, so
-  // edits made in Google Calendar land within seconds.
-  useEffect(() => {
-    if (!calendarConfigured) return;
-    let inFlight = false;
-    async function refresh() {
-      if (inFlight || document.visibilityState !== "visible") return;
-      inFlight = true;
-      const seqAtStart = overrideSeq.current;
-      try {
-        const res = await fetch(`/api/calendar?dates=${today},${tomorrow}`, {
-          cache: "no-store",
-        });
-        if (!res.ok) return;
-        const fresh = (await res.json()) as CalendarData;
-        const keepLocal =
-          overridesInFlight.current > 0 || overrideSeq.current !== seqAtStart;
-        setCalendar((prev) => ({
-          events: fresh.events,
-          overrides: keepLocal ? prev.overrides : fresh.overrides,
-        }));
-      } catch {
-        // Offline / transient — keep what's on screen.
-      } finally {
-        inFlight = false;
-      }
-    }
-    const id = setInterval(refresh, CAL_POLL_MS);
-    const onVisible = () => {
-      if (document.visibilityState === "visible") refresh();
+  useCalendarPolling(calendarConfigured, [today, tomorrow], () => {
+    const seqAtStart = overrideSeq.current;
+    return (fresh) => {
+      const keepLocal =
+        overridesInFlight.current > 0 || overrideSeq.current !== seqAtStart;
+      setCalendar((prev) => ({
+        events: fresh.events,
+        overrides: keepLocal ? prev.overrides : fresh.overrides,
+      }));
     };
-    document.addEventListener("visibilitychange", onVisible);
-    window.addEventListener("focus", onVisible);
-    return () => {
-      clearInterval(id);
-      document.removeEventListener("visibilitychange", onVisible);
-      window.removeEventListener("focus", onVisible);
-    };
-  }, [calendarConfigured, today, tomorrow]);
+  });
 
   const overrideEvent: OnEventOverride = async (e, scope, patch) => {
     const dateKey = scope === "day" ? e.dateKey : "";

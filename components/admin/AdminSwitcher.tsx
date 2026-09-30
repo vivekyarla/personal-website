@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 
 const items = [
   { href: "/admin/tasks", label: "Tasks" },
+  { href: "/admin/calendar", label: "Calendar" },
   { href: "/admin/habits", label: "Habits" },
   { href: "/admin/inbound", label: "Readings" },
 ];
@@ -13,7 +14,7 @@ const items = [
 // Persistent quick-switcher for the daily-use admin surfaces. Lives in the
 // admin layout so it never remounts on navigation — the hairline underline
 // slides between items while the page content swaps underneath. The slide is
-// optimistic: it starts the moment you click (or press 1/2/3), not when the
+// optimistic: it starts the moment you click (or press 1–4), not when the
 // server responds.
 export default function AdminSwitcher() {
   const pathname = usePathname();
@@ -53,7 +54,8 @@ export default function AdminSwitcher() {
     };
   }, [activeIdx]);
 
-  // Keyboard: 1/2/3 jump between Tasks/Habits/Readings (ignored while typing).
+  // Keyboard: 1–4 jump between Tasks/Calendar/Habits/Readings (ignored while
+  // typing).
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
@@ -66,7 +68,7 @@ export default function AdminSwitcher() {
           t.isContentEditable)
       )
         return;
-      const idx = ["1", "2", "3"].indexOf(e.key);
+      const idx = ["1", "2", "3", "4"].indexOf(e.key);
       if (idx < 0) return;
       e.preventDefault();
       setPending(idx);
