@@ -1154,11 +1154,11 @@ function AddTaskRow({
     if (!title.trim() || !target || busy) return;
     setBusy(true);
     await onAdd(target, title.trim(), tag.trim());
+    // Collapse back to "+ Add task" with fresh fields for next time.
     setTitle("");
+    setTag("");
     setBusy(false);
-    // Rapid entry: cursor returns to the title field (tag + day stick around
-    // so several tasks can share them).
-    requestAnimationFrame(() => titleRef.current?.focus());
+    setOpen(false);
   }
 
   if (!open) {
