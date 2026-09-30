@@ -1,16 +1,19 @@
 import "server-only";
-import ical from "node-ical";
+import ical, { type CalendarResponse } from "node-ical";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import {
+  calendarIdFromIcsUrl,
+  googleApiConfigured,
+  listEvents,
+  type GcalItem,
+} from "@/lib/google-calendar";
+import type {
+  CalEvent,
+  CalendarData,
+  CalOverride,
+} from "@/lib/calendar-overrides";
 
-export type CalEvent = {
-  uid: string;
-  title: string; // display title (override applied)
-  originalTitle: string;
-  dateKey: string; // YYYY-MM-DD in PT
-  timeLabel: string | null; // "07:00" (PT, 24h) — null for all-day
-  startMs: number;
-  allDay: boolean;
-};
+export type { CalEvent, CalendarData, CalOverride };
 
 const TZ = "America/Los_Angeles";
 
@@ -39,149 +42,207 @@ function localDateKey(d: Date): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
-// Feed expansion is the slow part (7 ICS downloads) — cache it in-module for
-// 5 minutes. Overrides are applied fresh on every request so renames show
-// instantly.
-const CAL_TTL_MS = 5 * 60 * 1000;
-let calCache: { key: string; exp: number; events: CalEvent[] } | null = null;
+type Window = { wanted: Set<string>; start: Date; end: Date; key: string };
 
-// Fetch + expand all configured calendars into a flat event list (no
-// overrides applied).
-async function expandAll(dateKeys: string[]): Promise<CalEvent[]> {
-  const urls = (process.env.GCAL_ICS_URLS ?? "")
-    .split(",")
-    .map((u) => u.trim())
-    .filter(Boolean);
-  if (urls.length === 0 || dateKeys.length === 0) return [];
-
-  const wanted = new Set(dateKeys);
-  // Expansion window: from start of first day to end of last, padded a day on
-  // each side so PT/UTC boundary events aren't missed.
+function windowFor(dateKeys: string[]): Window {
+  // From start of first day to end of last, padded a day on each side so
+  // PT/UTC boundary events aren't missed.
   const sorted = [...dateKeys].sort();
-  const winStart = new Date(sorted[0] + "T00:00:00Z");
-  winStart.setUTCDate(winStart.getUTCDate() - 1);
-  const winEnd = new Date(sorted[sorted.length - 1] + "T00:00:00Z");
-  winEnd.setUTCDate(winEnd.getUTCDate() + 2);
+  const start = new Date(sorted[0] + "T00:00:00Z");
+  start.setUTCDate(start.getUTCDate() - 1);
+  const end = new Date(sorted[sorted.length - 1] + "T00:00:00Z");
+  end.setUTCDate(end.getUTCDate() + 2);
+  return { wanted: new Set(dateKeys), start, end, key: sorted.join(",") };
+}
 
-  const events: CalEvent[] = [];
+/* ---------- Google Calendar API source (fresh, preferred) ---------- */
 
-  // Fetch all calendars in parallel; a failing feed never blocks the rest.
-  const parsedAll = await Promise.all(
-    urls.map((url) =>
-      ical.async.fromURL(url).catch((err) => {
-        console.error("[calendar] fetch failed:", err);
-        return null;
-      })
-    )
-  );
-
-  for (const parsed of parsedAll) {
-    if (!parsed) continue;
-    for (const ev of Object.values(parsed)) {
-      try {
-        if (!ev || ev.type !== "VEVENT") continue;
-        const summary = String(ev.summary ?? "(untitled)");
-        const isAllDay =
-          (ev.datetype as string | undefined) === "date" ||
-          (ev.start as unknown as { dateOnly?: boolean })?.dateOnly === true;
-
-        const keyOf = (d: Date) => (isAllDay ? localDateKey(d) : ptDateKey(d));
-
-        const pushOccurrence = (start: Date, title: string, uid: string) => {
-          const dateKey = keyOf(start);
-          if (!wanted.has(dateKey)) return;
-          events.push({
-            uid,
-            title,
-            originalTitle: title,
-            dateKey,
-            timeLabel: isAllDay ? null : ptTimeLabel(start),
-            startMs: start.getTime(),
-            allDay: isAllDay,
+function fromApi(items: GcalItem[], win: Window): CalEvent[] {
+  const out: CalEvent[] = [];
+  for (const it of items) {
+    const base = {
+      uid: it.iCalUID ?? it.id,
+      title: it.summary ?? "(untitled)",
+      recurring: !!it.recurringEventId,
+    };
+    if (it.start?.date) {
+      // All-day: end.date is exclusive. Show on every wanted day it covers.
+      const startKey = it.start.date;
+      const endKey = it.end?.date ?? startKey;
+      for (const d of win.wanted) {
+        if (d >= startKey && (d < endKey || d === startKey)) {
+          out.push({
+            ...base,
+            dateKey: d,
+            timeLabel: null,
+            startMs: Date.parse(d + "T00:00:00Z"),
+            allDay: true,
           });
-        };
-
-        const uid = String(ev.uid ?? summary);
-
-        if (ev.rrule) {
-          // node-ical wraps rrule-temporal: between() already returns
-          // timezone-correct instants (DST handled). No correction needed.
-          const occurrences = ev.rrule.between(winStart, winEnd, true);
-          const exdates = new Set(
-            Object.values(ev.exdate ?? {}).map((d) => keyOf(d as Date))
-          );
-          for (const occ of occurrences) {
-            if (exdates.has(keyOf(occ))) continue;
-            pushOccurrence(occ, summary, uid);
-          }
-          // Modified single occurrences (moved/renamed instances)
-          for (const rec of Object.values(ev.recurrences ?? {})) {
-            const r = rec as typeof ev;
-            pushOccurrence(
-              r.start as Date,
-              String(r.summary ?? summary),
-              uid
-            );
-          }
-        } else {
-          pushOccurrence(ev.start as Date, summary, uid);
         }
-      } catch (err) {
-        console.error("[calendar] event parse:", err);
       }
+    } else if (it.start?.dateTime) {
+      const start = new Date(it.start.dateTime);
+      const dateKey = ptDateKey(start);
+      if (!win.wanted.has(dateKey)) continue;
+      out.push({
+        ...base,
+        dateKey,
+        timeLabel: ptTimeLabel(start),
+        startMs: start.getTime(),
+        allDay: false,
+      });
+    }
+  }
+  return out;
+}
+
+/* ---------- iCal feed source (fallback; Google's feed can lag) ---------- */
+
+function fromIcs(parsed: CalendarResponse, win: Window): CalEvent[] {
+  const events: CalEvent[] = [];
+  for (const ev of Object.values(parsed)) {
+    try {
+      if (!ev || ev.type !== "VEVENT") continue;
+      const summary = String(ev.summary ?? "(untitled)");
+      const isAllDay =
+        (ev.datetype as string | undefined) === "date" ||
+        (ev.start as unknown as { dateOnly?: boolean })?.dateOnly === true;
+
+      const keyOf = (d: Date) => (isAllDay ? localDateKey(d) : ptDateKey(d));
+      const uid = String(ev.uid ?? summary);
+      const recurring = !!ev.rrule;
+
+      const pushOccurrence = (start: Date, title: string) => {
+        const dateKey = keyOf(start);
+        if (!win.wanted.has(dateKey)) return;
+        events.push({
+          uid,
+          title,
+          dateKey,
+          timeLabel: isAllDay ? null : ptTimeLabel(start),
+          startMs: start.getTime(),
+          allDay: isAllDay,
+          recurring,
+        });
+      };
+
+      if (ev.rrule) {
+        // node-ical wraps rrule-temporal: between() already returns
+        // timezone-correct instants (DST handled). No correction needed.
+        const occurrences = ev.rrule.between(win.start, win.end, true);
+        const exdates = new Set(
+          Object.values(ev.exdate ?? {}).map((d) => keyOf(d as Date))
+        );
+        for (const occ of occurrences) {
+          if (exdates.has(keyOf(occ))) continue;
+          pushOccurrence(occ, summary);
+        }
+        // Modified single occurrences (moved/renamed instances)
+        for (const rec of Object.values(ev.recurrences ?? {})) {
+          const r = rec as typeof ev;
+          pushOccurrence(r.start as Date, String(r.summary ?? summary));
+        }
+      } else {
+        pushOccurrence(ev.start as Date, summary);
+      }
+    } catch (err) {
+      console.error("[calendar] event parse:", err);
     }
   }
   return events;
 }
 
-// Expand events (cached) + apply local renames + bucket per date key.
-// Returns { dateKey -> events sorted all-day-first-then-time }.
-export async function fetchCalendarEvents(
-  dateKeys: string[]
-): Promise<Record<string, CalEvent[]>> {
-  const out: Record<string, CalEvent[]> = {};
-  for (const k of dateKeys) out[k] = [];
-  if (dateKeys.length === 0) return out;
+/* ---------- Per-calendar fetch with short-lived cache ---------- */
 
-  const cacheKey = [...dateKeys].sort().join(",");
-  let raw: CalEvent[];
-  if (calCache && calCache.key === cacheKey && calCache.exp > Date.now()) {
-    raw = calCache.events;
-  } else {
-    raw = await expandAll(dateKeys);
-    calCache = { key: cacheKey, exp: Date.now() + CAL_TTL_MS, events: raw };
+// The API is fast and fresh, so it's cached only long enough to dedupe
+// polling tabs. iCal downloads are slow (and lag on Google's side anyway).
+const API_TTL_MS = 10 * 1000;
+const ICS_TTL_MS = 60 * 1000;
+// Entries are kept past expiry as a last-known-good fallback, so a flaky
+// fetch never makes events blink out between polls.
+const cache = new Map<string, { exp: number; events: CalEvent[] }>();
+
+async function cached(
+  key: string,
+  ttl: number,
+  load: () => Promise<CalEvent[]>
+): Promise<CalEvent[] | null> {
+  const hit = cache.get(key);
+  if (hit && hit.exp > Date.now()) return hit.events;
+  try {
+    const events = await load();
+    cache.set(key, { exp: Date.now() + ttl, events });
+    return events;
+  } catch (err) {
+    console.error("[calendar]", key.split("|")[1], err);
+    return hit?.events ?? null;
   }
-  // Copy before mutating titles so the cache keeps originals.
-  const events = raw.map((e) => ({ ...e }));
+}
 
-  // Apply local rename overrides (always fresh)
-  const { data: overrides } = await supabaseAdmin
-    .from("calendar_overrides")
-    .select("uid, custom_title");
-  const byUid = new Map(
-    (overrides ?? []).map((o) => [o.uid as string, o.custom_title as string])
+async function fetchSource(url: string, win: Window): Promise<CalEvent[]> {
+  const calId = googleApiConfigured() ? calendarIdFromIcsUrl(url) : null;
+  if (calId) {
+    const viaApi = await cached(`api|${calId}|${win.key}`, API_TTL_MS, async () =>
+      fromApi(await listEvents(calId, win.start, win.end), win)
+    );
+    if (viaApi) return viaApi;
+  }
+  const viaIcs = await cached(`ics|${url}|${win.key}`, ICS_TTL_MS, async () =>
+    fromIcs(await ical.async.fromURL(url), win)
   );
-  for (const e of events) {
-    const custom = byUid.get(e.uid);
-    if (custom) e.title = custom;
-  }
+  return viaIcs ?? [];
+}
 
-  // Dedupe (recurrence overrides can duplicate the expanded base) + bucket
+function calendarUrls(): string[] {
+  return (process.env.GCAL_ICS_URLS ?? "")
+    .split(",")
+    .map((u) => u.trim())
+    .filter(Boolean);
+}
+
+async function fetchOverrides(dateKeys: string[]): Promise<CalOverride[]> {
+  // Tiny table — filter here rather than fight PostgREST over "" in in().
+  const { data, error } = await supabaseAdmin
+    .from("calendar_event_overrides")
+    .select("uid, date_key, custom_title, hidden");
+  if (error) console.error("[calendar] overrides:", error.message);
+  const wanted = new Set(["", ...dateKeys]);
+  return ((data ?? []) as CalOverride[]).filter((o) => wanted.has(o.date_key));
+}
+
+// Raw events bucketed per date key (all-day first, then by time) plus the
+// local overrides that apply to them. Overrides are resolved client-side so
+// renames/hides can update optimistically.
+export async function fetchCalendar(dateKeys: string[]): Promise<CalendarData> {
+  const events: Record<string, CalEvent[]> = {};
+  for (const k of dateKeys) events[k] = [];
+  const urls = calendarUrls();
+  if (dateKeys.length === 0 || urls.length === 0) return { events, overrides: [] };
+
+  const win = windowFor(dateKeys);
+  // All calendars in parallel; a failing feed never blocks the rest.
+  const [lists, overrides] = await Promise.all([
+    Promise.all(urls.map((u) => fetchSource(u, win))),
+    fetchOverrides(dateKeys),
+  ]);
+
+  // Dedupe (recurrence overrides can duplicate the expanded base; the same
+  // calendar may be subscribed twice) + bucket
   const seen = new Set<string>();
-  for (const e of events.sort((a, b) => a.startMs - b.startMs)) {
+  for (const e of lists.flat().sort((a, b) => a.startMs - b.startMs)) {
     const key = `${e.uid}|${e.dateKey}|${e.timeLabel ?? "allday"}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    out[e.dateKey]?.push(e);
+    events[e.dateKey]?.push(e);
   }
   for (const k of dateKeys) {
-    out[k].sort((a, b) =>
+    events[k].sort((a, b) =>
       a.allDay === b.allDay ? a.startMs - b.startMs : a.allDay ? -1 : 1
     );
   }
-  return out;
+  return { events, overrides };
 }
 
 export function calendarConfigured(): boolean {
-  return ((process.env.GCAL_ICS_URLS ?? "").trim().length ?? 0) > 0;
+  return calendarUrls().length > 0;
 }

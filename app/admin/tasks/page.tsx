@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/session";
 import { fetchAllTags, fetchTasks, taskWindow } from "@/lib/tasks";
-import { fetchCalendarEvents, calendarConfigured } from "@/lib/calendar";
+import { fetchCalendar, calendarConfigured } from "@/lib/calendar";
 import TasksBoard from "@/components/admin/TasksBoard";
 
 export const metadata = { title: "Admin · Tasks" };
@@ -11,9 +11,9 @@ export default async function AdminTasks() {
   if (!(await requireAuth())) redirect("/admin/login");
 
   const { today, tomorrow, week, weekEnd, historyStart } = taskWindow();
-  const [tasks, events, allTags] = await Promise.all([
+  const [tasks, calendar, allTags] = await Promise.all([
     fetchTasks(historyStart, weekEnd),
-    fetchCalendarEvents([today, tomorrow]),
+    fetchCalendar([today, tomorrow]),
     fetchAllTags(),
   ]);
 
@@ -38,7 +38,7 @@ export default async function AdminTasks() {
 
       <TasksBoard
         initialTasks={tasks}
-        initialEvents={events}
+        initialCalendar={calendar}
         today={today}
         tomorrow={tomorrow}
         week={week}

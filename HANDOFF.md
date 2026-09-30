@@ -37,7 +37,8 @@ npx vercel@latest --prod --yes
 The owner prefers deploying straight to prod after a passing build (no preview
 step). Env vars live in `.env.local` (local) and Vercel project env (prod):
 Supabase URL/keys, `ADMIN_PASSWORD`, `SESSION_SECRET` (must be 32+ chars),
-`CAPTURE_TOKEN` (bearer token for the Apple Shortcut), `PASSKEY_*`.
+`CAPTURE_TOKEN` (bearer token for the Apple Shortcut), `PASSKEY_*`,
+`GCAL_ICS_URLS` + `GOOGLE_SERVICE_ACCOUNT_JSON` (see Tasks calendar below).
 
 ## Pages
 
@@ -59,6 +60,24 @@ Supabase URL/keys, `ADMIN_PASSWORD`, `SESSION_SECRET` (must be 32+ chars),
   grid, momentum charts, perfect days). Auth: iron-session cookie +
   SimpleWebAuthn; guarded by `requireAuth()` from `lib/session.ts`.
 - `not-found.tsx` — custom 404 ("This page does not exist. What a tragedy.").
+
+## Tasks calendar (`/admin/tasks`)
+
+- Events for Today/Tomorrow come from the calendars listed in `GCAL_ICS_URLS`
+  (comma-separated Google "secret iCal" addresses). For each Google URL, if
+  `GOOGLE_SERVICE_ACCOUNT_JSON` (the full service-account key file JSON) is
+  set, `lib/google-calendar.ts` reads it via the Calendar API instead
+  (read-only scope; the calendar must be shared with the service account's
+  email, "See all event details"). Any calendar the API can't read falls back
+  to its iCal feed, which Google can serve stale.
+- The board polls `GET /api/calendar` every 20s while visible and on tab
+  focus, so Google edits land within seconds.
+- Renames/hides are **local only** (never written to Google) in Supabase
+  `calendar_event_overrides` (`uid` = iCal UID shared by a recurring series,
+  `date_key` = `""` for every occurrence or `YYYY-MM-DD` for one day,
+  `custom_title`, `hidden`). Resolution lives in `lib/calendar-overrides.ts`
+  (client-safe, so edits apply optimistically). Hidden events sit behind an
+  "N hidden" toggle where they can be restored.
 
 ## API routes (`app/api/`)
 

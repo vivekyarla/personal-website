@@ -22,6 +22,12 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import Collapsible from "@/components/Collapsible";
+import {
+  patchOverrides,
+  resolveEvents,
+  type CalendarData,
+  type ShownEvent,
+} from "@/lib/calendar-overrides";
 
 export type Task = {
   id: string;
@@ -32,18 +38,24 @@ export type Task = {
   position: number;
 };
 
-export type CalEvent = {
-  uid: string;
-  title: string;
-  originalTitle: string;
-  dateKey: string;
-  timeLabel: string | null;
-  allDay: boolean;
+// Override patch for one calendar event: `scope` "series" hits every
+// occurrence, "day" just this one.
+type EventPatch = {
+  custom_title?: string | null;
+  hidden?: boolean;
 };
+type OnEventOverride = (
+  e: ShownEvent,
+  scope: "series" | "day",
+  patch: EventPatch
+) => void;
+
+// How often the open board re-pulls Google Calendar (also on tab focus).
+const CAL_POLL_MS = 20 * 1000;
 
 type Props = {
   initialTasks: Task[];
-  initialEvents: Record<string, CalEvent[]>;
+  initialCalendar: CalendarData;
   today: string;
   tomorrow: string;
   week: string[];
@@ -63,7 +75,7 @@ const byPos = (a: Task, b: Task) =>
 
 export default function TasksBoard({
   initialTasks,
-  initialEvents,
+  initialCalendar,
   today,
   tomorrow,
   week,
@@ -72,7 +84,11 @@ export default function TasksBoard({
   calendarConfigured,
 }: Props) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
-  const [events, setEvents] = useState(initialEvents);
+  const [calendar, setCalendar] = useState(initialCalendar);
+  // Bumped on every local rename/hide; a poll that started before the latest
+  // edit (or while one is in flight) keeps the local overrides.
+  const overrideSeq = useRef(0);
+  const overridesInFlight = useRef(0);
   const [newTaskSignal, setNewTaskSignal] = useState(0);
   const [dragging, setDragging] = useState(false);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
@@ -153,26 +169,77 @@ export default function TasksBoard({
     }
   }
 
-  async function renameEvent(uid: string, dateKey: string, title: string) {
-    const list = events[dateKey] ?? [];
-    const ev = list.find((e) => e.uid === uid);
-    if (!ev) return;
-    const finalTitle = title.trim() || ev.originalTitle;
-    setEvents((prev) => ({
+  /* ---- Calendar: live refresh + local renames/hides ---- */
+
+  // Re-pull while the tab is visible, and immediately on returning to it, so
+  // edits made in Google Calendar land within seconds.
+  useEffect(() => {
+    if (!calendarConfigured) return;
+    let inFlight = false;
+    async function refresh() {
+      if (inFlight || document.visibilityState !== "visible") return;
+      inFlight = true;
+      const seqAtStart = overrideSeq.current;
+      try {
+        const res = await fetch(`/api/calendar?dates=${today},${tomorrow}`, {
+          cache: "no-store",
+        });
+        if (!res.ok) return;
+        const fresh = (await res.json()) as CalendarData;
+        const keepLocal =
+          overridesInFlight.current > 0 || overrideSeq.current !== seqAtStart;
+        setCalendar((prev) => ({
+          events: fresh.events,
+          overrides: keepLocal ? prev.overrides : fresh.overrides,
+        }));
+      } catch {
+        // Offline / transient — keep what's on screen.
+      } finally {
+        inFlight = false;
+      }
+    }
+    const id = setInterval(refresh, CAL_POLL_MS);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
+    };
+  }, [calendarConfigured, today, tomorrow]);
+
+  const overrideEvent: OnEventOverride = async (e, scope, patch) => {
+    const dateKey = scope === "day" ? e.dateKey : "";
+    const before = calendar.overrides;
+    overrideSeq.current++;
+    overridesInFlight.current++;
+    setCalendar((prev) => ({
       ...prev,
-      [dateKey]: (prev[dateKey] ?? []).map((e) =>
-        e.uid === uid ? { ...e, title: finalTitle } : e
-      ),
+      overrides: patchOverrides(prev.overrides, e.uid, dateKey, patch),
     }));
-    await fetch("/api/calendar-override", {
+    const res = await fetch("/api/calendar-override", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        uid,
-        custom_title: title.trim() === ev.originalTitle ? "" : title.trim(),
-      }),
-    });
-  }
+      body: JSON.stringify({ uid: e.uid, date_key: dateKey, ...patch }),
+    }).catch(() => null);
+    overridesInFlight.current--;
+    if (!res?.ok) {
+      // Didn't persist — put it back so the screen never lies.
+      overrideSeq.current++;
+      setCalendar((prev) => ({ ...prev, overrides: before }));
+    }
+  };
+
+  const shownEvents = useMemo(() => {
+    const out: Record<string, ShownEvent[]> = {};
+    for (const [d, list] of Object.entries(calendar.events)) {
+      out[d] = resolveEvents(list, calendar.overrides);
+    }
+    return out;
+  }, [calendar]);
 
   /* ---- Cross-section drag & drop (one context over all main sections) ---- */
 
@@ -347,10 +414,10 @@ export default function TasksBoard({
           label="Today"
           sub={fmtDay(today, { weekday: "long", month: "long", day: "numeric" })}
           dates={[today]}
-          events={events[today] ?? []}
+          events={shownEvents[today] ?? []}
           focusSignal={newTaskSignal}
           showCalendar={calendarConfigured}
-          onRenameEvent={renameEvent}
+          onEventOverride={overrideEvent}
           {...shared}
         />
         <DaySection
@@ -361,9 +428,9 @@ export default function TasksBoard({
             day: "numeric",
           })}
           dates={[tomorrow]}
-          events={events[tomorrow] ?? []}
+          events={shownEvents[tomorrow] ?? []}
           showCalendar={calendarConfigured}
-          onRenameEvent={renameEvent}
+          onEventOverride={overrideEvent}
           {...shared}
         />
         {week.length > 0 && (
@@ -373,7 +440,7 @@ export default function TasksBoard({
             dates={week}
             events={[]}
             showCalendar={false}
-            onRenameEvent={renameEvent}
+            onEventOverride={overrideEvent}
             {...shared}
           />
         )}
@@ -447,7 +514,7 @@ function DaySection(props: {
   label: string;
   sub: string;
   dates: string[];
-  events: CalEvent[];
+  events: ShownEvent[];
   showCalendar: boolean;
   focusSignal?: number;
   bucket: (d: string) => Task[];
@@ -456,7 +523,7 @@ function DaySection(props: {
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onAdd: (due: string, title: string, tag: string) => Promise<void>;
-  onRenameEvent: (uid: string, dateKey: string, title: string) => void;
+  onEventOverride: OnEventOverride;
 }) {
   const { label, sub, dates, events, dragging } = props;
   const multiDay = dates.length > 1;
@@ -475,11 +542,7 @@ function DaySection(props: {
       <hr className="border-rule mb-3" />
 
       {props.showCalendar && (
-        <CalendarList
-          events={events}
-          dateKey={dates[0]}
-          onRename={props.onRenameEvent}
-        />
+        <CalendarList events={events} onOverride={props.onEventOverride} />
       )}
 
       {multiDay ? (
@@ -527,66 +590,215 @@ function DaySection(props: {
 
 /* ---------- Calendar ---------- */
 
+// Renames/hides are local to this site — Google Calendar is never touched.
+// Hidden events collapse into an "N hidden" toggle so they can be restored.
 function CalendarList({
   events,
-  dateKey,
-  onRename,
+  onOverride,
 }: {
-  events: CalEvent[];
-  dateKey: string;
-  onRename: (uid: string, dateKey: string, title: string) => void;
+  events: ShownEvent[];
+  onOverride: OnEventOverride;
 }) {
-  const [editing, setEditing] = useState<string | null>(null);
-  const [draft, setDraft] = useState("");
+  const [showHidden, setShowHidden] = useState(false);
 
   if (events.length === 0) return null;
+  const visible = events.filter((e) => !e.hiddenBy);
+  const hidden = events.filter((e) => e.hiddenBy);
+  const key = (e: ShownEvent) =>
+    `${e.uid}|${e.dateKey}|${e.timeLabel ?? "allday"}`;
 
   return (
-    <ul className="mb-4 flex flex-col gap-1">
-      {events.map((e) => (
-        <li
-          key={`${e.uid}-${e.timeLabel}`}
-          className="flex items-baseline gap-2 leading-snug"
-        >
-          <span className="shrink-0 w-11 font-mono text-[0.72rem] text-muted tabular-nums">
-            {e.allDay ? (
-              <span className="text-[0.6rem] uppercase tracking-tight">
-                All day
-              </span>
-            ) : (
-              e.timeLabel
-            )}
-          </span>
-          {editing === e.uid ? (
-            <input
-              autoFocus
-              defaultValue={e.title}
-              onChange={(ev) => setDraft(ev.target.value)}
-              onKeyDown={(ev) => {
-                if (ev.key === "Enter") {
-                  onRename(e.uid, dateKey, draft);
-                  setEditing(null);
-                } else if (ev.key === "Escape") setEditing(null);
-              }}
-              onBlur={() => setEditing(null)}
-              className="flex-1 min-w-0 bg-transparent text-[0.85rem] border-b border-rule focus:outline-none focus:border-foreground"
-            />
-          ) : (
+    <div className="mb-4">
+      {visible.length > 0 && (
+        <ul className="flex flex-col gap-1">
+          {visible.map((e) => (
+            <CalendarRow key={key(e)} event={e} onOverride={onOverride} />
+          ))}
+        </ul>
+      )}
+      {hidden.length > 0 && (
+        <div className={visible.length > 0 ? "mt-1.5" : ""}>
+          <button
+            type="button"
+            onClick={() => setShowHidden((s) => !s)}
+            aria-expanded={showHidden}
+            className="text-[0.68rem] text-muted/60 hover:text-foreground transition-colors tabular-nums"
+          >
+            {hidden.length} hidden {showHidden ? "▴" : "▾"}
+          </button>
+          {showHidden && (
+            <ul className="mt-1 flex flex-col gap-1">
+              {hidden.map((e) => (
+                <li key={key(e)} className="flex items-baseline gap-2 leading-snug">
+                  <EventTime event={e} />
+                  <span className="min-w-0 truncate text-[0.85rem] text-muted/50 line-through decoration-rule">
+                    {e.displayTitle}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onOverride(e, e.hiddenBy === "day" ? "day" : "series", {
+                        hidden: false,
+                      })
+                    }
+                    className="ml-auto shrink-0 text-[0.68rem] text-muted hover:text-foreground transition-colors"
+                  >
+                    Show{e.hiddenBy === "series" && e.recurring ? " all" : ""}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// "19:00" -> "7:00". A leading figure space keeps colons aligned in the
+// mono column ("\u20077:00" over "10:30").
+function fmtTime(label: string | null): string {
+  if (!label) return "";
+  const [h, m] = label.split(":").map(Number);
+  const h12 = h % 12 || 12;
+  return `${h12 < 10 ? "\u2007" : ""}${h12}:${String(m).padStart(2, "0")}`;
+}
+
+function EventTime({ event: e }: { event: ShownEvent }) {
+  return (
+    <span className="shrink-0 w-11 font-mono text-[0.72rem] text-muted tabular-nums">
+      {e.allDay ? (
+        <span className="text-[0.6rem] uppercase tracking-tight">All day</span>
+      ) : (
+        fmtTime(e.timeLabel)
+      )}
+    </span>
+  );
+}
+
+// Keep focus in the rename input when tapping its inline controls.
+const keepFocus = (ev: React.SyntheticEvent) => ev.preventDefault();
+
+function CalendarRow({
+  event: e,
+  onOverride,
+}: {
+  event: ShownEvent;
+  onOverride: OnEventOverride;
+}) {
+  const [mode, setMode] = useState<"view" | "edit" | "hide">("view");
+  const [draft, setDraft] = useState("");
+  // Recurring events: rename every occurrence unless this day already has its
+  // own name.
+  const [scope, setScope] = useState<"series" | "day">("series");
+  const settled = useRef(false);
+
+  function startEdit() {
+    setDraft(e.displayTitle);
+    setScope(e.renamedAt === "day" ? "day" : "series");
+    settled.current = false;
+    setMode("edit");
+  }
+
+  // Enter and blur both save; Escape cancels. Clearing the text (or typing
+  // the original name) restores Google's title.
+  function finishEdit(save: boolean) {
+    if (settled.current) return;
+    settled.current = true;
+    setMode("view");
+    const next = draft.trim();
+    if (!save || next === e.displayTitle) return;
+    onOverride(e, e.recurring ? scope : "series", {
+      custom_title: next && next !== e.title ? next : null,
+    });
+  }
+
+  function hide(s: "series" | "day") {
+    setMode("view");
+    onOverride(e, s, { hidden: true });
+  }
+
+  const inline =
+    "shrink-0 text-[0.68rem] text-muted hover:text-foreground transition-colors";
+
+  return (
+    <li className="group flex items-baseline gap-2 leading-snug">
+      <EventTime event={e} />
+      {mode === "edit" ? (
+        <>
+          <input
+            autoFocus
+            onFocus={(ev) => ev.currentTarget.select()}
+            value={draft}
+            onChange={(ev) => setDraft(ev.target.value)}
+            onKeyDown={(ev) => {
+              if (ev.key === "Enter") finishEdit(true);
+              else if (ev.key === "Escape") finishEdit(false);
+            }}
+            onBlur={() => finishEdit(true)}
+            placeholder={e.title}
+            aria-label="Rename event on this site (clear to reset)"
+            className="flex-1 min-w-0 bg-transparent text-[0.85rem] border-b border-rule focus:outline-none focus:border-foreground"
+          />
+          {e.recurring && (
             <button
               type="button"
-              onClick={() => {
-                setDraft(e.title);
-                setEditing(e.uid);
-              }}
-              title="Click to rename (local only)"
-              className="text-left text-[0.85rem] text-muted hover:text-foreground transition-colors cursor-text min-w-0 truncate"
+              onMouseDown={keepFocus}
+              onPointerDown={keepFocus}
+              onClick={() => setScope((s) => (s === "series" ? "day" : "series"))}
+              title="Rename every occurrence, or just this day"
+              className={`${inline} border-b border-dotted border-rule`}
             >
-              {e.title}
+              {scope === "series" ? "every time" : "this day only"}
             </button>
           )}
-        </li>
-      ))}
-    </ul>
+        </>
+      ) : mode === "hide" ? (
+        <>
+          <span className="min-w-0 truncate text-[0.85rem] text-muted/50">
+            {e.displayTitle}
+          </span>
+          <span className="ml-auto flex shrink-0 items-baseline gap-2">
+            <span className="text-[0.68rem] text-muted/60">Hide</span>
+            <button type="button" onClick={() => hide("day")} className={inline}>
+              this day
+            </button>
+            <span className="text-[0.68rem] text-muted/40">·</span>
+            <button type="button" onClick={() => hide("series")} className={inline}>
+              every time
+            </button>
+            <span className="text-[0.68rem] text-muted/40">·</span>
+            <button type="button" onClick={() => setMode("view")} className={inline}>
+              cancel
+            </button>
+          </span>
+        </>
+      ) : (
+        <>
+          <button
+            type="button"
+            onClick={startEdit}
+            title={
+              e.renamed
+                ? `Originally “${e.title}” — click to rename (this site only)`
+                : "Click to rename (this site only)"
+            }
+            className="text-left text-[0.85rem] text-muted hover:text-foreground transition-colors cursor-text min-w-0 truncate"
+          >
+            {e.displayTitle}
+          </button>
+          <button
+            type="button"
+            onClick={() => (e.recurring ? setMode("hide") : hide("series"))}
+            aria-label="Hide event on this site"
+            title="Hide on this site (Google Calendar is unchanged)"
+            className="ml-auto -my-1 -mr-1 shrink-0 p-1 text-xs text-muted/0 group-hover:text-muted focus-visible:text-muted hover:!text-foreground [@media(hover:none)]:text-muted/50 transition-colors"
+          >
+            ✕
+          </button>
+        </>
+      )}
+    </li>
   );
 }
 
