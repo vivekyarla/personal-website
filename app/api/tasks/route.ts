@@ -1,9 +1,33 @@
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/session";
+import { requireAuthOrAgent } from "@/lib/session";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { fetchAllTags, fetchTasks, taskWindow } from "@/lib/tasks";
+
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+// GET ?from=YYYY-MM-DD&to=YYYY-MM-DD — tasks with due_date in range, ordered
+// by day then position. Defaults to the board's window (last 14 days through
+// the end of this week, PT). Also returns every tag ever used.
+export async function GET(request: Request) {
+  if (!(await requireAuthOrAgent(request))) {
+    return NextResponse.json({ error: "unauth" }, { status: 401 });
+  }
+  const q = new URL(request.url).searchParams;
+  const win = taskWindow();
+  const from = q.get("from") ?? win.historyStart;
+  const to = q.get("to") ?? win.weekEnd;
+  if (!DATE_RE.test(from) || !DATE_RE.test(to)) {
+    return NextResponse.json({ error: "bad date" }, { status: 400 });
+  }
+  const [tasks, tags] = await Promise.all([
+    fetchTasks(from, to),
+    fetchAllTags(),
+  ]);
+  return NextResponse.json({ today: win.today, from, to, tasks, tags });
+}
 
 export async function POST(request: Request) {
-  if (!(await requireAuth())) {
+  if (!(await requireAuthOrAgent(request))) {
     return NextResponse.json({ error: "unauth" }, { status: 401 });
   }
   const body = await request.json().catch(() => ({}));

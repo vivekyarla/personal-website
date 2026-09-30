@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/session";
+import { requireAuthOrAgent } from "@/lib/session";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
 // Set a habit's done-state for a given date. Body: { habit_id, date, done }
 export async function POST(request: Request) {
-  if (!(await requireAuth())) {
+  if (!(await requireAuthOrAgent(request))) {
     return NextResponse.json({ error: "unauth" }, { status: 401 });
   }
   const body = await request.json().catch(() => ({}));

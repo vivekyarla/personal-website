@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/session";
+import { requireAuthOrAgent } from "@/lib/session";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!(await requireAuth())) {
+  if (!(await requireAuthOrAgent(request))) {
     return NextResponse.json({ error: "unauth" }, { status: 401 });
   }
   const { id } = await params;
@@ -24,7 +24,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!(await requireAuth())) {
+  if (!(await requireAuthOrAgent(request))) {
     return NextResponse.json({ error: "unauth" }, { status: 401 });
   }
   const { id } = await params;

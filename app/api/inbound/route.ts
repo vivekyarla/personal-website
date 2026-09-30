@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/session";
+import { requireAuthOrAgent } from "@/lib/session";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { supabasePublic } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
@@ -17,7 +17,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  if (!(await requireAuth())) {
+  if (!(await requireAuthOrAgent(request))) {
     return NextResponse.json({ error: "unauth" }, { status: 401 });
   }
 

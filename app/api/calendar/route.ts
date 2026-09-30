@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/session";
+import { requireAuthOrAgent } from "@/lib/session";
 import { fetchCalendar } from "@/lib/calendar";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -7,7 +7,7 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 // GET ?dates=YYYY-MM-DD,YYYY-MM-DD — polled by the tasks board so Google
 // Calendar changes show up within seconds.
 export async function GET(request: Request) {
-  if (!(await requireAuth())) {
+  if (!(await requireAuthOrAgent(request))) {
     return NextResponse.json({ error: "unauth" }, { status: 401 });
   }
   const dates = (new URL(request.url).searchParams.get("dates") ?? "")

@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { getIronSession, IronSession, SessionOptions } from "iron-session";
 
@@ -30,6 +31,24 @@ export async function getSession(): Promise<IronSession<SessionData>> {
 export async function requireAuth(): Promise<boolean> {
   const session = await getSession();
   return !!session.authed;
+}
+
+// Instinct (AI assistant) access: `Authorization: Bearer <INSTINCT_TOKEN>`.
+// Accepted only by the tasks / calendar / habits / readings routes (they call
+// requireAuthOrAgent); everything else stays admin-session-only. Rotate or
+// unset INSTINCT_TOKEN in Vercel to revoke.
+function agentTokenValid(request: Request): boolean {
+  const expected = process.env.INSTINCT_TOKEN;
+  if (!expected || expected.length < 32) return false;
+  const header = request.headers.get("authorization") ?? "";
+  if (!header.startsWith("Bearer ")) return false;
+  const got = Buffer.from(header.slice(7).trim());
+  const want = Buffer.from(expected);
+  return got.length === want.length && timingSafeEqual(got, want);
+}
+
+export async function requireAuthOrAgent(request: Request): Promise<boolean> {
+  return agentTokenValid(request) || (await requireAuth());
 }
 
 export async function requireRoxAuth(): Promise<boolean> {

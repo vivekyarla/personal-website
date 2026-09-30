@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { requireAuth } from "@/lib/session";
+import { requireAuthOrAgent } from "@/lib/session";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
 // Body: { ids: string[] } — new order, index becomes position.
 export async function POST(request: Request) {
-  if (!(await requireAuth())) {
+  if (!(await requireAuthOrAgent(request))) {
     return NextResponse.json({ error: "unauth" }, { status: 401 });
   }
   const body = await request.json().catch(() => ({}));

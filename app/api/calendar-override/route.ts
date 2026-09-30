@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/session";
+import { requireAuthOrAgent } from "@/lib/session";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
 // Local rename/hide for a calendar event (never written back to Google
@@ -8,7 +8,7 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 // changed; an empty custom_title resets the name. Rows left with nothing to
 // override are deleted.
 export async function POST(request: Request) {
-  if (!(await requireAuth())) {
+  if (!(await requireAuthOrAgent(request))) {
     return NextResponse.json({ error: "unauth" }, { status: 401 });
   }
   const body = await request.json().catch(() => ({}));

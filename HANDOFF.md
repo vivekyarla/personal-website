@@ -38,7 +38,8 @@ The owner prefers deploying straight to prod after a passing build (no preview
 step). Env vars live in `.env.local` (local) and Vercel project env (prod):
 Supabase URL/keys, `ADMIN_PASSWORD`, `SESSION_SECRET` (must be 32+ chars),
 `CAPTURE_TOKEN` (bearer token for the Apple Shortcut), `PASSKEY_*`,
-`GCAL_ICS_URLS` + `GOOGLE_SERVICE_ACCOUNT_JSON` (see Tasks calendar below).
+`GCAL_ICS_URLS` + `GOOGLE_SERVICE_ACCOUNT_JSON` (see Tasks calendar below),
+`INSTINCT_TOKEN` (32+ chars; AI-assistant access, see below).
 
 ## Pages
 
@@ -109,6 +110,15 @@ Supabase URL/keys, `ADMIN_PASSWORD`, `SESSION_SECRET` (must be 32+ chars),
   `custom_title`, `hidden`). Resolution lives in `lib/calendar-overrides.ts`
   (client-safe, so edits apply optimistically). Hidden events sit behind an
   "N hidden" toggle where they can be restored.
+
+## Instinct (AI assistant) access
+
+`Authorization: Bearer <INSTINCT_TOKEN>` is accepted (via
+`requireAuthOrAgent` in `lib/session.ts`) only by the tasks, calendar,
+calendar-override, habits, habit-entries and inbound routes — read and write.
+Everything else stays admin-session-only. `GET /api/tasks` and
+`GET /api/habits` exist for it. Endpoint guide: `docs/instinct-api.md`.
+Revoke by rotating/unsetting the env var in Vercel.
 
 ## API routes (`app/api/`)
 

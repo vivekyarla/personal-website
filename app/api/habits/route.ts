@@ -1,10 +1,34 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { requireAuth } from "@/lib/session";
+import { requireAuthOrAgent } from "@/lib/session";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import {
+  fetchEntriesSince,
+  fetchHabits,
+  lastNDates,
+  ptToday,
+} from "@/lib/habits";
+
+// GET ?since=YYYY-MM-DD — all habits (in display order) plus the dates each
+// was checked off since `since` (default: 8 weeks back, PT).
+export async function GET(request: Request) {
+  if (!(await requireAuthOrAgent(request))) {
+    return NextResponse.json({ error: "unauth" }, { status: 401 });
+  }
+  const since =
+    new URL(request.url).searchParams.get("since") ?? lastNDates(56)[0];
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(since)) {
+    return NextResponse.json({ error: "bad date" }, { status: 400 });
+  }
+  const [habits, entries] = await Promise.all([
+    fetchHabits(),
+    fetchEntriesSince(since),
+  ]);
+  return NextResponse.json({ today: ptToday(), since, habits, entries });
+}
 
 export async function POST(request: Request) {
-  if (!(await requireAuth())) {
+  if (!(await requireAuthOrAgent(request))) {
     return NextResponse.json({ error: "unauth" }, { status: 401 });
   }
   const body = await request.json().catch(() => ({}));
