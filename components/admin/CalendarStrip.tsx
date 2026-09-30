@@ -20,7 +20,7 @@ import {
 import { useCalendarPolling } from "@/components/admin/useCalendarPolling";
 
 // Read-only day strip of Google Calendar (PT): 5 days across (3 on phones),
-// starting today. It's a native horizontal scroller with day snap points and
+// today in the middle. It's a native horizontal scroller with day snap points and
 // the tweet carousel's edge fog, so trackpad/swipe glide and snap, and the
 // arrows glide a page at a time. Days load as they come into view. Events are
 // hairline rails sized by duration; local renames/hides from Tasks apply.
@@ -172,13 +172,16 @@ export default function CalendarStrip({
   const todayIdx = days.indexOf(today);
 
   // Index of the leftmost visible day, and how many fit across.
-  const [first, setFirst] = useState(todayIdx);
+  const [first, setFirst] = useState(todayIdx - 2);
   const wide = useSyncExternalStore(
     subscribeWide,
     () => window.matchMedia(WIDE_MQ).matches,
     () => true
   );
   const perView = wide ? 5 : 3;
+  // "Home" puts today in the middle column: two days either side (one on
+  // phones).
+  const homeIdx = todayIdx - Math.floor(perView / 2);
   // False during SSR/hydration: the strip stays invisible until it has been
   // scrolled to today, so it never flashes the days before.
   const ready = useSyncExternalStore(
@@ -251,15 +254,21 @@ export default function CalendarStrip({
     () => (ready ? range(addDays(days[first] ?? today, -1), 7) : []),
     [ready, days, first, today]
   );
-  useCalendarPolling(configured, pollDates, () => merge, first !== todayIdx);
+  useCalendarPolling(configured, pollDates, () => merge, first !== homeIdx);
 
   /* ---- Scroll geometry ---- */
 
-  // Start with today as the first column (set on mount, before paint).
-  const initialIdx = useRef(todayIdx);
+  // Start with today centered (set on mount, before paint). Reads the media
+  // query directly: during hydration `perView` still has the server value.
+  const initialTodayIdx = useRef(todayIdx);
   const setScroller = useCallback((node: HTMLDivElement | null) => {
     scrollerRef.current = node;
-    if (node) node.scrollLeft = initialIdx.current * colWidth(node);
+    if (!node) return;
+    const per = window.matchMedia(WIDE_MQ).matches ? 5 : 3;
+    const idx = initialTodayIdx.current - Math.floor(per / 2);
+    node.scrollLeft = idx * colWidth(node);
+    // This scroll lands before the settle listener attaches — sync directly.
+    setFirst(idx);
   }, []);
 
   // Arriving from a Tasks link: bring the event into view vertically.
@@ -343,8 +352,8 @@ export default function CalendarStrip({
   );
   const goToday = useCallback(() => {
     setSelectedKey(null);
-    scrollToIdx(todayIdx);
-  }, [todayIdx, scrollToIdx]);
+    scrollToIdx(homeIdx);
+  }, [homeIdx, scrollToIdx]);
 
   // ←/→ glide a page, t returns to today (ignored while typing).
   useEffect(() => {
@@ -419,7 +428,7 @@ export default function CalendarStrip({
           sameMonth ? { day: "numeric" } : { month: "short", day: "numeric" }
         )}`
       : "";
-  const atToday = first === todayIdx;
+  const atToday = first === homeIdx;
 
   const selectedLabel = (() => {
     if (!selectedKey) return null;
@@ -534,8 +543,6 @@ export default function CalendarStrip({
                         }`}
                       >
                         {fmtDay(c.date, { weekday: "short" })}
-                        {c.date.endsWith("-01") &&
-                          ` · ${fmtDay(c.date, { month: "short" })}`}
                       </span>
                       <span
                         className={`relative self-start text-[0.95rem] leading-none tabular-nums tracking-tight ${
