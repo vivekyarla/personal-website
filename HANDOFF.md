@@ -75,7 +75,8 @@ Supabase URL/keys, `ADMIN_PASSWORD`, `SESSION_SECRET` (must be 32+ chars),
   focus (`useCalendarPolling`), so Google edits land within seconds.
 - `/admin/calendar` (`WeekCalendar.tsx`) is a read-only Sun–Sat week grid of
   the same data: blocks sized by duration, overlaps packed side by side,
-  now-line, all-day strip, ←/→/t to change week, tap a block for its full
+  hairline-rail events (no fills or gridlines), spotlight-blur hover, now-line,
+  all-day row, ←/→/t to change week, tap a block for its full
   title. Renames/hides from Tasks apply there too. Uses `.writing-bleed` to
   break out of the text column.
 - Renames/hides are **local only** (never written to Google) in Supabase

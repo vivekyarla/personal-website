@@ -217,26 +217,36 @@ export default function WeekCalendar({
   );
   const gridMin = startHour * 60;
   const hasAllDay = days.some((d) => d.allDay.length > 0);
-  const cols = "grid grid-cols-[2.25rem_repeat(7,minmax(0,1fr))] sm:grid-cols-[3rem_repeat(7,minmax(0,1fr))]";
+  // Sparse hour marks (every 3h) instead of gridlines — the event rails and
+  // their times carry the rest.
+  const marks = hours.filter((h) => h % 3 === 0 && h > startHour);
+  const cols =
+    "grid grid-cols-[1.75rem_repeat(7,minmax(0,1fr))] gap-x-1.5 sm:grid-cols-[2.5rem_repeat(7,minmax(0,1fr))] sm:gap-x-3";
 
+  const sameMonth =
+    fmtDay(dates[0], { month: "short" }) === fmtDay(dates[6], { month: "short" });
   const rangeLabel = `${fmtDay(dates[0], { month: "short", day: "numeric" })} – ${fmtDay(
     dates[6],
-    fmtDay(dates[0], { month: "short" }) === fmtDay(dates[6], { month: "short" })
-      ? { day: "numeric" }
-      : { month: "short", day: "numeric" }
+    sameMonth ? { day: "numeric" } : { month: "short", day: "numeric" }
   )}`;
   const isThisWeek = weekStart === initialWeekStart;
 
-  const navBtn =
-    "px-1 text-muted hover:text-foreground transition-colors disabled:opacity-40";
+  const navBtn = "px-1 text-muted hover:text-foreground transition-colors";
 
   return (
     <>
       <div className="flex items-baseline justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">Calendar</h1>
-        <div className="flex items-baseline gap-2 text-[0.72rem] text-muted/80 tabular-nums">
-          {!data && <span className="text-muted/50">loading…</span>}
-          <span className="text-foreground/80">{rangeLabel}</span>
+        <div className="flex items-baseline gap-1 text-[0.72rem] text-muted/80 tabular-nums">
+          {!isThisWeek && (
+            <button
+              type="button"
+              onClick={() => go(initialWeekStart)}
+              className={`${navBtn} mr-2`}
+            >
+              This week
+            </button>
+          )}
           <button
             type="button"
             onClick={() => go(addDays(weekStart, -7))}
@@ -245,14 +255,9 @@ export default function WeekCalendar({
           >
             ‹
           </button>
-          <button
-            type="button"
-            onClick={() => go(initialWeekStart)}
-            disabled={isThisWeek}
-            className={navBtn}
-          >
-            Today
-          </button>
+          <span className={`transition-opacity ${data ? "" : "opacity-50"}`}>
+            {rangeLabel}
+          </span>
           <button
             type="button"
             onClick={() => go(addDays(weekStart, 7))}
@@ -264,61 +269,77 @@ export default function WeekCalendar({
         </div>
       </div>
 
-      <p
-        aria-live="polite"
-        className={`-mt-3 min-h-[1.1rem] truncate text-[0.78rem] transition-opacity ${
-          selected ? "opacity-100" : "opacity-0"
-        }`}
-      >
-        {selected?.label}
-      </p>
-
       {!configured && (
         <p className="text-[0.8rem] text-muted/80 italic">
           Calendar not connected — set GCAL_ICS_URLS to see events here.
         </p>
       )}
 
-      <div className="writing-bleed">
-        {/* Day headers */}
-        <div className={`${cols} pb-2`}>
+      <div className="writing-bleed blur-group">
+        {/* Day headers — today gets the switcher's hairline underline */}
+        <div className={cols}>
           <div />
           {dates.map((d) => {
             const isToday = d === today;
+            const isPast = d < today;
             return (
-              <div key={d} className="flex flex-col items-center gap-1">
-                <span className="text-[0.6rem] uppercase tracking-wide text-muted/80">
+              <div key={d} className="flex min-w-0 flex-col gap-0.5">
+                <span
+                  className={`text-[0.6rem] uppercase tracking-wide ${
+                    isToday ? "text-foreground" : "text-muted/70"
+                  }`}
+                >
                   {fmtDay(d, { weekday: "short" })}
                 </span>
                 <span
-                  className={`flex size-6 items-center justify-center rounded-full text-[0.8rem] tabular-nums ${
+                  className={`relative self-start text-[0.95rem] tabular-nums tracking-tight ${
                     isToday
-                      ? "bg-foreground text-background font-medium"
-                      : d < today
-                        ? "text-muted"
-                        : "text-foreground"
+                      ? "text-foreground font-semibold"
+                      : isPast
+                        ? "text-muted/60"
+                        : "text-foreground/85"
                   }`}
                 >
                   {Number(d.slice(8))}
+                  {isToday && (
+                    <span
+                      aria-hidden
+                      className="absolute -bottom-0.5 inset-x-0 h-px bg-foreground"
+                    />
+                  )}
                 </span>
               </div>
             );
           })}
         </div>
 
-        {/* All-day strip */}
+        <hr className="border-rule mt-2.5 mb-3" />
+
+        {/* Selected event, in full (blocks truncate on narrow columns) */}
+        <p
+          aria-live="polite"
+          className={`-mt-1 mb-2 min-h-[1.1rem] truncate text-[0.78rem] transition-opacity ${
+            selected ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          {selected?.label}
+        </p>
+
+        {/* All-day */}
         {hasAllDay && (
-          <div className={`${cols} border-t border-rule py-1`}>
-            <div className="self-center text-[0.55rem] uppercase tracking-tight text-muted/70">
+          <div className={`${cols} mb-4`}>
+            <div className="invisible pt-px text-[0.55rem] uppercase tracking-wide text-muted/60 sm:visible">
               All day
             </div>
             {days.map((d) => (
-              <div key={d.date} className="flex min-w-0 flex-col gap-0.5 px-px">
+              <div key={d.date} className="flex min-w-0 flex-col gap-0.5">
                 {d.allDay.map((e) => (
                   <div
                     key={e.uid}
                     title={e.displayTitle}
-                    className="truncate rounded-[3px] bg-foreground/[0.07] px-1 py-0.5 text-[0.62rem] leading-tight text-foreground/85"
+                    className={`blur-item truncate text-[0.64rem] leading-snug sm:text-[0.7rem] ${
+                      d.date < today ? "text-muted/60" : "text-muted"
+                    }`}
                   >
                     {e.displayTitle}
                   </div>
@@ -328,18 +349,15 @@ export default function WeekCalendar({
           </div>
         )}
 
-        {/* Time grid */}
-        <div
-          className={`${cols} relative border-t border-rule`}
-          style={{ height: hours.length * HOUR_PX }}
-        >
-          {/* Hour labels */}
+        {/* Time grid — no lines; each event is a hairline rail spanning its
+            duration (same register as .rox-timeline). */}
+        <div className={`${cols} relative`} style={{ height: hours.length * HOUR_PX }}>
           <div className="relative">
-            {hours.slice(1).map((h, i) => (
+            {marks.map((h) => (
               <span
                 key={h}
-                className="absolute right-1.5 -translate-y-1/2 text-[0.55rem] uppercase tracking-tight text-muted/70 tabular-nums sm:right-2 sm:text-[0.6rem]"
-                style={{ top: (i + 1) * HOUR_PX }}
+                className="absolute left-0 -translate-y-1/2 text-[0.55rem] text-muted/55 tabular-nums sm:text-[0.6rem]"
+                style={{ top: (h - startHour) * HOUR_PX }}
               >
                 {fmtHour(h)}
               </span>
@@ -347,20 +365,9 @@ export default function WeekCalendar({
           </div>
 
           {days.map((d) => {
-            const isToday = d.date === today;
             const nowMin = now && now.dateKey === d.date ? now.min : null;
             return (
-              <div key={d.date} className="relative border-l border-rule">
-                {/* Hour lines */}
-                {hours.slice(1).map((h, i) => (
-                  <div
-                    key={h}
-                    aria-hidden
-                    className="absolute inset-x-0 border-t border-rule/60"
-                    style={{ top: (i + 1) * HOUR_PX }}
-                  />
-                ))}
-
+              <div key={d.date} className="relative">
                 {d.timed.map((p) => {
                   const top = ((p.start - gridMin) / 60) * HOUR_PX;
                   const height = Math.max(
@@ -392,55 +399,63 @@ export default function WeekCalendar({
                               }
                         )
                       }
-                      className={`absolute overflow-hidden rounded-[3px] border-l-2 px-0.5 text-left transition-[background-color,opacity] hover:z-10 sm:px-1 ${
+                      className={`blur-item group absolute overflow-hidden border-l pl-1 text-left sm:pl-1.5 ${
                         isSelected
-                          ? "z-10 border-foreground bg-foreground/[0.16]"
-                          : "border-foreground/45 bg-foreground/[0.07] hover:bg-foreground/[0.13]"
-                      } ${roomy ? "flex flex-col justify-start py-0.5" : "flex items-center"} ${
-                        past && !isSelected ? "opacity-45" : ""
-                      }`}
+                          ? "border-foreground"
+                          : past
+                            ? "border-rule hover:border-muted"
+                            : "border-foreground/30 hover:border-foreground"
+                      } ${roomy ? "flex flex-col justify-start" : "flex items-center"}`}
                       style={{
                         top: top + 1,
                         height: height - 2,
-                        left: `calc(${(p.col / p.cols) * 100}% + 2px)`,
-                        width: `calc(${100 / p.cols}% - 3px)`,
+                        left: `calc(${(p.col / p.cols) * 100}% + ${p.col ? 2 : 0}px)`,
+                        width: `calc(${100 / p.cols}% - ${p.col ? 2 : 0}px)`,
+                        transitionProperty: "opacity, filter, border-color",
                       }}
                     >
                       {roomy ? (
                         <>
                           {/* Whole words only — narrow (phone) columns clip
                               rather than splitting "CS229" mid-word. */}
-                          <div className="text-[0.6rem] font-medium leading-tight text-foreground/90 [overflow-wrap:normal] sm:text-[0.68rem]">
+                          <span
+                            className={`text-[0.62rem] leading-tight tracking-tight [overflow-wrap:normal] sm:text-[0.72rem] ${
+                              past && !isSelected ? "text-muted" : "text-foreground"
+                            }`}
+                          >
                             {p.e.displayTitle}
-                          </div>
-                          <div className="mt-px whitespace-nowrap text-[0.56rem] leading-tight text-muted tabular-nums sm:text-[0.6rem]">
+                          </span>
+                          <span className="mt-0.5 whitespace-nowrap text-[0.55rem] leading-tight text-muted/70 tabular-nums sm:text-[0.62rem]">
                             <span className="sm:hidden">{fmtClock(p.start)}</span>
                             <span className="hidden sm:inline">{range}</span>
-                          </div>
+                          </span>
                         </>
                       ) : (
-                        <div className="truncate text-[0.58rem] leading-none text-foreground/90 sm:text-[0.64rem]">
-                          <span className="font-medium">{p.e.displayTitle}</span>
-                          <span className="ml-1 text-muted tabular-nums">
+                        <span
+                          className={`truncate text-[0.6rem] leading-none tracking-tight sm:text-[0.68rem] ${
+                            past && !isSelected ? "text-muted" : "text-foreground"
+                          }`}
+                        >
+                          {p.e.displayTitle}
+                          <span className="ml-1 text-muted/70 tabular-nums">
                             {fmtClock(p.start)}
                           </span>
-                        </div>
+                        </span>
                       )}
                     </button>
                   );
                 })}
 
-                {/* Now line */}
-                {isToday &&
-                  nowMin !== null &&
+                {/* Now — a faint hairline with a small node, no color */}
+                {nowMin !== null &&
                   nowMin >= gridMin &&
                   nowMin <= endHour * 60 && (
                     <div
                       aria-hidden
-                      className="pointer-events-none absolute inset-x-0 z-20 h-px bg-red-500"
+                      className="pointer-events-none absolute inset-x-0 z-10 h-px bg-foreground/40"
                       style={{ top: ((nowMin - gridMin) / 60) * HOUR_PX }}
                     >
-                      <span className="absolute -left-1 -top-[3px] size-[7px] rounded-full bg-red-500" />
+                      <span className="absolute -left-[2.5px] -top-[2px] size-[5px] rounded-full bg-foreground" />
                     </div>
                   )}
               </div>
