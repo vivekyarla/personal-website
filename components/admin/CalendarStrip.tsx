@@ -10,6 +10,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import {
+  eventKey,
   resolveEvents,
   type CalEvent,
   type CalendarData,
@@ -36,7 +37,10 @@ type Props = {
   today: string;
   initialCalendar: CalendarData;
   configured: boolean;
+  // Event to highlight on arrival (from a Tasks link): eventKey() format.
+  focus?: string;
 };
+
 
 function addDays(iso: string, n: number): string {
   const d = new Date(iso + "T12:00:00Z");
@@ -153,6 +157,7 @@ export default function CalendarStrip({
   today,
   initialCalendar,
   configured,
+  focus,
 }: Props) {
   // Rendered window of days (extends as you scroll toward either end).
   const [span, setSpan] = useState({
@@ -186,10 +191,9 @@ export default function CalendarStrip({
   );
   const requested = useRef(new Set(Object.keys(initialCalendar.events)));
 
-  // Tapped/clicked event, shown in full above the grid (blocks truncate).
-  const [selected, setSelected] = useState<{ key: string; label: string } | null>(
-    null
-  );
+  // Tapped/clicked (or linked-to) event, shown in full above the grid
+  // (blocks truncate). The label is derived at render so renames stay fresh.
+  const [selectedKey, setSelectedKey] = useState<string | null>(focus ?? null);
   // Client-only (avoids hydration drift); ticks each minute for the now line.
   const [now, setNow] = useState<{ dateKey: string; min: number } | null>(null);
 
@@ -254,6 +258,18 @@ export default function CalendarStrip({
     if (node) node.scrollLeft = initialIdx.current * colWidth(node);
   }, []);
 
+  // Arriving from a Tasks link: bring the event into view vertically.
+  useEffect(() => {
+    if (!focus) return;
+    const el = scrollerRef.current?.querySelector(
+      `[data-key="${CSS.escape(focus)}"]`
+    );
+    el?.scrollIntoView({
+      block: "center",
+      behavior: prefersReducedMotion() ? "auto" : "smooth",
+    });
+  }, [focus]);
+
   // Days prepended to the window: shift by the same amount so the view
   // doesn't jump.
   useLayoutEffect(() => {
@@ -316,13 +332,13 @@ export default function CalendarStrip({
 
   const page = useCallback(
     (dir: -1 | 1) => {
-      setSelected(null);
+      setSelectedKey(null);
       scrollToIdx(first + dir * perView);
     },
     [first, perView, scrollToIdx]
   );
   const goToday = useCallback(() => {
-    setSelected(null);
+    setSelectedKey(null);
     scrollToIdx(todayIdx);
   }, [todayIdx, scrollToIdx]);
 
@@ -385,7 +401,7 @@ export default function CalendarStrip({
     (_, i) => startHour + i
   ).filter((h) => h % 3 === 0 && h > startHour);
   const allDayRows = Math.max(0, ...cols.map((c) => c.allDay.length));
-  const allDayPx = allDayRows ? allDayRows * ALLDAY_ROW_PX + 16 : 12;
+  const allDayPx = allDayRows ? allDayRows * ALLDAY_ROW_PX + 14 : 10;
 
   const visible = days.slice(first, first + perView);
   const sameMonth =
@@ -400,6 +416,22 @@ export default function CalendarStrip({
         )}`
       : "";
   const atToday = first === todayIdx;
+
+  const selectedLabel = (() => {
+    if (!selectedKey) return null;
+    const date = selectedKey.slice(0, 10);
+    const c = cols.find((x) => x.date === date);
+    const when = fmtDay(date, { weekday: "short", month: "short", day: "numeric" });
+    const allDay = c?.allDay.find((e) => eventKey(e) === selectedKey);
+    if (allDay) return `${allDay.displayTitle} · ${when}, all day`;
+    const p = c?.timed.find((x) => eventKey(x.e) === selectedKey);
+    if (p) {
+      return `${p.e.displayTitle} · ${when}, ${fmtClock(p.start)} – ${fmtClock(p.end)}`;
+    }
+    return null;
+  })();
+  const toggleSelected = (key: string) =>
+    setSelectedKey((k) => (k === key ? null : key));
 
   const navBtn = "px-1 text-muted hover:text-foreground transition-colors";
 
@@ -442,10 +474,10 @@ export default function CalendarStrip({
       <p
         aria-live="polite"
         className={`-my-3 min-h-[1.1rem] truncate text-[0.78rem] transition-opacity ${
-          selected ? "opacity-100" : "opacity-0"
+          selectedLabel ? "opacity-100" : "opacity-0"
         }`}
       >
-        {selected?.label}
+        {selectedLabel}
       </p>
 
       <div className="flex">
@@ -453,7 +485,7 @@ export default function CalendarStrip({
         <div className="w-7 shrink-0 sm:w-10">
           <div className="border-b border-rule" style={{ height: HEADER_PX }} />
           <div
-            className="pt-2 text-[0.55rem] uppercase leading-none tracking-wide text-muted/60"
+            className="pt-[9px] text-[0.55rem] uppercase leading-none tracking-wide text-muted/60"
             style={{ height: allDayPx }}
           >
             <span className="hidden sm:inline">{allDayRows > 0 && "All day"}</span>
@@ -522,21 +554,31 @@ export default function CalendarStrip({
 
                     {/* All-day */}
                     <div
-                      className="flex min-w-0 flex-col px-1.5 pt-2 sm:px-2"
+                      className="flex min-w-0 flex-col items-start px-1.5 pt-1.5 sm:px-2"
                       style={{ height: allDayPx }}
                     >
-                      {c.allDay.map((e) => (
-                        <div
-                          key={e.uid}
-                          title={e.displayTitle}
-                          className={`blur-item truncate text-[0.64rem] sm:text-[0.7rem] ${
-                            isPast ? "text-muted/60" : "text-muted"
-                          }`}
-                          style={{ height: ALLDAY_ROW_PX }}
-                        >
-                          {e.displayTitle}
-                        </div>
-                      ))}
+                      {c.allDay.map((e) => {
+                        const key = eventKey(e);
+                        return (
+                          <button
+                            type="button"
+                            key={key}
+                            data-key={key}
+                            title={e.displayTitle}
+                            onClick={() => toggleSelected(key)}
+                            className={`blur-item max-w-full truncate text-left text-[0.64rem] transition-colors hover:text-foreground sm:text-[0.7rem] ${
+                              selectedKey === key
+                                ? "text-foreground"
+                                : isPast
+                                  ? "text-muted/60"
+                                  : "text-muted"
+                            }`}
+                            style={{ height: ALLDAY_ROW_PX }}
+                          >
+                            {e.displayTitle}
+                          </button>
+                        );
+                      })}
                     </div>
 
                     {/* Timed — hairline rails sized by duration */}
@@ -558,26 +600,15 @@ export default function CalendarStrip({
                           (c.date < now.dateKey ||
                             (c.date === now.dateKey && p.end <= now.min));
                         const roomy = height >= 30;
-                        const key = `${c.date}|${p.e.uid}|${p.start}`;
-                        const isSelected = selected?.key === key;
+                        const key = eventKey(p.e);
+                        const isSelected = selectedKey === key;
                         return (
                           <button
                             type="button"
                             key={key}
+                            data-key={key}
                             title={`${p.e.displayTitle}\n${times}`}
-                            onClick={() =>
-                              setSelected(
-                                isSelected
-                                  ? null
-                                  : {
-                                      key,
-                                      label: `${p.e.displayTitle} · ${fmtDay(
-                                        c.date,
-                                        { weekday: "short", month: "short", day: "numeric" }
-                                      )}, ${times}`,
-                                    }
-                              )
-                            }
+                            onClick={() => toggleSelected(key)}
                             className={`blur-item absolute overflow-hidden border-l pl-1 text-left sm:pl-1.5 ${
                               isSelected
                                 ? "border-foreground"

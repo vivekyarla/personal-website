@@ -7,8 +7,14 @@ import CalendarStrip from "@/components/admin/CalendarStrip";
 export const metadata = { title: "Admin · Calendar" };
 export const dynamic = "force-dynamic";
 
-export default async function AdminCalendar() {
+export default async function AdminCalendar({
+  searchParams,
+}: {
+  searchParams: Promise<{ focus?: string | string[] }>;
+}) {
   if (!(await requireAuth())) redirect("/admin/login");
+  // ?focus=<eventKey> — set by event links on the Tasks page.
+  const { focus } = await searchParams;
 
   // First paint covers the opening view (today onward) plus a day back; the
   // strip lazy-loads the rest as you scroll.
@@ -24,6 +30,7 @@ export default async function AdminCalendar() {
         today={today}
         initialCalendar={calendar}
         configured={hasCalendar}
+        focus={typeof focus === "string" ? focus : undefined}
       />
     </div>
   );

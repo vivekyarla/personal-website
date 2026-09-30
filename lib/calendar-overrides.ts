@@ -35,6 +35,11 @@ export type ShownEvent = CalEvent & {
   renamedAt: "day" | "series" | null;
 };
 
+// Stable per-occurrence key — links Tasks-page events to the calendar view.
+export function eventKey(e: Pick<CalEvent, "dateKey" | "uid" | "timeLabel">) {
+  return `${e.dateKey}|${e.uid}|${e.timeLabel ?? "allday"}`;
+}
+
 const okey = (uid: string, dateKey: string) => `${uid}|${dateKey}`;
 
 export function resolveEvents(

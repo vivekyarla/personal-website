@@ -21,9 +21,11 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import Link from "next/link";
 import Collapsible from "@/components/Collapsible";
 import { useCalendarPolling } from "@/components/admin/useCalendarPolling";
 import {
+  eventKey,
   patchOverrides,
   resolveEvents,
   type CalendarData,
@@ -690,6 +692,9 @@ function CalendarRow({
 
   const inline =
     "shrink-0 text-[0.68rem] text-muted hover:text-foreground transition-colors";
+  // Hover-revealed row actions (always faintly visible on touch screens).
+  const rowIcon =
+    "-my-1 p-1 leading-none text-muted/0 group-hover:text-muted focus-visible:text-muted hover:!text-foreground [@media(hover:none)]:text-muted/50 transition-colors";
 
   return (
     <li className="group flex items-baseline gap-2 leading-snug">
@@ -745,27 +750,44 @@ function CalendarRow({
         </>
       ) : (
         <>
-          <button
-            type="button"
-            onClick={startEdit}
+          <Link
+            href={`/admin/calendar?focus=${encodeURIComponent(eventKey(e))}`}
             title={
               e.renamed
-                ? `Originally “${e.title}” — click to rename (this site only)`
-                : "Click to rename (this site only)"
+                ? `Originally “${e.title}” — open in calendar`
+                : "Open in calendar"
             }
-            className="text-left text-[0.85rem] text-muted hover:text-foreground transition-colors cursor-text min-w-0 truncate"
+            className="min-w-0 truncate text-[0.85rem] text-muted underline-offset-4 decoration-foreground/40 transition-colors hover:text-foreground hover:underline"
           >
             {e.displayTitle}
-          </button>
-          <button
-            type="button"
-            onClick={() => (e.recurring ? setMode("hide") : hide("series"))}
-            aria-label="Hide event on this site"
-            title="Hide on this site (Google Calendar is unchanged)"
-            className="ml-auto -my-1 -mr-1 shrink-0 p-1 text-xs text-muted/0 group-hover:text-muted focus-visible:text-muted hover:!text-foreground [@media(hover:none)]:text-muted/50 transition-colors"
-          >
-            ✕
-          </button>
+          </Link>
+          <span className="ml-auto flex shrink-0 items-center gap-0.5">
+            <button
+              type="button"
+              onClick={startEdit}
+              aria-label="Rename event on this site"
+              title="Rename (this site only)"
+              className={rowIcon}
+            >
+              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden>
+                <path
+                  d="M8.2 1.8l2 2L4 10H2v-2l6.2-6.2z"
+                  stroke="currentColor"
+                  strokeWidth="1.1"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={() => (e.recurring ? setMode("hide") : hide("series"))}
+              aria-label="Hide event on this site"
+              title="Hide on this site (Google Calendar is unchanged)"
+              className={`${rowIcon} text-xs`}
+            >
+              ✕
+            </button>
+          </span>
         </>
       )}
     </li>

@@ -84,6 +84,9 @@ Supabase URL/keys, `ADMIN_PASSWORD`, `SESSION_SECRET` (must be 32+ chars),
   duration (overlaps packed side by side), spotlight blur on hover, today
   marked by the switcher's hairline underline, monochrome now-line. Tap a
   block for its full title. Renames/hides from Tasks apply.
+  `?focus=<eventKey>` (date|uid|HH:MM or allday) highlights and scrolls to
+  an event — Tasks-page event titles link there; renaming on Tasks is the
+  pencil beside ✕.
 - Renames/hides are **local only** (never written to Google) in Supabase
   `calendar_event_overrides` (`uid` = iCal UID shared by a recurring series,
   `date_key` = `""` for every occurrence or `YYYY-MM-DD` for one day,
