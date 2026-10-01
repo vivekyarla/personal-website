@@ -8,7 +8,7 @@ Habits, Readings) on `https://vivekyarla.com`.
 **Browser (for agents whose vault fills form fields):** open
 `https://vivekyarla.com/admin/instinct`, fill the token into the password
 field (username is `instinct`), and submit. That sets a session cookie for
-the browser, then lands on `/admin/tasks`. From there you can use the pages
+the browser, then lands on `/admin/tasks` (the hub, also at `/admin/hub`). From there you can use the pages
 (`/admin/tasks`, `/admin/calendar`, `/admin/habits`, `/admin/inbound`) or call
 the endpoints below from the same browser. The cookie authenticates them, and
 no header is needed.

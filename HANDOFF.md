@@ -56,6 +56,10 @@ Supabase URL/keys, `ADMIN_PASSWORD`, `SESSION_SECRET` (must be 32+ chars),
 - `/repository` — quotes, `N tweets · M categories` index, collapsible
   **Latest** (defaultOpen, category labels) + collapsible category sections,
   each a full-bleed horizontal tweet carousel with edge fog.
+- `/admin/hub` — the hub's URL: redirects to the last-used tab (`hub_tab`
+  cookie set by `AdminSwitcher`), else Tasks. The switcher (in the admin
+  layout, so it persists across tabs) carries the homepage's Palo Alto
+  `Clock` at right (above the tabs on phones).
 - `/admin` — Tasks / Calendar / Habits / Readings switcher (keys 1–4);
   passkey (TouchID/FaceID) or password auth. Manages inbound
   readings, tweet categories/tweets, and a habit tracker (Today quick-check,

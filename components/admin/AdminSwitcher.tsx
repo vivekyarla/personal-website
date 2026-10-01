@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import Clock from "@/components/Clock";
 
 const items = [
   { href: "/admin/tasks", label: "Tasks" },
@@ -36,6 +37,15 @@ export default function AdminSwitcher({
   useEffect(() => {
     setPending(null);
   }, [pathname]);
+
+  // Remember the tab so /admin/hub reopens it.
+  useEffect(() => {
+    if (pathIdx >= 0) {
+      document.cookie =
+        `hub_tab=${items[pathIdx].href}; path=/admin; ` +
+        "max-age=31536000; samesite=lax";
+    }
+  }, [pathIdx]);
 
   useEffect(() => {
     function measure() {
@@ -84,8 +94,10 @@ export default function AdminSwitcher({
 
   if (pathIdx < 0) return null;
 
+  // Tabs left, Palo Alto clock right (the homepage's); on phones the clock
+  // row sits above the tabs. Lives in the layout, so it ticks on across tabs.
   return (
-    <nav className="flex items-baseline justify-between gap-4">
+    <nav className="flex flex-col-reverse gap-5 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
       <div ref={wrapRef} className="relative blur-group flex gap-6 pb-1.5">
         {items.map((it, i) => {
           const active = i === activeIdx;
@@ -120,14 +132,19 @@ export default function AdminSwitcher({
           />
         )}
       </div>
-      {showAdminLink && (
-        <Link
-          href="/admin"
-          className="text-xs text-muted/70 hover:text-foreground transition-colors"
-        >
-          admin ↩
-        </Link>
-      )}
+      <div className="flex items-end justify-between gap-4 sm:justify-end">
+        {showAdminLink ? (
+          <Link
+            href="/admin"
+            className="pb-px text-xs text-muted/70 hover:text-foreground transition-colors"
+          >
+            admin ↩
+          </Link>
+        ) : (
+          <span />
+        )}
+        <Clock />
+      </div>
     </nav>
   );
 }

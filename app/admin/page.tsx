@@ -18,13 +18,13 @@ export default async function AdminHome() {
 
       <section>
         <h2 className="text-base font-semibold tracking-tight mb-2">
-          Tasks
+          Hub
         </h2>
         <Link
-          href="/admin/tasks"
+          href="/admin/hub"
           className="underline decoration-rule underline-offset-4 hover:decoration-foreground"
         >
-          Open tasks →
+          Open hub →
         </Link>
       </section>
 
