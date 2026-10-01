@@ -36,6 +36,11 @@ export type ShownEvent = CalEvent & {
   renamedAt: "day" | "series" | null;
 };
 
+// When an event is over (events with no end count as 30 minutes).
+export function eventEndMs(e: Pick<CalEvent, "startMs" | "endMs">): number {
+  return e.endMs > e.startMs ? e.endMs : e.startMs + 30 * 60 * 1000;
+}
+
 // Stable per-occurrence key — links Tasks-page events to the calendar view.
 export function eventKey(e: Pick<CalEvent, "dateKey" | "uid" | "timeLabel">) {
   return `${e.dateKey}|${e.uid}|${e.timeLabel ?? "allday"}`;

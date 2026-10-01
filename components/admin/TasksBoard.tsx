@@ -37,6 +37,7 @@ import {
   type TaskView,
 } from "@/components/admin/taskView";
 import {
+  eventEndMs,
   eventKey,
   patchOverrides,
   resolveEvents,
@@ -135,6 +136,18 @@ export default function TasksBoard({
     prev_tag: string | null;
   } | null>(null);
   const view = useTaskView();
+  // Client clock for fading today's finished events (null until mounted so
+  // server and client render the same).
+  const [nowMs, setNowMs] = useState<number | null>(null);
+  useEffect(() => {
+    const tick = () => setNowMs(Date.now());
+    const first = window.setTimeout(tick, 0);
+    const id = window.setInterval(tick, 30 * 1000);
+    return () => {
+      window.clearTimeout(first);
+      window.clearInterval(id);
+    };
+  }, []);
   // Client-only flag for the drag overlay portal (no document during SSR).
   const mounted = useSyncExternalStore(
     noopSubscribe,
@@ -495,6 +508,7 @@ export default function TasksBoard({
           sub={fmtDay(today, { weekday: "long", month: "long", day: "numeric" })}
           dates={[today]}
           events={shownEvents[today] ?? []}
+          nowMs={nowMs}
           focusSignal={newTaskSignal}
           showCalendar={calendarConfigured}
           onEventOverride={overrideEvent}
@@ -618,6 +632,7 @@ function DaySection(props: {
   onDelete: (id: string) => void;
   onAdd: (due: string, title: string, tag: string) => Promise<void>;
   onEventOverride: OnEventOverride;
+  nowMs?: number | null; // Today only: fades events that have ended
 }) {
   const { label, sub, dates, events, dragging } = props;
   const multiDay = dates.length > 1;
@@ -636,7 +651,11 @@ function DaySection(props: {
       <hr className="border-rule mb-3" />
 
       {props.showCalendar && (
-        <CalendarList events={events} onOverride={props.onEventOverride} />
+        <CalendarList
+          events={events}
+          nowMs={props.nowMs ?? null}
+          onOverride={props.onEventOverride}
+        />
       )}
 
       {multiDay ? (
@@ -676,9 +695,11 @@ function DaySection(props: {
 // Hidden events collapse into an "N hidden" toggle so they can be restored.
 function CalendarList({
   events,
+  nowMs,
   onOverride,
 }: {
   events: ShownEvent[];
+  nowMs: number | null;
   onOverride: OnEventOverride;
 }) {
   const [showHidden, setShowHidden] = useState(false);
@@ -694,7 +715,12 @@ function CalendarList({
       {visible.length > 0 && (
         <ul className="flex flex-col gap-1">
           {visible.map((e) => (
-            <CalendarRow key={key(e)} event={e} onOverride={onOverride} />
+            <CalendarRow
+              key={key(e)}
+              event={e}
+              past={nowMs !== null && !e.allDay && eventEndMs(e) <= nowMs}
+              onOverride={onOverride}
+            />
           ))}
         </ul>
       )}
@@ -746,9 +772,19 @@ function fmtTime(label: string | null): string {
   return `${h12 < 10 ? "\u2007" : ""}${h12}:${String(m).padStart(2, "0")}`;
 }
 
-function EventTime({ event: e }: { event: ShownEvent }) {
+function EventTime({
+  event: e,
+  past = false,
+}: {
+  event: ShownEvent;
+  past?: boolean;
+}) {
   return (
-    <span className="shrink-0 w-11 font-mono text-[0.72rem] text-muted tabular-nums">
+    <span
+      className={`shrink-0 w-11 font-mono text-[0.72rem] tabular-nums transition-colors duration-500 ${
+        past ? "text-muted/45" : "text-muted"
+      }`}
+    >
       {e.allDay ? (
         <span className="text-[0.6rem] uppercase tracking-tight">All day</span>
       ) : (
@@ -763,9 +799,11 @@ const keepFocus = (ev: React.SyntheticEvent) => ev.preventDefault();
 
 function CalendarRow({
   event: e,
+  past = false,
   onOverride,
 }: {
   event: ShownEvent;
+  past?: boolean; // ended (Today only) — shown faded
   onOverride: OnEventOverride;
 }) {
   const [mode, setMode] = useState<"view" | "edit" | "hide">("view");
@@ -808,7 +846,7 @@ function CalendarRow({
 
   return (
     <li className="group flex items-baseline gap-2 leading-snug">
-      <EventTime event={e} />
+      <EventTime event={e} past={past} />
       {mode === "edit" ? (
         <>
           <input
@@ -867,7 +905,9 @@ function CalendarRow({
                 ? `Originally “${e.title}” — open in calendar`
                 : "Open in calendar"
             }
-            className="min-w-0 truncate text-[0.85rem] text-muted underline-offset-4 decoration-foreground/40 transition-colors hover:text-foreground hover:underline"
+            className={`min-w-0 truncate text-[0.85rem] underline-offset-4 decoration-foreground/40 transition-colors duration-500 hover:text-foreground hover:underline ${
+              past ? "text-muted/45" : "text-muted"
+            }`}
           >
             {e.displayTitle}
           </Link>
