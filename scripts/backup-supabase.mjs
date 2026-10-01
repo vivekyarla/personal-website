@@ -1,6 +1,7 @@
 // Dumps the public-content Supabase tables to backups/*.json.
-// Private tables (habits, habit_entries, briefs, daily_sentences,
-// admin_credentials) are deliberately excluded — this repo is public.
+// Private tables (tasks, habits, habit_entries, calendar_event_overrides,
+// admin_credentials, visits, auth_epoch) are deliberately excluded — this
+// repo is public.
 // Env: SUPABASE_URL, SUPABASE_SECRET_KEY.
 import { mkdir, writeFile } from "node:fs/promises";
 

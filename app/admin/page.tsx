@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { requireAuth } from "@/lib/session";
 import LogoutButton from "@/components/admin/LogoutButton";
 import EnrollPasskeyButton from "@/components/admin/EnrollPasskeyButton";
+import RevokeAllButton from "@/components/admin/RevokeAllButton";
 
 export const metadata = { title: "Admin" };
 
@@ -106,9 +107,17 @@ export default async function AdminHome() {
         </h2>
         <EnrollPasskeyButton />
         <p className="text-xs text-muted/70 mt-2">
-          Enroll a passkey to sign in with TouchID / FaceID next time. Apple
-          syncs it across your devices via iCloud Keychain.
+          Sign-in is passkey-only (Face ID / Touch ID). Apple syncs passkeys
+          across your devices via iCloud Keychain; enroll one on any device
+          that isn&apos;t synced. Sign-ins last 7 days.
         </p>
+        <div className="mt-5">
+          <RevokeAllButton />
+          <p className="text-xs text-muted/70 mt-2">
+            Ends every admin and Instinct session on every device, including
+            this one.
+          </p>
+        </div>
       </section>
     </div>
   );

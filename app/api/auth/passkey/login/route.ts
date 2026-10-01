@@ -8,6 +8,9 @@ import { getSession } from "@/lib/session";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { ORIGIN, RP_ID } from "@/lib/passkey";
 
+// Slow down failed attempts a touch.
+const failDelay = () => new Promise((r) => setTimeout(r, 800));
+
 // GET → authentication options
 export async function GET() {
   const { data: creds } = await supabaseAdmin
@@ -16,7 +19,8 @@ export async function GET() {
 
   const options = await generateAuthenticationOptions({
     rpID: RP_ID,
-    userVerification: "preferred",
+    // Face ID / Touch ID (or a device PIN) must confirm it's you.
+    userVerification: "required",
     allowCredentials: (creds ?? []).map((c) => ({
       id: c.credential_id,
       transports: (c.transports as AuthenticatorTransport[] | null) ?? undefined,
@@ -47,6 +51,7 @@ export async function POST(request: Request) {
     .single();
 
   if (fetchErr || !row) {
+    await failDelay();
     return NextResponse.json({ ok: false, error: "credential not found" }, { status: 404 });
   }
 
@@ -61,10 +66,11 @@ export async function POST(request: Request) {
       counter: Number(row.counter),
       transports: (row.transports as AuthenticatorTransport[] | null) ?? undefined,
     },
-    requireUserVerification: false,
-  });
+    requireUserVerification: true,
+  }).catch(() => null);
 
-  if (!verification.verified) {
+  if (!verification?.verified) {
+    await failDelay();
     return NextResponse.json({ ok: false, error: "verify failed" }, { status: 400 });
   }
 
@@ -77,6 +83,8 @@ export async function POST(request: Request) {
     .eq("credential_id", credentialId);
 
   session.authed = true;
+  session.authedAt = Date.now();
+  session.recoveryAt = undefined;
   session.webauthnChallenge = undefined;
   await session.save();
   return NextResponse.json({ ok: true });

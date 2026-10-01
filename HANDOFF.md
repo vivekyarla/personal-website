@@ -6,7 +6,7 @@ repo: `/Users/viveky/personal-website-v2` (GitHub: `vivekyarla/personal-website`
 
 ## Stack
 
-- **Next.js 16** (App Router, Turbopack) + React 19 + TypeScript.
+- **Next.js 16.3** (App Router, Turbopack) + React 19 + TypeScript.
   ⚠️ Next 16 has breaking changes vs. training data (async `params`/`cookies`,
   etc.) — read `node_modules/next/dist/docs/` before writing Next-specific code
   (see AGENTS.md).
@@ -36,7 +36,8 @@ npx vercel@latest --prod --yes
 
 The owner prefers deploying straight to prod after a passing build (no preview
 step). Env vars live in `.env.local` (local) and Vercel project env (prod):
-Supabase URL/keys, `ADMIN_PASSWORD`, `SESSION_SECRET` (must be 32+ chars),
+Supabase URL/keys, `ADMIN_RECOVERY_CODE` (32+ chars, see Security),
+`SESSION_SECRET` (must be 32+ chars),
 `CAPTURE_TOKEN` (bearer token for the Apple Shortcut), `PASSKEY_*`,
 `GCAL_ICS_URLS` + `GOOGLE_SERVICE_ACCOUNT_JSON` (see Tasks calendar below),
 `INSTINCT_TOKEN` (32+ chars; AI-assistant access, see below).
@@ -61,7 +62,7 @@ Supabase URL/keys, `ADMIN_PASSWORD`, `SESSION_SECRET` (must be 32+ chars),
   layout, so it persists across tabs) carries the homepage's Palo Alto
   `Clock` at right (above the tabs on phones).
 - `/admin` — Tasks / Calendar / Habits / Readings switcher (keys 1–4);
-  passkey (TouchID/FaceID) or password auth. Manages inbound
+  passkey-only auth (Face ID / Touch ID; see Security). Manages inbound
   readings, tweet categories/tweets, and a habit tracker (Today quick-check,
   grid, momentum charts, perfect days). Auth: iron-session cookie +
   SimpleWebAuthn; guarded by `requireAuth()` from `lib/session.ts`.
@@ -128,9 +129,33 @@ admin home, tweets, categories and analytics stay `authed`-only. Endpoint
 guide: `docs/instinct-api.md`.
 Revoke by rotating/unsetting the env var in Vercel.
 
+## Security
+
+- **Admin sign-in is passkey-only** with user verification *required*
+  (Face ID / Touch ID / device PIN) on both enrollment and sign-in. There is
+  no password. Lost device → `/admin/recover`: `ADMIN_RECOVERY_CODE` grants a
+  10-minute, enroll-one-passkey-only session (never a sign-in).
+- **Sessions** (iron-session cookie `vy_session`, httpOnly/Secure/Lax) carry
+  `authedAt` / `agentAuthedAt`; `requireAuth` & co. enforce a 7-day lifetime
+  and reject anything older than `auth_epoch.epoch` (single-row table,
+  cached 15s). "Sign out everywhere" on `/admin` (`POST
+  /api/auth/revoke-all`) bumps the epoch — voids every admin + Instinct
+  session. Rox pass (`roxAuthed`) is separate and unaffected.
+- **`proxy.ts`** refuses cross-site state-changing `/api/*` requests (Origin /
+  Sec-Fetch-Site); non-browser callers without Origin pass.
+- **Headers** (`next.config.ts`): X-Frame-Options DENY + CSP
+  `frame-ancestors 'none'; base-uri 'self'; object-src 'none';
+  form-action 'self'`, nosniff, Referrer-Policy, Permissions-Policy;
+  `X-Robots-Tag: noindex` on `/admin/*`; no `X-Powered-By`.
+- **Supabase**: RLS on every table; only `tweets`, `tweet_categories`,
+  `inbound_readings` have (SELECT-only) public policies. Everything private is
+  reached solely via the server-only secret key.
+- Shared-secret compares are constant-time (`secretMatches`); failed sign-in
+  attempts are delayed.
+
 ## API routes (`app/api/`)
 
-`auth/*` (password, logout, passkey register/login) · `inbound` (+`[id]`) ·
+`auth/*` (passkey register/login, recover, revoke-all, agent, logout) · `inbound` (+`[id]`) ·
 `categories` (+`[id]`) · `tweets` (+`[id]`) — POST accepts admin session OR
 `Authorization: Bearer CAPTURE_TOKEN` (used by the iPhone share-sheet Shortcut;
 fetches oEmbed, derives post date from the tweet snowflake ID) · `habits`,
