@@ -132,18 +132,17 @@ export default function AdminSwitcher({
           />
         )}
       </div>
-      <div className="flex items-end justify-between gap-4 sm:justify-end">
-        {showAdminLink ? (
+      {/* Clock, with "admin ↩" right-aligned beneath it */}
+      <div className="flex flex-col items-end gap-1.5">
+        <Clock />
+        {showAdminLink && (
           <Link
             href="/admin"
-            className="pb-px text-xs text-muted/70 hover:text-foreground transition-colors"
+            className="text-xs text-muted/70 hover:text-foreground transition-colors"
           >
             admin ↩
           </Link>
-        ) : (
-          <span />
         )}
-        <Clock />
       </div>
     </nav>
   );
