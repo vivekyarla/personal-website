@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { requireAuthOrAgentSession } from "@/lib/session";
+import Link from "next/link";
+import { requireAuth, requireAuthOrAgentSession } from "@/lib/session";
 import { fetchAllTags, fetchTasks, taskWindow } from "@/lib/tasks";
 import { fetchCalendar, calendarConfigured } from "@/lib/calendar";
 import TasksBoard from "@/components/admin/TasksBoard";
@@ -24,10 +25,23 @@ export default async function AdminTasks() {
     .reverse();
 
   const hasCalendar = calendarConfigured();
+  const isAdmin = await requireAuth();
 
   return (
     <div className="waterfall flex flex-col gap-8">
-      <h1 className="text-2xl font-semibold tracking-tight">Tasks</h1>
+      {/* "admin ↩" sits on the heading row here (elsewhere it's under the
+          switcher's clock); hidden for Instinct, which can't open /admin. */}
+      <header className="flex items-baseline justify-between gap-3">
+        <h1 className="text-2xl font-semibold tracking-tight">Tasks</h1>
+        {isAdmin && (
+          <Link
+            href="/admin"
+            className="text-xs text-muted/70 hover:text-foreground transition-colors"
+          >
+            admin ↩
+          </Link>
+        )}
+      </header>
 
       {!hasCalendar && (
         <p className="text-[0.8rem] text-muted/80 italic">

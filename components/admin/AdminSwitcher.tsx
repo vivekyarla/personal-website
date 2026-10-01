@@ -136,7 +136,8 @@ export default function AdminSwitcher({
       {/* Clock, with "admin ↩" right-aligned beneath it */}
       <div className="flex flex-col items-end gap-1.5">
         <Clock />
-        {showAdminLink && (
+        {/* On Tasks the link lives on the page heading row instead. */}
+        {showAdminLink && !pathname.startsWith("/admin/tasks") && (
           <Link
             href="/admin"
             className="text-xs text-muted/70 hover:text-foreground transition-colors"
