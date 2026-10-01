@@ -32,11 +32,6 @@ import Link from "next/link";
 import Collapsible from "@/components/Collapsible";
 import { useCalendarPolling } from "@/components/admin/useCalendarPolling";
 import {
-  toggleTaskView,
-  useTaskView,
-  type TaskView,
-} from "@/components/admin/taskView";
-import {
   eventEndMs,
   eventKey,
   patchOverrides,
@@ -135,7 +130,6 @@ export default function TasksBoard({
     tag: string | null;
     prev_tag: string | null;
   } | null>(null);
-  const view = useTaskView();
   // Client clock for fading today's finished events (null until mounted so
   // server and client render the same).
   const [nowMs, setNowMs] = useState<number | null>(null);
@@ -177,9 +171,6 @@ export default function TasksBoard({
       if (e.key === "n") {
         e.preventDefault();
         setNewTaskSignal((s) => s + 1);
-      } else if (e.key === "g") {
-        e.preventDefault();
-        toggleTaskView();
       }
     }
     window.addEventListener("keydown", onKey);
@@ -191,10 +182,10 @@ export default function TasksBoard({
     return tasks.filter((t) => t.due_date === date).sort(byPos);
   }
 
-  // Drag/drop container: the day, or in label view (current days only —
-  // history stays plain) the day + group, e.g. "2026-10-01#rox".
+  // Drag/drop container: day + group for current days, e.g.
+  // "2026-10-01#rox"; just the day for history (which stays a plain list).
   function containerOf(t: Task): string {
-    return view === "label" && t.due_date >= today
+    return t.due_date >= today
       ? `${t.due_date}#${groupOf(t.tag)}`
       : t.due_date;
   }
@@ -350,7 +341,7 @@ export default function TasksBoard({
     restoreOrigin();
   }
 
-  // While hovering over another day (or, in label view, another group), move
+  // While hovering over another day or group, move
   // the task there optimistically so the lists make room (fractional
   // positions; normalized on drop). Entering a group retags the task.
   function onDragOver(e: DragOverEvent) {
@@ -430,7 +421,7 @@ export default function TasksBoard({
     }
 
     // Days keep one ordering across views: write the container's new order
-    // back into the slots its tasks occupy in the day (identity in day view).
+    // back into the slots its tasks occupy in the day.
     let gi = 0;
     const dayOrder = cur
       .filter((x) => x.due_date === targetDate)
@@ -483,7 +474,6 @@ export default function TasksBoard({
   }
 
   const shared = {
-    view,
     bucket,
     bucketIn,
     knownTags,
@@ -597,7 +587,6 @@ export default function TasksBoard({
                   <TaskRowBody
                     task={activeTask}
                     hideTag={
-                      view === "label" &&
                       activeTask.due_date >= today &&
                       groupOf(activeTask.tag) !== "all"
                     }
@@ -623,7 +612,6 @@ function DaySection(props: {
   events: ShownEvent[];
   showCalendar: boolean;
   focusSignal?: number;
-  view: TaskView;
   bucket: (d: string) => Task[];
   bucketIn: (container: string) => Task[];
   knownTags: string[];
@@ -946,36 +934,21 @@ function CalendarRow({
 
 /* ---------- Droppable day list (shares the board's DndContext) ---------- */
 
-// One day's tasks: a single list, or (label view) All / Rox / McK groups in
-// that order. Empty groups hide except while dragging (as drop targets).
+// One day's tasks as All / Rox / McK groups, in that order. Empty groups
+// hide except while dragging (as drop targets).
 function DayTasks({
   date,
-  view,
-  bucket,
   bucketIn,
   dragging,
   onToggle,
   onDelete,
 }: {
   date: string;
-  view: TaskView;
-  bucket: (d: string) => Task[];
   bucketIn: (container: string) => Task[];
   dragging: boolean;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
 }) {
-  if (view === "day") {
-    return (
-      <DayList
-        id={date}
-        list={bucket(date)}
-        dragging={dragging}
-        onToggle={onToggle}
-        onDelete={onDelete}
-      />
-    );
-  }
   return (
     <div className="flex flex-col gap-2.5">
       {GROUPS.map((g) => {
@@ -1018,7 +991,7 @@ function DayList({
   onToggle,
   onDelete,
 }: {
-  id: string; // date, or date#group in label view
+  id: string; // date#group, or a date (history)
   list: Task[];
   dragging: boolean;
   hideTag?: boolean; // group heading already says Rox/McK

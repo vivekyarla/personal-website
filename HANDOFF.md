@@ -70,13 +70,11 @@ Supabase URL/keys, `ADMIN_RECOVERY_CODE` (32+ chars, see Security),
 
 ## Tasks labels (`/admin/tasks`)
 
-- **Day · Label** switch beside the heading (`g`; remembered per browser in
-  `localStorage` via `components/admin/taskView.ts`). Label view splits each
-  current day into All / Rox / McK (Rox/McK match any case; everything else,
-  including untagged, is All). History stays plain.
+- Each current day is split into All / Rox / McK groups (Rox/McK match any
+  case; everything else, including untagged, is All). History stays plain.
 - Dragging between groups retags: into Rox/McK sets `tag` to "Rox"/"McK" and
   stores the All tag it came from in `tasks.prev_tag`; back into All restores
-  it. Days keep one ordering across views (a group's new order is written
+  it. Each day keeps one underlying order (a group's new order is written
   back into its slots in the day).
 - The drag overlay is portaled to `<body>` — `.waterfall`'s lingering
   transform otherwise re-anchors its `position: fixed` and offsets drops.

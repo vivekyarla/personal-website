@@ -94,10 +94,11 @@ export default function AdminSwitcher({
 
   if (pathIdx < 0) return null;
 
-  // Tabs left, Palo Alto clock right (the homepage's); on phones the clock
-  // row sits above the tabs. Lives in the layout, so it ticks on across tabs.
+  // Tabs left, Palo Alto clock right (the homepage's), its date line on the
+  // tabs' baseline with the time + "admin ↩" hanging below. On phones the
+  // clock sits above the tabs. Lives in the layout, so it ticks across tabs.
   return (
-    <nav className="flex flex-col-reverse gap-5 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+    <nav className="flex flex-col-reverse gap-5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
       <div ref={wrapRef} className="relative blur-group flex gap-6 pb-1.5">
         {items.map((it, i) => {
           const active = i === activeIdx;
