@@ -124,3 +124,24 @@ curl -s -X POST https://vivekyarla.com/api/tasks \
   -H "Content-Type: application/json" \
   -d '{"title":"Prep for Rox sync","tag":"Rox","due_date":"2026-10-01"}'
 ```
+
+---
+
+## Tweet capture (Instinct, headless)
+
+Instinct can only make plain GET requests, so tweets are saved with one:
+
+```
+GET /api/capture/tweet?url=<tweet url>&category=<slug>&note=<optional>&key=<TWEET_CAPTURE_KEY>
+```
+
+- Uses its own key, `TWEET_CAPTURE_KEY` (Vercel env var). It is not
+  `INSTINCT_TOKEN` or `CAPTURE_TOKEN` and can only save a tweet into an
+  existing category (e.g. `takes`). Delete or rotate the env var to revoke.
+- Also accepts `Authorization: Bearer <key>`.
+- The key sits in the URL, so it can show in Vercel request logs. Rotate it
+  if that matters.
+- Tracking params on the tweet URL are dropped; re-saving a URL updates it.
+- 30 saves per hour per server instance, then `429`.
+- Returns `{ ok, tweet, category }`; `400` bad URL or unknown category,
+  `401` bad key.
