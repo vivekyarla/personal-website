@@ -1,4 +1,5 @@
 import Clock from "@/components/Clock";
+import CypressTrees from "@/components/CypressTrees";
 import HomeViewport from "@/components/HomeViewport";
 import HoverReveal from "@/components/HoverReveal";
 import NameToggle from "@/components/NameToggle";
@@ -57,7 +58,11 @@ const personLd = {
 
 export default function Home() {
   return (
-    <div className="namespot waterfall w-full max-w-[600px] mx-auto flex flex-1 flex-col gap-[clamp(0.875rem,2.4vh,2rem)] text-[0.9rem] pt-[clamp(1.5rem,7vh,6rem)] pb-6">
+    <>
+    {/* Outside .waterfall: its lingering transform would re-anchor the
+        trees' position:fixed to this column instead of the viewport. */}
+    <CypressTrees />
+    <div className="namespot waterfall relative z-10 w-full max-w-[600px] mx-auto flex flex-1 flex-col gap-[clamp(0.875rem,2.4vh,2rem)] text-[0.9rem] pt-[clamp(1.5rem,7vh,6rem)] pb-6">
       <HomeViewport />
       <script
         type="application/ld+json"
@@ -301,5 +306,6 @@ export default function Home() {
         </ul>
       </section>
     </div>
+    </>
   );
 }

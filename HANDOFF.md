@@ -44,7 +44,17 @@ Supabase URL/keys, `ADMIN_RECOVERY_CODE` (32+ chars, see Security),
 
 ## Pages
 
-- `/` — home. Name (click = dark-mode toggle), live viewer-local clock, bio,
+- `/` — home. Flanked (≥960px wide) by two animated Monterey cypresses
+  (`components/CypressTrees.tsx`, assets in `public/cypress/`): the
+  `<cypress-tree>` custom element draws each tree in from ~1,300 pen
+  strokes on every load, resolves to the photo texture, then loops a wind
+  sway (trunks fixed). Trees are big and may crop off-screen; a frosted
+  `.cypress-veil` over the column (above trees, below text) blurs any
+  overlap. Inverted in dark mode; static for reduced-motion. `cypress.js`
+  carries one `[site patch]` (1px triangle overlap to hide wind-mesh seams).
+  Only write unprefixed `backdrop-filter` — Lightning CSS otherwise drops it.
+  Adds ~1.35MB to the home page (two WebPs + 243KB gzipped traces).
+  Rest of home: Name (click = dark-mode toggle), live viewer-local clock, bio,
   interests, Writing/Repository buttons, Projects, Experience, socials.
   **Hard scroll-lock**: `HomeViewport` adds `html.home-locked` (overflow hidden
   ≥640px wide). Content must always fit — spacing uses `clamp()` so it
