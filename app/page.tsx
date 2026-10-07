@@ -72,7 +72,7 @@ export default function Home() {
       {/* Bio */}
       <section className="name-dim">
         <p className="leading-relaxed">
-          I&apos;m 19 and a student at Stanford studying Economics &amp;
+          I&apos;m 20 and a student at Stanford studying Economics &amp;
           Computer Science. I&apos;m also an intern at{" "}
           <a
             href="https://rox.com"
