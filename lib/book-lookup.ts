@@ -1,8 +1,11 @@
 import "server-only";
 
 // Finds cover images (and page counts) for a book by title + author, so
-// covers never have to be uploaded. Open Library first (free, no key);
-// Google Books as a fallback. Returns up to 6 candidates, best first.
+// covers never have to be uploaded. Covers: Apple Books search first
+// (official, current US covers — covers new releases Open Library lacks),
+// then Open Library's editions. Page count: Open Library. Google Books is a
+// last resort (its anonymous quota is often exhausted). All free, no keys.
+// Returns up to 6 candidates, best first.
 export type CoverCandidate = {
   cover_url: string;
   pages: number | null;
@@ -142,21 +145,62 @@ async function googleBooks(title: string, author: string): Promise<CoverCandidat
     }));
 }
 
-export async function lookupCovers(title: string, author: string): Promise<CoverCandidate[]> {
-  const t = title.trim(), a = author.trim();
-  if (!t) return [];
-  let out: CoverCandidate[] = [];
+// Apple Books (iTunes Search API): official ebook covers; no page counts.
+async function appleBooks(title: string, author: string): Promise<CoverCandidate[]> {
+  const q = new URLSearchParams({
+    term: `${title} ${author}`.trim(),
+    entity: "ebook",
+    country: "US",
+    limit: "8",
+  });
+  const data = await getJson(`https://itunes.apple.com/search?${q}`);
+  type Result = { trackName?: string; artistName?: string; artworkUrl100?: string; releaseDate?: string };
+  const want = norm(title);
+  return ((data.results ?? []) as Result[])
+    .filter(
+      (r) =>
+        r.artworkUrl100 &&
+        !NOT_THE_BOOK.test(r.trackName ?? "") &&
+        norm(r.trackName ?? "").startsWith(want)
+    )
+    .map((r) => ({
+      // ask for a large render (keeps the cover's aspect within the box)
+      cover_url: r.artworkUrl100!.replace(/\/\d+x\d+bb\.(jpg|png)$/, "/600x900bb.jpg"),
+      pages: null,
+      title: r.trackName ?? title,
+      author: r.artistName ?? null,
+      year: r.releaseDate ? Number(r.releaseDate.slice(0, 4)) || null : null,
+    }));
+}
+
+async function attempt<T>(label: string, fn: () => Promise<T[]>): Promise<T[]> {
   try {
-    out = await openLibrary(t, a);
+    return await fn();
   } catch (err) {
-    console.error("[books] open library:", err);
+    console.error(`[books] ${label}:`, err instanceof Error ? err.message : err);
+    return [];
   }
-  if (out.length === 0) {
-    try {
-      out = await googleBooks(t, a);
-    } catch (err) {
-      console.error("[books] google books:", err);
-    }
-  }
+}
+
+export async function lookupCovers(title: string, author: string): Promise<CoverCandidate[]> {
+  const full = title.trim(), a = author.trim();
+  if (!full) return [];
+  // "The Power Law: Venture Capital and…" → also try "The Power Law"
+  const short = full.split(/\s*[:—–]\s*/)[0];
+
+  const [apple, olFull] = await Promise.all([
+    attempt("apple books", () => appleBooks(short, a)),
+    attempt("open library", () => openLibrary(full, a)),
+  ]);
+  let ol = olFull;
+  if (ol.length === 0 && short !== full) ol = await attempt("open library", () => openLibrary(short, a));
+
+  // Apple covers first, Open Library's after; page count from Open Library.
+  const pages = ol.find((c) => c.pages)?.pages ?? null;
+  const seen = new Set<string>();
+  let out = [...apple, ...ol]
+    .filter((c) => !seen.has(c.cover_url) && seen.add(c.cover_url))
+    .map((c) => ({ ...c, pages: c.pages ?? pages }));
+  if (out.length === 0) out = await attempt("google books", () => googleBooks(short, a));
   return out.slice(0, 6);
 }

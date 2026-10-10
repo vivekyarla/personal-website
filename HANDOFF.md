@@ -60,9 +60,11 @@ Supabase URL/keys, `ADMIN_RECOVERY_CODE` (32+ chars, see Security),
   `books`, `lib/books.ts`): Up next (status `future`, by `position`) →
   Reading → Finished (newest `read_month` first). Rows show cover, title /
   author, month; click expands review + pages. Admin: `/admin/inbound`
-  (Books section) → `BookForm`. Covers + page counts come from Open Library
-  (`lib/book-lookup.ts`: English editions whose title matches first, spin-offs
-  last; Google Books fallback, often out of anonymous quota) — ‹ › cycles
+  (Books section) → `BookForm`. `lib/book-lookup.ts`: covers from Apple
+  Books search first (official US covers, has new releases), then Open
+  Library editions (English + title-matching first, spin-offs last); page
+  count from Open Library; titles retried without the subtitle; Google
+  Books last resort (anonymous quota often exhausted) — ‹ › cycles
   alternatives; custom URL / none allowed. API: `/api/books` (+`[id]`,
   `lookup`), admin or Instinct. Articles stay in `inbound_readings`
   (its `kind` column is legacy; the article form no longer offers "book").
