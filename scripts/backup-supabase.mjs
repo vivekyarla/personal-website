@@ -12,7 +12,7 @@ if (!URL_BASE || !KEY) {
   process.exit(1);
 }
 
-const TABLES = ["tweets", "tweet_categories", "inbound_readings"];
+const TABLES = ["tweets", "tweet_categories", "inbound_readings", "books"];
 
 await mkdir("backups", { recursive: true });
 

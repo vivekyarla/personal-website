@@ -56,6 +56,16 @@ Supabase URL/keys, `ADMIN_RECOVERY_CODE` (32+ chars, see Security),
 - `/writing` — Ayn Rand quote, `X in · Y out` index, then a **breakout
   two-column band** (`.writing-bleed`, ~58rem) with Inbound (curated readings,
   tag filter chips, expandable highlighter quotes) | Outbound (Substack essays).
+- `/writing` right column — **Books** (`components/BooksSection.tsx`, table
+  `books`, `lib/books.ts`): Up next (status `future`, by `position`) →
+  Reading → Finished (newest `read_month` first). Rows show cover, title /
+  author, month; click expands review + pages. Admin: `/admin/inbound`
+  (Books section) → `BookForm`. Covers + page counts come from Open Library
+  (`lib/book-lookup.ts`: English editions whose title matches first, spin-offs
+  last; Google Books fallback, often out of anonymous quota) — ‹ › cycles
+  alternatives; custom URL / none allowed. API: `/api/books` (+`[id]`,
+  `lookup`), admin or Instinct. Articles stay in `inbound_readings`
+  (its `kind` column is legacy; the article form no longer offers "book").
 - `/writing/[slug]` — essay page rendering Substack HTML (`.prose-editorial`).
   Slightly stale styling; restyle before first publish.
 - `/repository` — quotes, `N tweets · M categories` index, collapsible

@@ -8,7 +8,8 @@ type Props = { initial?: InboundReading };
 
 export default function InboundForm({ initial }: Props) {
   const router = useRouter();
-  const [kind, setKind] = useState<"article" | "book">(initial?.kind ?? "article");
+  // Articles only — books have their own table/form (BookForm).
+  const kind = "article" as const;
   const [title, setTitle] = useState(initial?.title ?? "");
   const [url, setUrl] = useState(initial?.url ?? "");
   const [source, setSource] = useState(initial?.source ?? "");
@@ -47,10 +48,7 @@ export default function InboundForm({ initial }: Props) {
         tag: tag.trim() || null,
         date_published: dateRead,
         summary: summary.trim(),
-        quotes:
-          kind === "book"
-            ? []
-            : quotes.map((q) => q.trim()).filter((q) => q.length > 0),
+        quotes: quotes.map((q) => q.trim()).filter((q) => q.length > 0),
         pinned,
       };
       const endpoint = initial ? `/api/inbound/${initial.id}` : "/api/inbound";
@@ -78,25 +76,6 @@ export default function InboundForm({ initial }: Props) {
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-4">
-      {/* Article / Book toggle */}
-      <div className="flex gap-2">
-        {(["article", "book"] as const).map((k) => (
-          <button
-            key={k}
-            type="button"
-            onClick={() => setKind(k)}
-            aria-pressed={kind === k}
-            className={`text-[0.75rem] uppercase tracking-wide px-2.5 py-1 border rounded-sm transition-colors ${
-              kind === k
-                ? "border-foreground bg-foreground text-background"
-                : "border-rule text-muted hover:text-foreground"
-            }`}
-          >
-            {k}
-          </button>
-        ))}
-      </div>
-
       <Field label="Title">
         <input
           required
@@ -105,9 +84,9 @@ export default function InboundForm({ initial }: Props) {
           onChange={(e) => setTitle(e.target.value)}
         />
       </Field>
-      <Field label={kind === "book" ? "URL (optional)" : "URL"}>
+      <Field label="URL">
         <input
-          required={kind === "article"}
+          required
           type="url"
           className={inputClass}
           value={url}
@@ -116,12 +95,12 @@ export default function InboundForm({ initial }: Props) {
         />
       </Field>
       <div className="grid grid-cols-2 gap-4">
-        <Field label={kind === "book" ? "Author" : "Source"}>
+        <Field label="Source">
           <input
             className={inputClass}
             value={source}
             onChange={(e) => setSource(e.target.value)}
-            placeholder={kind === "book" ? "Ayn Rand" : "Stratechery"}
+            placeholder="Stratechery"
           />
         </Field>
         <Field label="Tag">
@@ -133,7 +112,7 @@ export default function InboundForm({ initial }: Props) {
           />
         </Field>
       </div>
-      <Field label={kind === "book" ? "Date finished" : "Date published"}>
+      <Field label="Date published">
         <input
           required
           type="date"
@@ -152,7 +131,6 @@ export default function InboundForm({ initial }: Props) {
         />
       </Field>
 
-      {kind === "article" && (
       <div>
         <div className="text-xs uppercase tracking-wide text-muted mb-2">
           Quotes
@@ -187,10 +165,8 @@ export default function InboundForm({ initial }: Props) {
           </button>
         </div>
       </div>
-      )}
 
-      {kind === "article" && (
-        <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+      <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
           <input
             type="checkbox"
             checked={pinned}
@@ -199,7 +175,6 @@ export default function InboundForm({ initial }: Props) {
           />
           <span>Pin to top of articles</span>
         </label>
-      )}
 
       {error && <p className="text-xs text-red-600">{error}</p>}
 

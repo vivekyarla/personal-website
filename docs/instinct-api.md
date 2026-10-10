@@ -100,16 +100,37 @@ An entry means the habit was done that day: `{ id, habit_id, date, done }`.
 ⚠️ **Readings are public.** They appear on vivekyarla.com/writing the moment
 they're created or edited.
 
-A reading: `{ id, title, url, source, tag, date_published, summary, quotes,
-pinned, kind, created_at }`. `kind` is `"article"` (needs `url`) or `"book"`
-(`url` optional, `source` = author, no quotes).
+### Articles
+
+An article: `{ id, title, url, source, tag, date_published, summary, quotes,
+pinned, created_at }`.
 
 | Method | Path | Body | Returns |
 | --- | --- | --- | --- |
 | GET | `/api/inbound` | — | `{ readings }` (newest first) |
-| POST | `/api/inbound` | `{ title, summary, kind?, url?, source?, tag?, date_published?, quotes?, pinned? }` | `{ reading }` |
+| POST | `/api/inbound` | `{ title, url, summary, source?, tag?, date_published?, quotes?, pinned? }` | `{ reading }` |
 | PATCH | `/api/inbound/{id}` | any of the fields above | `{ ok }` |
 | DELETE | `/api/inbound/{id}` | — | `{ ok }` |
+
+### Books
+
+A book: `{ id, title, author, status, read_month, pages, review, cover_url,
+position, created_at }`.
+
+- `status`: `"future"` (shown as Up next), `"reading"`, or `"finished"`.
+- `read_month`: `"YYYY-MM"` (stored as the 1st of the month). It's the month
+  finished for finished books, the month started for reading, and optional for
+  future.
+- On create, a missing `cover_url` and `pages` are looked up automatically
+  from Open Library. Send `cover_url: null` to skip the cover.
+
+| Method | Path | Body | Returns |
+| --- | --- | --- | --- |
+| GET | `/api/books` | — | `{ books }` |
+| POST | `/api/books` | `{ title, author?, status?, read_month?, pages?, review?, cover_url? }` | `{ book }` |
+| PATCH | `/api/books/{id}` | any of the fields above, plus `position` | `{ ok }` |
+| DELETE | `/api/books/{id}` | — | `{ ok }` |
+| GET | `/api/books/lookup?title=&author=` | — | `{ candidates: [{ cover_url, pages, title, author, year }] }` |
 
 ---
 

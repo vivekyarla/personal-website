@@ -3,6 +3,7 @@ import Clock from "@/components/Clock";
 import InboundSection from "@/components/InboundSection";
 import BooksSection from "@/components/BooksSection";
 import { fetchInbound } from "@/lib/inbound";
+import { fetchBooks } from "@/lib/books";
 
 export const revalidate = 60;
 
@@ -19,9 +20,9 @@ export const metadata = {
 };
 
 export default async function ReadingIndex() {
-  const inbound = await fetchInbound();
+  const [inbound, books] = await Promise.all([fetchInbound(), fetchBooks()]);
   const articles = inbound.filter((i) => i.kind !== "book");
-  const books = inbound.filter((i) => i.kind === "book");
+  const booksRead = books.filter((b) => b.status === "finished").length;
 
   return (
     <div className="relative waterfall flex flex-col gap-8 text-[0.9rem] pt-[clamp(1.5rem,7vh,6rem)] pb-20">
@@ -51,7 +52,7 @@ export default async function ReadingIndex() {
       <section>
         <p className="text-center text-[0.72rem] text-muted/80 tabular-nums">
           {articles.length} article{articles.length === 1 ? "" : "s"} ·{" "}
-          {books.length} book{books.length === 1 ? "" : "s"}
+          {booksRead} book{booksRead === 1 ? "" : "s"}
         </p>
       </section>
 
@@ -79,7 +80,7 @@ export default async function ReadingIndex() {
             Books
           </h2>
           <hr className="border-rule mb-2" />
-          <BooksSection items={books} />
+          <BooksSection books={books} />
         </section>
       </div>
     </div>
