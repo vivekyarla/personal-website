@@ -48,7 +48,11 @@ Supabase URL/keys, `ADMIN_RECOVERY_CODE` (32+ chars, see Security),
   interests, Writing/Repository buttons, Projects, Experience, socials.
   **Hard scroll-lock**: `HomeViewport` adds `html.home-locked` (overflow hidden
   ≥640px wide). Content must always fit — spacing uses `clamp()` so it
-  compresses.
+  compresses, and when the window is still too short `HomeViewport` sets CSS
+  `zoom` on the root layout's `[data-site-frame]` (min 0.5) so the footer
+  ends exactly at the window bottom; re-fits on resize / font load / content
+  change and resets on leaving home. Measures the footer's bottom, not
+  `scrollHeight` (the lock clips that to the window).
 - `/writing` — Ayn Rand quote, `X in · Y out` index, then a **breakout
   two-column band** (`.writing-bleed`, ~58rem) with Inbound (curated readings,
   tag filter chips, expandable highlighter quotes) | Outbound (Substack essays).

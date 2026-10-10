@@ -77,7 +77,11 @@ apply(lat,lon);
       <body className="min-h-full flex flex-col">
         <GeoTheme />
         <VisitLogger />
-        <div className="mx-auto w-full max-w-2xl px-6 sm:px-8 flex-1 flex flex-col">
+        {/* data-site-frame: HomeViewport zooms this to fit short windows */}
+        <div
+          data-site-frame
+          className="mx-auto w-full max-w-2xl px-6 sm:px-8 flex-1 flex flex-col"
+        >
           <main className="flex-1 flex flex-col">{children}</main>
           <footer className="py-6 text-[0.7rem] text-muted/60 text-center">
             © {new Date().getFullYear()} Vivek Yarlagedda
